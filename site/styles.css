@@ -175,6 +175,8 @@ h3 { font-size: 1.25rem; }
   border: 1px solid rgba(102, 231, 199, 0.25); border-radius: 999px;
   font: 700 0.82rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
+.sam-cycle { margin: 1.5rem auto 0; color: var(--soft); text-align: center; }
+.sam-cycle code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
 .install { padding: 6.5rem 0; scroll-margin-top: 2rem; }
 .prompt {

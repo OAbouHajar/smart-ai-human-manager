@@ -27,7 +27,7 @@ pwsh -File .\scripts\install.ps1
 The installer:
 
 1. Copies the application into the platform installation directory.
-2. Registers the installed, version-matched `ai-session-hub` marketplace and installs or refreshes `copilot-session-hub@ai-session-hub`.
+2. Registers the installed, version-matched `ai-session-hub` marketplace and installs or refreshes `sam@ai-session-hub`.
 3. Starts AI Session Hub at `http://127.0.0.1:43120`.
 4. Preserves the existing Session Hub database.
 
@@ -42,4 +42,4 @@ curl http://127.0.0.1:43120/api/health
 copilot plugin list
 ```
 
-The health response must contain `"ok":true`, and the plugin list must include `copilot-session-hub`.
+The health response must contain `"ok":true`, and the plugin list must include `sam`.

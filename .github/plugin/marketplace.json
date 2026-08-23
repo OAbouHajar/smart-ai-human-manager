@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Official plugins for AI Session Hub",
-    "version": "0.3.6"
+    "version": "0.3.7"
   },
   "plugins": [
     {
-      "name": "copilot-session-hub",
-      "description": "Persistent session continuity and project management for AI CLIs.",
-      "version": "0.3.6",
+      "name": "sam",
+      "description": "Smart AI Manager for session continuity and agile project delivery.",
+      "version": "0.3.7",
       "source": "."
     }
   ]

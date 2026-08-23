@@ -68,11 +68,7 @@ fi
 
 mkdir -p "$INSTALL_ROOT" "$DATA_ROOT" "$LAUNCH_AGENTS"
 if [[ "$PROJECT_ROOT" != "$INSTALL_ROOT" ]]; then
-  for stale_command in \
-    sesh-do.md sesh-handoff.md sesh-next.md sesh-plan.md sesh-project.md \
-    sesh-reopen.md sesh-sync.md sesh-update.md sesh-wrap.md; do
-    rm -f "$INSTALL_ROOT/commands/$stale_command"
-  done
+  rm -rf "$INSTALL_ROOT/commands"
   tar --exclude="./.git" --exclude="./node_modules" -cf - -C "$PROJECT_ROOT" . |
     tar -xf - -C "$INSTALL_ROOT"
 fi
@@ -124,6 +120,7 @@ start_service() {
 node "$INSTALL_ROOT/scripts/provider-hooks.mjs" install "$INSTALL_ROOT"
 
 if command -v copilot >/dev/null 2>&1; then
+  copilot plugin uninstall sam >/dev/null 2>&1 || true
   copilot plugin uninstall copilot-session-hub >/dev/null 2>&1 || true
   copilot plugin marketplace remove ai-session-hub >/dev/null 2>&1 || true
   MARKETPLACE_READY=false
@@ -143,7 +140,7 @@ if command -v copilot >/dev/null 2>&1; then
 
   PLUGIN_INSTALLED=false
   for _ in {1..5}; do
-    if INSTALL_OUTPUT="$(copilot plugin install copilot-session-hub@ai-session-hub 2>&1)"; then
+    if INSTALL_OUTPUT="$(copilot plugin install sam@ai-session-hub 2>&1)"; then
       PLUGIN_INSTALLED=true
       break
     fi

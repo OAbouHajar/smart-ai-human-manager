@@ -6,7 +6,7 @@ Wrap the current session into AI Session Hub and preserve the user's intended ne
 
 1. Read the full substantive conversation, including completed work, failed checks, blockers, corrections, and promises.
 2. Determine the todo list:
-   - If the user included todos with the `/sam-handoff`, `/sam-next`, or `/wrap-with-next` invocation, use those todos.
+   - If the user included todos with the `/sam:handoff` invocation, use those todos.
    - Otherwise ask one focused question using the `ask_user` tool: `What should I save in the todo list for your next session?`
    - Preserve the user's intent, but rewrite each todo as one concise actionable item.
    - Maximum 10 todos.
@@ -51,7 +51,7 @@ Use the session-start context to determine project membership. If linked, descri
 If the successful response has `update.updateAvailable` set to true, also show:
 
 ```text
-AI Session Hub <latestVersion> is available (installed: <currentVersion>). Run /sam-update to prepare it safely.
+AI Session Hub <latestVersion> is available (installed: <currentVersion>). Run /sam:update to prepare it safely.
 ```
 
 After a successful save, show:

@@ -25,7 +25,7 @@ test("synchronizes files, exposes safe paths, and searches archived sessions", a
       { sessionId, path: "D:\\private\\outside.js", toolName: "view", turnIndex: 3 }
     ],
     questions: [
-      { sessionId, text: "/copilot-session-hub:session-wrap", turnIndex: 0 },
+      { sessionId, text: "/sam:wrap", turnIndex: 0 },
       { sessionId, text: "<skill-context name=\"session-wrap\">Internal skill instructions</skill-context>", turnIndex: 1 },
       { sessionId, text: "How can I finish the payment migration?", turnIndex: 2 },
       { sessionId, text: "Can you add tests for the retry path?", turnIndex: 3 }
@@ -572,28 +572,29 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
 });
 
 test("static UI presents explicit projects first and preserves session tools", async () => {
-  const [html, app, styles, hookClient, wrap, wrapWithNext, hubProject, unwrap, hubUpdate, installPrompt, logoMark] = await Promise.all([
+  const [html, app, styles, hookClient, wrap, handoff, project, reopen, update, refine, review, retro, installPrompt, logoMark] = await Promise.all([
     readFile(join(root, "public", "index.html"), "utf8"),
     readFile(join(root, "public", "app.js"), "utf8"),
     readFile(join(root, "public", "styles.css"), "utf8"),
     readFile(join(root, "scripts", "hook-client.mjs"), "utf8"),
     readFile(join(root, "commands", "wrap.md"), "utf8"),
-    readFile(join(root, "commands", "wrap-with-next.md"), "utf8"),
-    readFile(join(root, "commands", "hub-project.md"), "utf8"),
-    readFile(join(root, "commands", "unwrap.md"), "utf8"),
-    readFile(join(root, "commands", "hub-update.md"), "utf8"),
+    readFile(join(root, "commands", "handoff.md"), "utf8"),
+    readFile(join(root, "commands", "project.md"), "utf8"),
+    readFile(join(root, "commands", "reopen.md"), "utf8"),
+    readFile(join(root, "commands", "update.md"), "utf8"),
+    readFile(join(root, "commands", "refine.md"), "utf8"),
+    readFile(join(root, "commands", "review.md"), "utf8"),
+    readFile(join(root, "commands", "retro.md"), "utf8"),
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
     readFile(join(root, "public", "logo-mark.png"))
   ]);
-  const samCommands = await Promise.all(
-    ["wrap", "handoff", "next", "reopen", "project", "plan", "sync", "do", "update"]
-      .map((name) => readFile(join(root, "commands", `sam-${name}.md`), "utf8"))
-  );
-  assert.match(html, /<strong>AI Session Hub<\/strong>/);
+  const commandNames = ["wrap", "handoff", "reopen", "project", "refine", "plan", "work", "sync", "review", "retro", "update"];
+  const samCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
+  assert.match(html, /<strong>Smart AI Manager<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
   assert.match(html, /<img src="\/logo-mark\.png" alt="">/);
   assert.deepEqual([...logoMark.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
-  assert.match(html, /AI project management/);
+  assert.match(html, /Session-powered projects/);
   assert.match(html, /Find a project or session/);
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
@@ -640,19 +641,13 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /providerName/);
   assert.match(app, /function openBoardTaskForm/);
   assert.match(app, /body: \{ text, status \}/);
-  assert.match(app, /\/sam-handoff/);
-  assert.match(app, /\/sam-reopen/);
-  assert.match(app, /\/sam-update/);
-  assert.match(app, /\/sam-project/);
-  assert.match(app, /\/sam-plan/);
-  assert.match(app, /\/sam-sync/);
-  assert.match(app, /\/sam-do/);
+  for (const name of commandNames) assert.match(app, new RegExp(`/sam:${name}`));
   assert.match(app, /function refreshUpdateStatus/);
   assert.match(app, /elements\.filesSection\.classList\.toggle\("hidden", !files\.length\)/);
   assert.match(styles, /\.kanban-card \{[^}]*min-width: 0;[^}]*max-width: 100%;[^}]*overflow: hidden;/);
   assert.match(styles, /\.card-text \{[^}]*overflow-wrap: anywhere;/);
   assert.match(hookClient, /body\.update\?\.updateAvailable/);
-  assert.match(hookClient, /Copilot users can run \/sam-update/);
+  assert.match(hookClient, /Copilot users can run \/sam:update/);
   assert.match(hookClient, /api\/update\/install/);
   assert.match(hookClient, /Never run or show a separate installer command/);
   assert.match(hookClient, /updated successfully from/);
@@ -661,20 +656,23 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(wrap, /update\.updateAvailable/);
   assert.match(wrap, /"files"/);
   assert.match(wrap, /"completedTasks"/);
-  assert.match(wrapWithNext, /What should I save in the todo list for your next session\?/);
-  assert.match(wrapWithNext, /"tasks"/);
-  assert.match(wrapWithNext, /"completedTasks"/);
-  assert.match(wrapWithNext, /update\.updateAvailable/);
-  assert.match(wrapWithNext, /"files"/);
-  assert.match(hubProject, /one primary project/);
-  assert.match(hubProject, /Never infer or create a project from the repository/);
-  assert.match(hubProject, /api\/project-suggestions/);
-  assert.match(unwrap, /"needsReview": true/);
-  assert.match(unwrap, /Do not clear or replace/);
-  assert.match(hubUpdate, /\/api\/update\/install/);
-  assert.match(hubUpdate, /\/api\/update\/job/);
-  assert.match(hubUpdate, /must not need to run a second script/);
-  assert.equal(samCommands.every((command) => /preferred SAM command|intentionally perform the same workflow/.test(command)), true);
+  assert.match(handoff, /What should I save in the todo list for your next session\?/);
+  assert.match(handoff, /"tasks"/);
+  assert.match(handoff, /"completedTasks"/);
+  assert.match(handoff, /update\.updateAvailable/);
+  assert.match(handoff, /"files"/);
+  assert.match(project, /one primary project/);
+  assert.match(project, /Never infer or create a project from the repository/);
+  assert.match(project, /api\/project-suggestions/);
+  assert.match(reopen, /"needsReview": true/);
+  assert.match(reopen, /Do not clear or replace/);
+  assert.match(update, /\/api\/update\/install/);
+  assert.match(update, /\/api\/update\/job/);
+  assert.match(update, /must not need to run a second script/);
+  assert.match(refine, /Ask for confirmation before changing task wording/);
+  assert.match(review, /Do not accept work merely because code changed/);
+  assert.match(retro, /Avoid generic agile advice/);
+  assert.equal(samCommands.every((command) => /^---[\s\S]+description:/m.test(command)), true);
   assert.match(installPrompt, /Install AI Session Hub/);
   assert.match(installPrompt, /do not delete or overwrite/i);
   assert.match(installPrompt, /active Copilot session is locking/i);

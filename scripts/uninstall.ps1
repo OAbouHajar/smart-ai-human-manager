@@ -15,7 +15,15 @@ if ((Get-Command node -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPat
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     try {
+        copilot plugin uninstall sam
+    } catch {
+    }
+    try {
         copilot plugin uninstall copilot-session-hub
+    } catch {
+    }
+    try {
+        copilot plugin marketplace remove ai-session-hub
     } catch {
     }
 }

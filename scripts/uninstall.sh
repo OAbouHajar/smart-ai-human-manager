@@ -22,7 +22,9 @@ elif [[ -f "$INSTALL_ROOT/scripts/provider-hooks.mjs" ]]; then
   echo "Warning: Node.js is unavailable, so AI CLI provider hooks could not be removed." >&2
 fi
 if command -v copilot >/dev/null 2>&1; then
+  copilot plugin uninstall sam >/dev/null 2>&1 || true
   copilot plugin uninstall copilot-session-hub >/dev/null 2>&1 || true
+  copilot plugin marketplace remove ai-session-hub >/dev/null 2>&1 || true
 fi
 launchctl bootout "$DOMAIN" "$PLIST_PATH" >/dev/null 2>&1 || true
 if [[ -f "$PLIST_PATH" ]]; then

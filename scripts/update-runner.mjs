@@ -216,7 +216,7 @@ function validReleaseUrl(value, version) {
 function userFacingError(error, phase) {
   const message = error instanceof Error ? error.message : "Unknown update error.";
   if (phase === "download") return "The release could not be downloaded or verified. Check that Git is installed and try again.";
-  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /hub-update again.";
+  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /sam:update again.";
   return message.slice(0, 300);
 }
 

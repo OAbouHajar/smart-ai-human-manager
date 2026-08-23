@@ -46,12 +46,7 @@ New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
 $ResolvedProjectRoot = [IO.Path]::GetFullPath($ProjectRoot).TrimEnd("\")
 $ResolvedInstallRoot = [IO.Path]::GetFullPath($InstallRoot).TrimEnd("\")
 if ($ResolvedProjectRoot -ne $ResolvedInstallRoot) {
-    @(
-        "sesh-do.md", "sesh-handoff.md", "sesh-next.md", "sesh-plan.md", "sesh-project.md",
-        "sesh-reopen.md", "sesh-sync.md", "sesh-update.md", "sesh-wrap.md"
-    ) | ForEach-Object {
-        Remove-Item -LiteralPath (Join-Path $InstallRoot "commands\$_") -Force -ErrorAction SilentlyContinue
-    }
+    Remove-Item -LiteralPath (Join-Path $InstallRoot "commands") -Recurse -Force -ErrorAction SilentlyContinue
     Get-ChildItem -LiteralPath $ProjectRoot -Force |
         Where-Object { $_.Name -notin @(".git", "node_modules") } |
         Copy-Item -Destination $InstallRoot -Recurse -Force
@@ -67,6 +62,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    try {
+        copilot plugin uninstall sam 2>$null | Out-Null
+    } catch {
+    }
     try {
         copilot plugin uninstall copilot-session-hub 2>$null | Out-Null
     } catch {
@@ -91,7 +90,7 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
 
     $PluginInstalled = $false
     for ($Attempt = 0; $Attempt -lt 5; $Attempt++) {
-        $InstallOutput = copilot plugin install copilot-session-hub@ai-session-hub 2>&1
+        $InstallOutput = copilot plugin install sam@ai-session-hub 2>&1
         if ($LASTEXITCODE -eq 0) {
             $PluginInstalled = $true
             break

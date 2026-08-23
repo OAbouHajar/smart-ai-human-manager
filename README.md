@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="assets/logo.png" alt="AI Session Hub — Remember. Resume. Continue." width="480">
+  <img src="assets/logo.png" alt="Smart AI Manager — Remember. Resume. Continue." width="480">
 </p>
 
-<p align="center"><strong>Local-first AI project management built from your coding sessions.</strong></p>
+<p align="center"><strong>Smart AI Manager — local-first project management built from your coding sessions.</strong></p>
 
 Turn AI conversations into explicit projects with tasks, decisions, progress, effort, and a clear next action.
 
 <p align="center">
   <a href="https://oabouhajar.github.io/ai-session-hub/"><strong>Visit the website</strong></a>
   ·
-  <a href="#quick-start">Install AI Session Hub</a>
+  <a href="#quick-start">Install Smart AI Manager</a>
 </p>
 
 > Supports **GitHub Copilot CLI**, **Claude Code**, **OpenAI Codex CLI**, and **Google Gemini CLI**.
 >
 > Independent open source software; not an official GitHub, Microsoft, Anthropic, OpenAI, or Google product.
 
-![AI Session Hub Sessions view](screenshots/sessions-screenshot.png)
+![Smart AI Manager Sessions view](screenshots/sessions-screenshot.png)
 
 ## Start here
 
@@ -101,7 +101,7 @@ The installer detects available providers, preserves existing settings and sessi
 
 | Provider | Tracking | Resume | Wrap interaction | Guides |
 |---|---|---|---|---|
-| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sam-wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
+| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sam:wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
 | Claude Code | Yes | `claude --resume <id>` | “Wrap this session” | [Setup](docs/providers/claude-code/setup.md) · [Usage](docs/providers/claude-code/usage.md) |
 | OpenAI Codex CLI | Yes | `codex resume <id>` | “Wrap this session” | [Setup](docs/providers/codex/setup.md) · [Usage](docs/providers/codex/usage.md) |
 | Google Gemini CLI | Yes | `gemini --resume <id>` | “Wrap this session” | [Setup](docs/providers/gemini/setup.md) · [Usage](docs/providers/gemini/usage.md) |
@@ -111,7 +111,7 @@ AI Session Hub uses documented lifecycle hooks rather than unstable provider tra
 ## Daily workflow
 
 1. Start or resume a supported AI CLI session.
-2. Run `/sam-project` when the session belongs to a larger goal; create a project or explicitly link it to one.
+2. Run `/sam:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
 3. Work normally while AI Session Hub tracks lifecycle events.
 4. Before leaving, ask the assistant to **wrap this session** or **checkpoint this session**.
 5. Review project progress, tasks, effort, blockers, and the recommended next action in the dashboard.
@@ -123,16 +123,25 @@ Copilot includes **SAM (Smart AI Manager)** commands:
 
 | Command | Purpose |
 |---|---|
-| `/sam-wrap` | Save a continuity checkpoint |
-| `/sam-handoff` or `/sam-next` | Save a checkpoint with an explicit todo list |
-| `/sam-reopen` | Remove a session from Wrapped while preserving its saved data |
-| `/sam-project` | Create, link, switch, inspect, unlink, or complete an explicit project |
-| `/sam-plan` | Build an ordered plan from unfinished work |
-| `/sam-sync` | Reconcile project state with actual progress |
-| `/sam-do` | Execute the next actionable project task |
-| `/sam-update` | Download, verify, and install the latest stable release automatically |
+| `/sam:wrap` | Save the session checkpoint and update its linked project |
+| `/sam:handoff` | Wrap with an explicit next-session todo list |
+| `/sam:reopen` | Return a wrapped session to active review |
+| `/sam:project` | Create, link, switch, inspect, unlink, or complete a project |
+| `/sam:refine` | Clarify, split, and prioritize backlog work |
+| `/sam:plan` | Build an ordered plan from unfinished work |
+| `/sam:work` | Execute the best ready project task |
+| `/sam:sync` | Reconcile project state with actual evidence |
+| `/sam:review` | Validate delivered work against its intended outcome |
+| `/sam:retro` | Turn project experience into concrete improvements |
+| `/sam:update` | Download, verify, and install the latest stable release automatically |
 
-**SAM** means **Smart AI Manager**. The original `/wrap`, `/wrap-with-next`, `/unwrap`, `/hub-project`, `/hub-update`, and `/kanban*` commands remain available as compatibility aliases.
+**SAM** means **Smart AI Manager**. It combines session continuity with an AI-assisted agile cycle:
+
+```text
+refine → plan → work → sync → review → retro
+```
+
+The human owns goals, priorities, acceptance, and process decisions. SAM prepares the evidence, keeps the board current, executes approved work, and proposes changes for confirmation.
 
 ## Project workspace
 
@@ -184,7 +193,7 @@ Hooks record lifecycle events and provide the assistant with the local checkpoin
 
 When a stable release is available, Session Hub shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
 
-Copilot users can run `/sam-update` for a one-command upgrade. Session Hub downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
+Copilot users can run `/sam:update` for a one-command upgrade. Session Hub downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
 
 To check manually, or when upgrading an older installation that predates update notifications, pull the latest source and rerun the installer:
 

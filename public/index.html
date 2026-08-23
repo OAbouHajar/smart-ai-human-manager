@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Session Hub</title>
+  <title>Smart AI Manager</title>
   <link rel="icon" href="/logo-mark.png" type="image/png">
   <script>
     (() => {
@@ -23,8 +23,8 @@
           <img src="/logo-mark.png" alt="">
         </span>
         <span>
-          <strong>AI Session Hub</strong>
-          <small>AI project management</small>
+          <strong>Smart AI Manager</strong>
+          <small>Session-powered projects</small>
         </span>
         <button id="closeSidebar" class="icon-button sidebar-close" aria-label="Close session history">
           <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
@@ -108,10 +108,10 @@
             <button data-action="import-history">Import session history</button>
             <button data-action="archive">Archive session</button>
           </div>
-          <aside id="infoPanel" class="info-panel hidden" aria-label="AI Session Hub information">
+          <aside id="infoPanel" class="info-panel hidden" aria-label="Smart AI Manager information">
             <header>
               <div>
-                <span class="section-label">AI Session Hub</span>
+                <span class="section-label">Smart AI Manager</span>
                 <strong id="infoVersion">Version —</strong>
               </div>
               <button id="closeInfo" class="icon-button" aria-label="Close information">
@@ -139,11 +139,11 @@
       <aside id="updateBanner" class="update-banner hidden" aria-live="polite">
         <span class="update-icon" aria-hidden="true">↑</span>
         <div>
-          <strong id="updateTitle">AI Session Hub update available</strong>
+          <strong id="updateTitle">Smart AI Manager update available</strong>
           <span id="updateDetail">A newer stable release is ready.</span>
         </div>
         <a id="updateReleaseLink" href="#" target="_blank" rel="noopener noreferrer">Release notes</a>
-        <button id="copyUpdateCommand" class="button quiet">Copy /sam-update</button>
+        <button id="copyUpdateCommand" class="button quiet">Copy /sam:update</button>
         <button id="dismissUpdate" class="icon-button" aria-label="Dismiss update notification">
           <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
         </button>
@@ -214,7 +214,7 @@
                 <svg viewBox="0 0 24 24"><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Z"/></svg>
               </button>
             </div>
-            <p id="nextAction">Run /sam-wrap to create a recommended next step.</p>
+            <p id="nextAction">Run /sam:wrap to create a recommended next step.</p>
             <button id="resumeMainButton" class="button primary">
               Resume this session
               <svg viewBox="0 0 24 24"><path d="m13 5 7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
@@ -310,7 +310,7 @@
         </header>
         <div id="noProjects" class="no-projects hidden">
           <strong>No project exists yet</strong>
-          <span>Run /sam-project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
+          <span>Run /sam:project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
         </div>
 
         <nav id="projectTabs" class="project-tabs" aria-label="Project views">
@@ -328,7 +328,7 @@
                 <div>
                   <span class="next-action-index">01</span>
                   <div>
-                    <h2 id="projectNextAction">Run /sam-wrap to establish the next project action.</h2>
+                    <h2 id="projectNextAction">Run /sam:wrap to establish the next project action.</h2>
                     <p id="projectNextContext">The latest wrapped session keeps this recommendation current.</p>
                   </div>
                   <button id="startProjectAction" class="button primary">Start work</button>
@@ -361,8 +361,8 @@
               <div id="projectNextTasks" class="project-next-tasks"></div>
 
               <aside class="wrap-project-note">
-                <code>/sam-wrap</code>
-                <div><strong>SAM Wrap updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /sam-project or the dashboard.</span></div>
+                <code>/sam:wrap</code>
+                <div><strong>SAM Wrap updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /sam:project or the dashboard.</span></div>
               </aside>
             </div>
 
@@ -389,7 +389,7 @@
               <article class="project-latest-session">
                 <header><span>Latest session</span><em>Wrapped</em></header>
                 <h3 id="projectLatestSessionTitle">No wrapped session yet</h3>
-                <p id="projectLatestSessionSummary">Run /sam-wrap to connect session outcomes to this project.</p>
+                <p id="projectLatestSessionSummary">Run /sam:wrap to connect session outcomes to this project.</p>
                 <button id="openLatestProjectSession" class="project-text-action">Open session →</button>
               </article>
             </aside>
@@ -398,8 +398,8 @@
 
         <section id="projectBoardPanel" class="project-panel hidden">
           <div id="coachStrip" class="coach-strip hidden">
-            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /sam-plan to generate an ordered execution plan.</strong></div>
-            <code>/sam-plan</code>
+            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /sam:plan to generate an ordered execution plan.</strong></div>
+            <code>/sam:plan</code>
           </div>
           <div id="boardSummary" class="board-summary" aria-label="Project progress">
             <span><b id="boardOpenCount">0</b> open</span>

@@ -30,7 +30,7 @@ if (eventName === "sessionStart") {
   const body = await response.json();
   const updateNotice = body.update?.updateAvailable
     ? ` AI Session Hub ${body.update.latestVersion} is available (installed: ${body.update.currentVersion}). ` +
-      `Mention this once at a natural stopping point. Copilot users can run /sam-update. ` +
+      `Mention this once at a natural stopping point. Copilot users can run /sam:update. ` +
       `For a natural-language update request, confirm with the user, then POST ${url}/api/update/install with ` +
       `{"sessionId":${JSON.stringify(body.sessionId)}} and poll ${url}/api/update/job until waiting_for_exit or failed. ` +
       `Never run or show a separate installer command.`
@@ -43,7 +43,7 @@ if (eventName === "sessionStart") {
       : "";
   const projectContext = body.project
     ? `This session belongs to the "${body.project.title}" project. Make the checkpoint describe how this session changed that project. `
-    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /sam-project to create or choose one. ";
+    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /sam:project to create or choose one. ";
   const context =
     `AI Session Hub is tracking this ${providerName(provider)} session. Session ID: ${body.sessionId}. ` +
     `Checkpoint endpoint: ${url}/api/sessions/${encodeURIComponent(body.sessionId)}/checkpoint. ` +

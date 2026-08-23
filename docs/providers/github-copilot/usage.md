@@ -8,16 +8,19 @@ Use:
 
 | Command | Purpose |
 |---|---|
-| `/sam-wrap` | Save a continuity checkpoint |
-| `/sam-handoff` or `/sam-next` | Save a checkpoint with an explicit next-session todo list |
-| `/sam-project` | Manage this session's explicit project |
-| `/sam-plan` | Build an ordered board from unfinished work |
-| `/sam-sync` | Reconcile board state with actual progress |
-| `/sam-do` | Execute the next actionable board task |
-| `/sam-reopen` | Return a wrapped session to active review |
-| `/sam-update` | Prepare the latest stable update |
+| `/sam:wrap` | Save the session checkpoint and update its linked project |
+| `/sam:handoff` | Save an explicit next-session todo list |
+| `/sam:reopen` | Return a wrapped session to active review |
+| `/sam:project` | Manage this session's explicit project |
+| `/sam:refine` | Clarify, split, and prioritize backlog work |
+| `/sam:plan` | Build an ordered board from unfinished work |
+| `/sam:work` | Execute the best ready board task |
+| `/sam:sync` | Reconcile board state with actual evidence |
+| `/sam:review` | Validate delivered outcomes |
+| `/sam:retro` | Adopt evidence-backed process improvements |
+| `/sam:update` | Prepare the latest stable update |
 
-SAM means **Smart AI Manager**. The original command names remain available as compatibility aliases.
+SAM means **Smart AI Manager**. The project cycle is `refine → plan → work → sync → review → retro`, while wrap, handoff, and reopen manage session continuity.
 
 You can also ask Copilot to **wrap this session** or **checkpoint this session**.
 

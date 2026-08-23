@@ -1,12 +1,12 @@
 {
-  "name": "copilot-session-hub",
-  "description": "Local-first AI project management with explicit projects, wrap checkpoints, and measurable progress.",
-  "version": "0.3.6",
+  "name": "sam",
+  "description": "Smart AI Manager for session continuity and agile project delivery.",
+  "version": "0.3.7",
   "author": {
     "name": "AI Session Hub"
   },
   "license": "MIT",
-  "keywords": ["sessions", "projects", "kanban", "continuity", "dashboard", "wrap"],
+  "keywords": ["sam", "agile", "sessions", "projects", "continuity", "dashboard"],
   "commands": "commands/",
   "skills": "skills/",
   "hooks": "hooks.json"
