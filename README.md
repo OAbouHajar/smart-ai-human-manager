@@ -119,7 +119,7 @@ AI Session Hub uses documented lifecycle hooks rather than unstable provider tra
 
 Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but AI Session Hub never merges sessions automatically.
 
-Copilot also includes:
+Copilot includes **SAM (Smart AI Manager)** commands:
 
 | Command | Purpose |
 |---|---|
