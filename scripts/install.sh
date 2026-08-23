@@ -68,6 +68,11 @@ fi
 
 mkdir -p "$INSTALL_ROOT" "$DATA_ROOT" "$LAUNCH_AGENTS"
 if [[ "$PROJECT_ROOT" != "$INSTALL_ROOT" ]]; then
+  for stale_command in \
+    sesh-do.md sesh-handoff.md sesh-next.md sesh-plan.md sesh-project.md \
+    sesh-reopen.md sesh-sync.md sesh-update.md sesh-wrap.md; do
+    rm -f "$INSTALL_ROOT/commands/$stale_command"
+  done
   tar --exclude="./.git" --exclude="./node_modules" -cf - -C "$PROJECT_ROOT" . |
     tar -xf - -C "$INSTALL_ROOT"
 fi

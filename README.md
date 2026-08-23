@@ -101,7 +101,7 @@ The installer detects available providers, preserves existing settings and sessi
 
 | Provider | Tracking | Resume | Wrap interaction | Guides |
 |---|---|---|---|---|
-| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sesh-wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
+| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sam-wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
 | Claude Code | Yes | `claude --resume <id>` | “Wrap this session” | [Setup](docs/providers/claude-code/setup.md) · [Usage](docs/providers/claude-code/usage.md) |
 | OpenAI Codex CLI | Yes | `codex resume <id>` | “Wrap this session” | [Setup](docs/providers/codex/setup.md) · [Usage](docs/providers/codex/usage.md) |
 | Google Gemini CLI | Yes | `gemini --resume <id>` | “Wrap this session” | [Setup](docs/providers/gemini/setup.md) · [Usage](docs/providers/gemini/usage.md) |
@@ -111,7 +111,7 @@ AI Session Hub uses documented lifecycle hooks rather than unstable provider tra
 ## Daily workflow
 
 1. Start or resume a supported AI CLI session.
-2. Run `/sesh-project` when the session belongs to a larger goal; create a project or explicitly link it to one.
+2. Run `/sam-project` when the session belongs to a larger goal; create a project or explicitly link it to one.
 3. Work normally while AI Session Hub tracks lifecycle events.
 4. Before leaving, ask the assistant to **wrap this session** or **checkpoint this session**.
 5. Review project progress, tasks, effort, blockers, and the recommended next action in the dashboard.
@@ -123,16 +123,16 @@ Copilot also includes:
 
 | Command | Purpose |
 |---|---|
-| `/sesh-wrap` | Save a continuity checkpoint |
-| `/sesh-handoff` or `/sesh-next` | Save a checkpoint with an explicit todo list |
-| `/sesh-reopen` | Remove a session from Wrapped while preserving its saved data |
-| `/sesh-project` | Create, link, switch, inspect, unlink, or complete an explicit project |
-| `/sesh-plan` | Build an ordered plan from unfinished work |
-| `/sesh-sync` | Reconcile project state with actual progress |
-| `/sesh-do` | Execute the next actionable project task |
-| `/sesh-update` | Download, verify, and install the latest stable release automatically |
+| `/sam-wrap` | Save a continuity checkpoint |
+| `/sam-handoff` or `/sam-next` | Save a checkpoint with an explicit todo list |
+| `/sam-reopen` | Remove a session from Wrapped while preserving its saved data |
+| `/sam-project` | Create, link, switch, inspect, unlink, or complete an explicit project |
+| `/sam-plan` | Build an ordered plan from unfinished work |
+| `/sam-sync` | Reconcile project state with actual progress |
+| `/sam-do` | Execute the next actionable project task |
+| `/sam-update` | Download, verify, and install the latest stable release automatically |
 
-The previous `/wrap`, `/wrap-with-next`, `/unwrap`, `/hub-project`, `/hub-update`, and `/kanban*` commands remain available as compatibility aliases.
+**SAM** means **Smart AI Manager**. The original `/wrap`, `/wrap-with-next`, `/unwrap`, `/hub-project`, `/hub-update`, and `/kanban*` commands remain available as compatibility aliases.
 
 ## Project workspace
 
@@ -184,7 +184,7 @@ Hooks record lifecycle events and provide the assistant with the local checkpoin
 
 When a stable release is available, Session Hub shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
 
-Copilot users can run `/sesh-update` for a one-command upgrade. Session Hub downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
+Copilot users can run `/sam-update` for a one-command upgrade. Session Hub downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
 
 To check manually, or when upgrading an older installation that predates update notifications, pull the latest source and rerun the installer:
 

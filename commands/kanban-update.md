@@ -5,7 +5,7 @@ description: Synchronize the project Kanban with work completed or discovered in
 Reconcile the current tracked project's Kanban with the full conversation and actual tool results.
 
 1. Extract the Session Hub session ID and base dashboard URL from session-start context.
-2. GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sesh-project`; never infer a project from the repository.
+2. GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sam-project`; never infer a project from the repository.
 3. GET `{baseUrl}/api/board?projectId={projectId}`.
 4. Compare every board task with the substantive chat, tests, and tool results.
 5. Update only when evidence supports it:

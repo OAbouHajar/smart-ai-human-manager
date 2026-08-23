@@ -31,4 +31,8 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
   );
   assert.doesNotMatch(macInstaller, /plugin marketplace add OAbouHajar/);
   assert.doesNotMatch(windowsInstaller, /plugin marketplace add OAbouHajar/);
+  for (const command of ["do", "handoff", "next", "plan", "project", "reopen", "sync", "update", "wrap"]) {
+    assert.match(macInstaller, new RegExp(`sesh-${command}\\.md`));
+    assert.match(windowsInstaller, new RegExp(`sesh-${command}\\.md`));
+  }
 });

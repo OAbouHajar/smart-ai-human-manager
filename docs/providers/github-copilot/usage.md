@@ -8,16 +8,16 @@ Use:
 
 | Command | Purpose |
 |---|---|
-| `/sesh-wrap` | Save a continuity checkpoint |
-| `/sesh-handoff` or `/sesh-next` | Save a checkpoint with an explicit next-session todo list |
-| `/sesh-project` | Manage this session's explicit project |
-| `/sesh-plan` | Build an ordered board from unfinished work |
-| `/sesh-sync` | Reconcile board state with actual progress |
-| `/sesh-do` | Execute the next actionable board task |
-| `/sesh-reopen` | Return a wrapped session to active review |
-| `/sesh-update` | Prepare the latest stable update |
+| `/sam-wrap` | Save a continuity checkpoint |
+| `/sam-handoff` or `/sam-next` | Save a checkpoint with an explicit next-session todo list |
+| `/sam-project` | Manage this session's explicit project |
+| `/sam-plan` | Build an ordered board from unfinished work |
+| `/sam-sync` | Reconcile board state with actual progress |
+| `/sam-do` | Execute the next actionable board task |
+| `/sam-reopen` | Return a wrapped session to active review |
+| `/sam-update` | Prepare the latest stable update |
 
-The previous command names remain available as compatibility aliases.
+SAM means **Smart AI Manager**. The original command names remain available as compatibility aliases.
 
 You can also ask Copilot to **wrap this session** or **checkpoint this session**.
 

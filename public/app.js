@@ -22,42 +22,42 @@ let modalReturnFocus = null;
 
 const sessionHubCommands = [
   {
-    command: "/sesh-wrap",
+    command: "/sam-wrap",
     title: "Wrap this session",
     description: "Update the project outcome, completed work, unfinished tasks, and recommended next action."
   },
   {
-    command: "/sesh-handoff",
+    command: "/sam-handoff",
     title: "Wrap with a todo list",
     description: "Save the session plus an explicit list of what you want to do next time."
   },
   {
-    command: "/sesh-reopen",
+    command: "/sam-reopen",
     title: "Remove from Wrapped",
     description: "Mark the session as needing wrap again without deleting its saved continuity data."
   },
   {
-    command: "/sesh-update",
+    command: "/sam-update",
     title: "Update Session Hub automatically",
     description: "Download and verify the latest stable release, then install it automatically after this AI CLI exits."
   },
   {
-    command: "/sesh-project",
+    command: "/sam-project",
     title: "Manage this session's project",
     description: "Create, link, switch, inspect, unlink, or complete an explicit goal-based project."
   },
   {
-    command: "/sesh-plan",
+    command: "/sam-plan",
     title: "Generate an execution plan",
     description: "Analyze unfinished chat work, order it, and populate the project board."
   },
   {
-    command: "/sesh-sync",
+    command: "/sam-sync",
     title: "Synchronize board progress",
     description: "Move completed, blocked, and discovered work based on actual conversation evidence."
   },
   {
-    command: "/sesh-do",
+    command: "/sam-do",
     title: "Execute the next task",
     description: "Choose the best actionable card, move it to In Progress, execute it, and update the board."
   },
@@ -193,7 +193,7 @@ function bindEvents() {
     else await refresh({ preserveSelection: false });
   }, 180));
   elements.refreshButton.addEventListener("click", () => refresh());
-  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sesh-update"));
+  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sam-update"));
   elements.dismissUpdate.addEventListener("click", dismissUpdate);
   elements.resumeMainButton.addEventListener("click", resumeSelected);
   elements.openCopilotButton.addEventListener("click", resumeSelected);
@@ -446,7 +446,7 @@ async function refreshUpdateStatus() {
       ? (job.state === "succeeded_with_warnings"
         ? job.warning || "The app updated, but one or more integrations need attention."
         : `Previous version: ${job.fromVersion}`)
-      : job.error || "Run /sesh-update to try again.";
+      : job.error || "Run /sam-update to try again.";
     elements.updateReleaseLink.href = job.releaseUrl || "https://github.com/OAbouHajar/ai-session-hub/releases";
     return;
   }
@@ -534,7 +534,7 @@ function renderDetail() {
   elements.emptyState.classList.add("hidden");
   elements.detailContent.classList.remove("hidden");
   elements.sessionTitle.textContent = session.title;
-  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sesh-wrap before leaving this session.";
+  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sam-wrap before leaving this session.";
   elements.statusBadge.textContent = session.status;
   elements.statusBadge.className = `badge ${session.status}`;
   elements.providerBadge.textContent = session.providerName || "AI CLI";
@@ -544,7 +544,7 @@ function renderDetail() {
   elements.projectBadge.textContent = session.project ? `Project: ${session.project.title}` : "Unassigned";
   elements.importedBadge.classList.toggle("hidden", !session.imported);
   elements.reviewBadge.classList.toggle("hidden", !session.needsReview);
-  elements.nextAction.textContent = session.nextAction || "Run /sesh-wrap to create a recommended next step.";
+  elements.nextAction.textContent = session.nextAction || "Run /sam-wrap to create a recommended next step.";
   elements.lastAction.textContent = session.lastAction || "No checkpoint has been saved yet.";
   elements.repoChip.querySelector("span").textContent = basename(session.repository) || basename(session.cwd) || "Workspace";
   elements.repoChip.title = session.cwd || "No working directory";
@@ -738,7 +738,7 @@ function renderEmpty() {
     elements.emptyAction.dataset.action = "clear-search";
   } else if (state.filter === "wrapped") {
     elements.emptyTitle.textContent = "No wrapped sessions yet";
-    elements.emptyCopy.textContent = "Run /sesh-wrap in a Copilot session to save its summary, stopping point, and next action.";
+    elements.emptyCopy.textContent = "Run /sam-wrap in a Copilot session to save its summary, stopping point, and next action.";
     elements.emptyAction.textContent = "Show active sessions";
     elements.emptyAction.dataset.action = "show-active";
   } else {
@@ -798,7 +798,7 @@ async function refreshBoard() {
   elements.projectWorkspaceTitle.textContent = hasProject ? "Loading project…" : "Your projects";
   elements.projectWorkspaceSummary.textContent = hasProject
     ? "Collecting the latest wrapped session state."
-    : "Create an explicit goal here or run /sesh-project from an AI session.";
+    : "Create an explicit goal here or run /sam-project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectWorkItems.replaceChildren();
@@ -812,7 +812,7 @@ async function refreshBoard() {
   state.board = board;
   renderProjectWorkspace(board);
   elements.coachStrip.classList.remove("hidden");
-  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sesh-plan to generate an ordered execution plan.";
+  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sam-plan to generate an ordered execution plan.";
   elements.boardOpenCount.textContent = board.total - (board.counts.done || 0);
   elements.boardProgressCount.textContent = board.counts.in_progress || 0;
   elements.boardBlockedCount.textContent = board.counts.blocked || 0;
@@ -885,7 +885,7 @@ function renderProjectWorkspace(board) {
   elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action — this project is complete.";
   elements.projectNextContext.textContent = projectState
     ? `From ${projectState.title} · ${relativeTime(projectState.updatedAt)}`
-    : "Run /sesh-wrap to establish the next project action.";
+    : "Run /sam-wrap to establish the next project action.";
   elements.projectLastCompleted.textContent = completed[0]?.text || projectState?.lastAction || "No completed work recorded yet.";
   elements.projectCurrentWork.textContent = inProgress?.text || nextTasks[0]?.text || "No task is in progress.";
   elements.projectBlockedWork.textContent = blocked?.text || projectState?.unresolved?.[0] || "No blockers recorded.";
@@ -906,7 +906,7 @@ function renderProjectWorkspace(board) {
     empty.append(
       element("span", "project-empty-icon", "✓"),
       element("strong", "", "No open next tasks"),
-      element("small", "", "Run /sesh-wrap when new work is discovered.")
+      element("small", "", "Run /sam-wrap when new work is discovered.")
     );
     elements.projectNextTasks.append(empty);
   }
@@ -922,7 +922,7 @@ function renderProjectWorkspace(board) {
   elements.projectEffortSessions.textContent = sessions.length;
   elements.projectEffortFiles.textContent = fileCount;
   elements.projectLatestSessionTitle.textContent = latestSession?.title || "No wrapped session yet";
-  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sesh-wrap to connect session outcomes to this project.";
+  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sam-wrap to connect session outcomes to this project.";
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);

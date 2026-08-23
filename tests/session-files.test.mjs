@@ -585,9 +585,9 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
     readFile(join(root, "public", "logo-mark.png"))
   ]);
-  const seshCommands = await Promise.all(
+  const samCommands = await Promise.all(
     ["wrap", "handoff", "next", "reopen", "project", "plan", "sync", "do", "update"]
-      .map((name) => readFile(join(root, "commands", `sesh-${name}.md`), "utf8"))
+      .map((name) => readFile(join(root, "commands", `sam-${name}.md`), "utf8"))
   );
   assert.match(html, /<strong>AI Session Hub<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
@@ -598,7 +598,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
   assert.match(html, /Where the project stands/);
-  assert.match(html, /Sesh Wrap updates this project only when the session is linked/);
+  assert.match(html, /SAM Wrap updates this project only when the session is linked/);
   assert.match(html, /Unassigned sessions/);
   assert.match(html, /id="projectDialog"/);
   assert.match(html, /id="linkProjectWorkItemButton"/);
@@ -640,19 +640,19 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /providerName/);
   assert.match(app, /function openBoardTaskForm/);
   assert.match(app, /body: \{ text, status \}/);
-  assert.match(app, /\/sesh-handoff/);
-  assert.match(app, /\/sesh-reopen/);
-  assert.match(app, /\/sesh-update/);
-  assert.match(app, /\/sesh-project/);
-  assert.match(app, /\/sesh-plan/);
-  assert.match(app, /\/sesh-sync/);
-  assert.match(app, /\/sesh-do/);
+  assert.match(app, /\/sam-handoff/);
+  assert.match(app, /\/sam-reopen/);
+  assert.match(app, /\/sam-update/);
+  assert.match(app, /\/sam-project/);
+  assert.match(app, /\/sam-plan/);
+  assert.match(app, /\/sam-sync/);
+  assert.match(app, /\/sam-do/);
   assert.match(app, /function refreshUpdateStatus/);
   assert.match(app, /elements\.filesSection\.classList\.toggle\("hidden", !files\.length\)/);
   assert.match(styles, /\.kanban-card \{[^}]*min-width: 0;[^}]*max-width: 100%;[^}]*overflow: hidden;/);
   assert.match(styles, /\.card-text \{[^}]*overflow-wrap: anywhere;/);
   assert.match(hookClient, /body\.update\?\.updateAvailable/);
-  assert.match(hookClient, /Copilot users can run \/sesh-update/);
+  assert.match(hookClient, /Copilot users can run \/sam-update/);
   assert.match(hookClient, /api\/update\/install/);
   assert.match(hookClient, /Never run or show a separate installer command/);
   assert.match(hookClient, /updated successfully from/);
@@ -674,7 +674,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(hubUpdate, /\/api\/update\/install/);
   assert.match(hubUpdate, /\/api\/update\/job/);
   assert.match(hubUpdate, /must not need to run a second script/);
-  assert.equal(seshCommands.every((command) => /preferred Sesh command|intentionally perform the same workflow/.test(command)), true);
+  assert.equal(samCommands.every((command) => /preferred SAM command|intentionally perform the same workflow/.test(command)), true);
   assert.match(installPrompt, /Install AI Session Hub/);
   assert.match(installPrompt, /do not delete or overwrite/i);
   assert.match(installPrompt, /active Copilot session is locking/i);
