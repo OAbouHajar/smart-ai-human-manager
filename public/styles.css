@@ -397,6 +397,12 @@ button.context-link { cursor: pointer; }
 
 .file-history-status { color: var(--cp-text-muted); font-size: 0.72rem; }
 .file-history-status.stale, .file-history-status.unavailable { color: var(--cp-warning); }
+.files-section > summary { align-items: center; margin: 0; cursor: pointer; list-style: none; }
+.files-section > summary::-webkit-details-marker { display: none; }
+.files-section > summary::after { content: "+"; color: var(--cp-text-muted); font-size: 1rem; }
+.files-section[open] > summary { margin-bottom: 1.25rem; }
+.files-section[open] > summary::after { content: "−"; }
+.files-section > summary #fileHistoryMessage { margin-left: auto; }
 .file-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .file-item {
   display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;

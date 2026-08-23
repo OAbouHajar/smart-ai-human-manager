@@ -37,6 +37,7 @@ jobs:
           cp screenshots/sessions-screenshot.png _site/screenshots/
           cp screenshots/questions-screenshot.png _site/screenshots/
           cp screenshots/board-screenshot.png _site/screenshots/
+          cp screenshots/sam-board.png _site/screenshots/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

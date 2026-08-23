@@ -625,7 +625,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /\/api\/projects\/\$\{encodeURIComponent\(state\.selectedProjectId\)\}\/work-items/);
   assert.match(app, /sessionHub\.projectFirstView/);
   assert.match(html, /Files involved/);
-  assert.match(html, /id="filesSection"/);
+  assert.match(html, /<details id="filesSection" class="context-section files-section">/);
   assert.match(html, /Questions and actions/);
   assert.match(html, /id="boardView"/);
   assert.equal((html.match(/data-add-board-task=/g) || []).length, 5);
