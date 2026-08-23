@@ -42,15 +42,6 @@
         </button>
       </nav>
 
-      <label class="search" for="searchInput">
-        <span class="search-label">Find a project or session</span>
-        <span class="search-field">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 20-4.7-4.7a8 8 0 1 0-1 1L20 21l1-1ZM5.5 10.5a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
-          <input id="searchInput" type="search" placeholder="Task, project, folder, or file" autocomplete="off">
-          <kbd>/</kbd>
-        </span>
-      </label>
-
       <nav id="statusFilters" class="filters" aria-label="Session status">
         <button class="filter active" data-filter="wrapped" aria-pressed="true"><span>Wrapped</span><b id="wrappedCount">0</b></button>
         <button class="filter" data-filter="active" aria-pressed="false"><span>Active</span><b id="activeCount">0</b></button>
@@ -65,6 +56,12 @@
         </button>
       </div>
       <div id="sessionList" class="session-list" aria-live="polite"></div>
+
+      <button id="projectInboxButton" class="project-inbox-destination hidden">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l2 10v6H2v-6L4 4Zm1.6 2-1.4 7h4.2l1 2h5.2l1-2h4.2l-1.4-7H5.6ZM4 15v3h16v-3h-3.2l-1 2H8.2l-1-2H4Z"/></svg>
+        <span><strong>Session inbox</strong><small><b id="projectInboxCount">0</b> unassigned sessions</small></span>
+        <span aria-hidden="true">→</span>
+      </button>
 
       <footer class="sidebar-footer">
         <span class="live-indicator">Local session history</span>
@@ -84,6 +81,14 @@
           <strong id="topbarLabel">Session details</strong>
           <span id="topbarDetail">What happened and where to continue</span>
         </div>
+        <label class="search topbar-search" for="searchInput">
+          <span class="sr-only">Find a project or session</span>
+          <span class="search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 20-4.7-4.7a8 8 0 1 0-1 1L20 21l1-1ZM5.5 10.5a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/></svg>
+            <input id="searchInput" type="search" placeholder="Task, project, folder, or file" autocomplete="off">
+            <kbd>/</kbd>
+          </span>
+        </label>
         <div id="topActions" class="top-actions">
           <button id="infoButton" class="button quiet" aria-expanded="false" aria-controls="infoPanel">
             <svg viewBox="0 0 24 24"><path d="M11 10h2v7h-2v-7Zm0-3h2v2h-2V7Zm1-5a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z"/></svg>
@@ -98,7 +103,7 @@
             <svg viewBox="0 0 24 24"><path d="M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
           </button>
           <div id="moreMenu" class="menu hidden">
-            <button data-action="pin">Pin session</button>
+            <button data-action="pin">Star session</button>
             <button data-action="folder">Open folder</button>
             <button data-action="import-history">Import session history</button>
             <button data-action="archive">Archive session</button>
@@ -138,7 +143,7 @@
           <span id="updateDetail">A newer stable release is ready.</span>
         </div>
         <a id="updateReleaseLink" href="#" target="_blank" rel="noopener noreferrer">Release notes</a>
-        <button id="copyUpdateCommand" class="button quiet">Copy /hub-update</button>
+        <button id="copyUpdateCommand" class="button quiet">Copy /sesh-update</button>
         <button id="dismissUpdate" class="icon-button" aria-label="Dismiss update notification">
           <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
         </button>
@@ -209,7 +214,7 @@
                 <svg viewBox="0 0 24 24"><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Z"/></svg>
               </button>
             </div>
-            <p id="nextAction">Run /wrap to create a recommended next step.</p>
+            <p id="nextAction">Run /sesh-wrap to create a recommended next step.</p>
             <button id="resumeMainButton" class="button primary">
               Resume this session
               <svg viewBox="0 0 24 24"><path d="m13 5 7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
@@ -305,7 +310,7 @@
         </header>
         <div id="noProjects" class="no-projects hidden">
           <strong>No project exists yet</strong>
-          <span>Run /hub-project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
+          <span>Run /sesh-project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
         </div>
 
         <nav id="projectTabs" class="project-tabs" aria-label="Project views">
@@ -323,7 +328,7 @@
                 <div>
                   <span class="next-action-index">01</span>
                   <div>
-                    <h2 id="projectNextAction">Run /wrap to establish the next project action.</h2>
+                    <h2 id="projectNextAction">Run /sesh-wrap to establish the next project action.</h2>
                     <p id="projectNextContext">The latest wrapped session keeps this recommendation current.</p>
                   </div>
                   <button id="startProjectAction" class="button primary">Start work</button>
@@ -356,8 +361,8 @@
               <div id="projectNextTasks" class="project-next-tasks"></div>
 
               <aside class="wrap-project-note">
-                <code>/wrap</code>
-                <div><strong>Wrap updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /hub-project or the dashboard.</span></div>
+                <code>/sesh-wrap</code>
+                <div><strong>Sesh Wrap updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /sesh-project or the dashboard.</span></div>
               </aside>
             </div>
 
@@ -384,7 +389,7 @@
               <article class="project-latest-session">
                 <header><span>Latest session</span><em>Wrapped</em></header>
                 <h3 id="projectLatestSessionTitle">No wrapped session yet</h3>
-                <p id="projectLatestSessionSummary">Run /wrap to connect session outcomes to this project.</p>
+                <p id="projectLatestSessionSummary">Run /sesh-wrap to connect session outcomes to this project.</p>
                 <button id="openLatestProjectSession" class="project-text-action">Open session →</button>
               </article>
             </aside>
@@ -393,8 +398,8 @@
 
         <section id="projectBoardPanel" class="project-panel hidden">
           <div id="coachStrip" class="coach-strip hidden">
-            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /kanban to generate an ordered execution plan.</strong></div>
-            <code>/kanban</code>
+            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /sesh-plan to generate an ordered execution plan.</strong></div>
+            <code>/sesh-plan</code>
           </div>
           <div id="boardSummary" class="board-summary" aria-label="Project progress">
             <span><b id="boardOpenCount">0</b> open</span>

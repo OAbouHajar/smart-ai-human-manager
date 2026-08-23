@@ -1,7 +1,7 @@
 {
   "name": "copilot-session-hub",
   "description": "Local-first AI project management with explicit projects, wrap checkpoints, and measurable progress.",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "author": {
     "name": "AI Session Hub"
   },

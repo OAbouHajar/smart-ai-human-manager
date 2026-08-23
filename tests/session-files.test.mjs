@@ -534,6 +534,12 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
       method: "POST",
       body: { title: "Implement code changes", description: "Deliver a separate code goal." }
     });
+    const starredProject = await request(server, `/api/projects/${releaseProject.id}`, {
+      method: "PATCH",
+      body: { starred: true }
+    });
+    assert.equal(starredProject.starred, true);
+    assert.equal((await request(server, "/api/projects"))[0].id, releaseProject.id);
     await request(server, `/api/projects/${codeProject.id}/sessions`, {
       method: "POST",
       body: { sessionId: secondSession }
@@ -579,6 +585,10 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
     readFile(join(root, "public", "logo-mark.png"))
   ]);
+  const seshCommands = await Promise.all(
+    ["wrap", "handoff", "next", "reopen", "project", "plan", "sync", "do", "update"]
+      .map((name) => readFile(join(root, "commands", `sesh-${name}.md`), "utf8"))
+  );
   assert.match(html, /<strong>AI Session Hub<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
   assert.match(html, /<img src="\/logo-mark\.png" alt="">/);
@@ -588,11 +598,16 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
   assert.match(html, /Where the project stands/);
-  assert.match(html, /Wrap updates this project only when the session is linked/);
+  assert.match(html, /Sesh Wrap updates this project only when the session is linked/);
   assert.match(html, /Unassigned sessions/);
   assert.match(html, /id="projectDialog"/);
   assert.match(html, /id="linkProjectWorkItemButton"/);
   assert.match(html, /id="projectWorkItems"/);
+  assert.match(app, /createStarButton\(project\.starred, "project"/);
+  assert.match(app, /createStarButton\(session\.pinned, "session"/);
+  assert.match(app, /^function createStarButton\(/m);
+  assert.match(styles, /\.session-entry:hover \.session-star/);
+  assert.match(html, /Star session/);
   assert.doesNotMatch(html, /id="projectSelect"/);
   assert.doesNotMatch(html, /Current project/);
   assert.match(html, /id="workItemForm"[\s\S]*<\/form>\s*<\/div>\s*<\/div>\s*<div id="projectDialog"/);
@@ -604,6 +619,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /projectMetaChip\("folder"/);
   assert.match(app, /function projectMetaChip/);
   assert.match(app, /function renderProjectWorkItems/);
+  assert.match(app, /function toggleProjectStar/);
   assert.match(app, /project-empty-tasks/);
   assert.match(app, /\/api\/projects\/\$\{encodeURIComponent\(state\.selectedProjectId\)\}\/work-items/);
   assert.match(app, /sessionHub\.projectFirstView/);
@@ -624,16 +640,19 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /providerName/);
   assert.match(app, /function openBoardTaskForm/);
   assert.match(app, /body: \{ text, status \}/);
-  assert.match(app, /\/wrap-with-next/);
-  assert.match(app, /\/unwrap/);
-  assert.match(app, /\/hub-update/);
-  assert.match(app, /\/hub-project/);
+  assert.match(app, /\/sesh-handoff/);
+  assert.match(app, /\/sesh-reopen/);
+  assert.match(app, /\/sesh-update/);
+  assert.match(app, /\/sesh-project/);
+  assert.match(app, /\/sesh-plan/);
+  assert.match(app, /\/sesh-sync/);
+  assert.match(app, /\/sesh-do/);
   assert.match(app, /function refreshUpdateStatus/);
   assert.match(app, /elements\.filesSection\.classList\.toggle\("hidden", !files\.length\)/);
   assert.match(styles, /\.kanban-card \{[^}]*min-width: 0;[^}]*max-width: 100%;[^}]*overflow: hidden;/);
   assert.match(styles, /\.card-text \{[^}]*overflow-wrap: anywhere;/);
   assert.match(hookClient, /body\.update\?\.updateAvailable/);
-  assert.match(hookClient, /Copilot users can run \/hub-update/);
+  assert.match(hookClient, /Copilot users can run \/sesh-update/);
   assert.match(hookClient, /api\/update\/install/);
   assert.match(hookClient, /Never run or show a separate installer command/);
   assert.match(hookClient, /updated successfully from/);
@@ -655,6 +674,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(hubUpdate, /\/api\/update\/install/);
   assert.match(hubUpdate, /\/api\/update\/job/);
   assert.match(hubUpdate, /must not need to run a second script/);
+  assert.equal(seshCommands.every((command) => /preferred Sesh command|intentionally perform the same workflow/.test(command)), true);
   assert.match(installPrompt, /Install AI Session Hub/);
   assert.match(installPrompt, /do not delete or overwrite/i);
   assert.match(installPrompt, /active Copilot session is locking/i);

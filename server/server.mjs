@@ -63,6 +63,7 @@ db.exec(`
     title TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'active',
+    starred INTEGER NOT NULL DEFAULT 0,
     repository TEXT NOT NULL DEFAULT '',
     cwd TEXT NOT NULL DEFAULT '',
     created_at INTEGER NOT NULL,
@@ -123,6 +124,7 @@ ensureColumn("sessions", "model", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "context_tier", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "metrics_at", "INTEGER");
 ensureColumn("sessions", "initial_question", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("projects", "starred", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("tasks", "project_id", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("work_items", "project_id", "TEXT NOT NULL DEFAULT ''");
 db.exec(`
@@ -739,7 +741,7 @@ function getProjects(response) {
       COALESCE((SELECT MAX(s.updated_at) FROM sessions s WHERE s.project_id = p.id AND s.archived = 0), p.updated_at) AS activity_at
     FROM projects p
     WHERE p.status <> 'archived'
-    ORDER BY CASE p.status WHEN 'active' THEN 0 WHEN 'complete' THEN 1 ELSE 2 END, activity_at DESC
+    ORDER BY p.starred DESC, CASE p.status WHEN 'active' THEN 0 WHEN 'complete' THEN 1 ELSE 2 END, activity_at DESC
   `).all().map((row) => ({
     ...projectRecord(row),
     updatedAt: row.activity_at,
@@ -804,6 +806,10 @@ function updateProject(id, data, response) {
     if (!status) return json(response, 400, { error: "Invalid project status" });
     updates.push("status = ?");
     values.push(status);
+  }
+  if (data.starred !== undefined) {
+    updates.push("starred = ?");
+    values.push(data.starred ? 1 : 0);
   }
   if (!updates.length) return json(response, 400, { error: "No project changes supplied" });
   updates.push("updated_at = ?");
@@ -1438,6 +1444,7 @@ function projectRecord(row) {
     summary: row.description || "",
     description: row.description || "",
     status: row.status,
+    starred: Boolean(row.starred),
     isProject: true,
     repository: row.repository || "",
     cwd: row.cwd || "",

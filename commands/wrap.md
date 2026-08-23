@@ -40,8 +40,8 @@ Wrap the current session into AI Session Hub.
    - If no unfinished requested work remains, set `nextAction` to "No pending action — this session is complete." and use an empty `tasks` array.
    - `lastAction` must be the most recent meaningful completed and verified outcome, not merely the latest command.
    - Use the session-start context to determine project membership. If the session belongs to a project, make `summary`, `lastAction`, `nextAction`, `tasks`, and `completedTasks` describe how this session changed that explicit project.
-   - If the session is unassigned, save it independently. Do not infer project membership from its repository or working directory and do not create a project automatically. The user can run `/hub-project` later.
+   - If the session is unassigned, save it independently. Do not infer project membership from its repository or working directory and do not create a project automatically. The user can run `/sesh-project` later.
 6. Do not include secrets, credentials, access tokens, or raw tool output.
 7. If the POST fails, state the error clearly and do not claim the checkpoint was saved.
-8. Inspect the successful checkpoint response. If `update.updateAvailable` is true, show one short notice after the checkpoint result: `AI Session Hub {latestVersion} is available (installed: {currentVersion}). Run /hub-update to prepare it safely.`
+8. Inspect the successful checkpoint response. If `update.updateAvailable` is true, show one short notice after the checkpoint result: `AI Session Hub {latestVersion} is available (installed: {currentVersion}). Run /sesh-update to prepare it safely.`
 9. After a successful save, show the recommended next action and the dashboard URL. Do not exit Copilot automatically.

@@ -4,7 +4,7 @@ description: Build an ordered execution plan from unfinished work in the current
 
 Act as a practical delivery coach for the current Copilot session.
 
-1. Find the Session Hub session ID and base URL, then GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/hub-project`; never infer a project from the repository.
+1. Find the Session Hub session ID and base URL, then GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sesh-project`; never infer a project from the repository.
 2. Read the full substantive conversation, tool results, tests, corrections, and any todo state.
 3. Identify only work that is genuinely unfinished:
    - Explicit user requests not yet completed.

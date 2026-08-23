@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 const dataDir = await mkdtemp(join(tmpdir(), "copilot-session-hub-"));
 const port = 43121;
 const baseUrl = `http://127.0.0.1:${port}`;
+const currentVersion = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).version;
 const updateRunner = fileURLToPath(new URL("fixtures/update-runner-stub.mjs", import.meta.url));
 const releaseUrl = `data:application/json,${encodeURIComponent(JSON.stringify({
   tag_name: "v0.4.0",
@@ -38,10 +39,10 @@ test.after(async () => {
 
 test("reports installed and available stable versions", async () => {
   const health = await fetch(`${baseUrl}/api/health`).then((response) => response.json());
-  assert.equal(health.version, "0.3.4");
+  assert.equal(health.version, currentVersion);
 
   const update = await fetch(`${baseUrl}/api/update?refresh=1`).then((response) => response.json());
-  assert.equal(update.currentVersion, "0.3.4");
+  assert.equal(update.currentVersion, currentVersion);
   assert.equal(update.latestVersion, "0.4.0");
   assert.equal(update.updateAvailable, true);
   assert.equal(update.error, "");
@@ -65,7 +66,7 @@ test("prepares an update and continues it when the initiating session exits", as
   assert.equal((await response.json()).job.state, "preparing");
 
   const job = await waitForUpdateState("waiting_for_exit");
-  assert.equal(job.fromVersion, "0.3.4");
+  assert.equal(job.fromVersion, currentVersion);
   assert.equal(job.toVersion, "0.4.0");
   const config = JSON.parse(await readFile(join(dataDir, "update", "job.json"), "utf8"));
   assert.equal(config.cancelPath, join(dataDir, "update", "cancel"));

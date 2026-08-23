@@ -22,42 +22,42 @@ let modalReturnFocus = null;
 
 const sessionHubCommands = [
   {
-    command: "/wrap",
+    command: "/sesh-wrap",
     title: "Wrap this session",
     description: "Update the project outcome, completed work, unfinished tasks, and recommended next action."
   },
   {
-    command: "/wrap-with-next",
+    command: "/sesh-handoff",
     title: "Wrap with a todo list",
     description: "Save the session plus an explicit list of what you want to do next time."
   },
   {
-    command: "/unwrap",
+    command: "/sesh-reopen",
     title: "Remove from Wrapped",
     description: "Mark the session as needing wrap again without deleting its saved continuity data."
   },
   {
-    command: "/hub-update",
+    command: "/sesh-update",
     title: "Update Session Hub automatically",
     description: "Download and verify the latest stable release, then install it automatically after this AI CLI exits."
   },
   {
-    command: "/hub-project",
+    command: "/sesh-project",
     title: "Manage this session's project",
     description: "Create, link, switch, inspect, unlink, or complete an explicit goal-based project."
   },
   {
-    command: "/kanban",
+    command: "/sesh-plan",
     title: "Generate an execution plan",
     description: "Analyze unfinished chat work, order it, and populate the project board."
   },
   {
-    command: "/kanban-update",
+    command: "/sesh-sync",
     title: "Synchronize board progress",
     description: "Move completed, blocked, and discovered work based on actual conversation evidence."
   },
   {
-    command: "/kanban-process",
+    command: "/sesh-do",
     title: "Execute the next task",
     description: "Choose the best actionable card, move it to In Progress, execute it, and update the board."
   },
@@ -116,6 +116,7 @@ async function refresh({ preserveSelection = true } = {}) {
   elements.activeCount.textContent = stats.active || 0;
   elements.pausedCount.textContent = stats.paused || 0;
   elements.unassignedCount.textContent = stats.unassigned || 0;
+  elements.projectInboxCount.textContent = stats.unassigned || 0;
   state.unassignedCount = stats.unassigned || 0;
   renderSessionList();
   const hasSelected = preserveSelection && sessions.some((session) => session.id === state.selectedId);
@@ -192,7 +193,7 @@ function bindEvents() {
     else await refresh({ preserveSelection: false });
   }, 180));
   elements.refreshButton.addEventListener("click", () => refresh());
-  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/hub-update"));
+  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sesh-update"));
   elements.dismissUpdate.addEventListener("click", dismissUpdate);
   elements.resumeMainButton.addEventListener("click", resumeSelected);
   elements.openCopilotButton.addEventListener("click", resumeSelected);
@@ -287,6 +288,7 @@ function bindEvents() {
     applyView();
   });
   elements.createProjectButton.addEventListener("click", () => openProjectDialog());
+  elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
     if (event.target === elements.projectDialog) closeProjectDialog();
@@ -444,7 +446,7 @@ async function refreshUpdateStatus() {
       ? (job.state === "succeeded_with_warnings"
         ? job.warning || "The app updated, but one or more integrations need attention."
         : `Previous version: ${job.fromVersion}`)
-      : job.error || "Run /hub-update to try again.";
+      : job.error || "Run /sesh-update to try again.";
     elements.updateReleaseLink.href = job.releaseUrl || "https://github.com/OAbouHajar/ai-session-hub/releases";
     return;
   }
@@ -473,6 +475,7 @@ function dismissUpdate() {
 function renderSessionList() {
   elements.sessionList.replaceChildren();
   for (const session of state.sessions) {
+    const row = element("div", `session-entry${session.pinned ? " starred" : ""}`);
     const button = document.createElement("button");
     button.className = `session-item${session.id === state.selectedId ? " selected" : ""}`;
     button.dataset.id = session.id;
@@ -492,13 +495,22 @@ function renderSessionList() {
       : session.summary || session.lastAction || session.nextAction || "No checkpoint summary yet";
     const preview = element("span", `session-preview${visibleMatch ? " matched" : ""}`, previewText);
     copy.append(title, context, preview);
-    const time = element("span", `session-time${session.pinned ? " pin" : ""}`, session.pinned ? "Pinned" : relativeTime(session.updatedAt));
+    const time = element("span", "session-time", relativeTime(session.updatedAt));
     button.append(copy, time);
     button.addEventListener("click", async () => {
       await selectSession(session.id);
       closeSidebar();
     });
-    elements.sessionList.append(button);
+    const star = createStarButton(session.pinned, "session", async () => {
+      await api(`/api/sessions/${encodeURIComponent(session.id)}`, {
+        method: "PATCH",
+        body: { pinned: !session.pinned }
+      });
+      toast(session.pinned ? "Session unstarred" : "Session starred");
+      await refresh();
+    });
+    row.append(button, star);
+    elements.sessionList.append(row);
   }
   if (!state.sessions.length) {
     elements.sessionList.append(element("p", "empty-copy", "No sessions match this view."));
@@ -522,7 +534,7 @@ function renderDetail() {
   elements.emptyState.classList.add("hidden");
   elements.detailContent.classList.remove("hidden");
   elements.sessionTitle.textContent = session.title;
-  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /wrap before leaving this session.";
+  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sesh-wrap before leaving this session.";
   elements.statusBadge.textContent = session.status;
   elements.statusBadge.className = `badge ${session.status}`;
   elements.providerBadge.textContent = session.providerName || "AI CLI";
@@ -532,7 +544,7 @@ function renderDetail() {
   elements.projectBadge.textContent = session.project ? `Project: ${session.project.title}` : "Unassigned";
   elements.importedBadge.classList.toggle("hidden", !session.imported);
   elements.reviewBadge.classList.toggle("hidden", !session.needsReview);
-  elements.nextAction.textContent = session.nextAction || "Run /wrap to create a recommended next step.";
+  elements.nextAction.textContent = session.nextAction || "Run /sesh-wrap to create a recommended next step.";
   elements.lastAction.textContent = session.lastAction || "No checkpoint has been saved yet.";
   elements.repoChip.querySelector("span").textContent = basename(session.repository) || basename(session.cwd) || "Workspace";
   elements.repoChip.title = session.cwd || "No working directory";
@@ -549,7 +561,7 @@ function renderDetail() {
   renderWorkItems();
   renderTimeline();
   const pinButton = elements.moreMenu.querySelector('[data-action="pin"]');
-  pinButton.textContent = session.pinned ? "Unpin session" : "Pin session";
+  pinButton.textContent = session.pinned ? "Unstar session" : "Star session";
   const archiveButton = elements.moreMenu.querySelector('[data-action="archive"]');
   archiveButton.textContent = session.archived ? "Restore session" : "Archive session";
 }
@@ -726,7 +738,7 @@ function renderEmpty() {
     elements.emptyAction.dataset.action = "clear-search";
   } else if (state.filter === "wrapped") {
     elements.emptyTitle.textContent = "No wrapped sessions yet";
-    elements.emptyCopy.textContent = "Run /wrap in a Copilot session to save its summary, stopping point, and next action.";
+    elements.emptyCopy.textContent = "Run /sesh-wrap in a Copilot session to save its summary, stopping point, and next action.";
     elements.emptyAction.textContent = "Show active sessions";
     elements.emptyAction.dataset.action = "show-active";
   } else {
@@ -752,6 +764,7 @@ function applyView() {
   elements.topbarLabel.textContent = boardActive ? "Project workspace" : "Session details";
   elements.topbarDetail.textContent = boardActive ? "Where the work stands and what happens next" : "The work behind this project";
   document.querySelector(".sidebar").classList.toggle("board-mode", boardActive);
+  elements.projectInboxButton.classList.toggle("hidden", !boardActive || !state.unassignedCount);
   elements.sidebarHeadingLabel.textContent = boardActive ? "Projects" : "Project sessions";
   elements.searchInput.placeholder = boardActive ? "Search projects" : "Task, project, folder, or file";
   elements.statusFilters.classList.toggle("hidden", boardActive || searching);
@@ -785,7 +798,7 @@ async function refreshBoard() {
   elements.projectWorkspaceTitle.textContent = hasProject ? "Loading project…" : "Your projects";
   elements.projectWorkspaceSummary.textContent = hasProject
     ? "Collecting the latest wrapped session state."
-    : "Create an explicit goal here or run /hub-project from an AI session.";
+    : "Create an explicit goal here or run /sesh-project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectWorkItems.replaceChildren();
@@ -799,7 +812,7 @@ async function refreshBoard() {
   state.board = board;
   renderProjectWorkspace(board);
   elements.coachStrip.classList.remove("hidden");
-  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /kanban to generate an ordered execution plan.";
+  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sesh-plan to generate an ordered execution plan.";
   elements.boardOpenCount.textContent = board.total - (board.counts.done || 0);
   elements.boardProgressCount.textContent = board.counts.in_progress || 0;
   elements.boardBlockedCount.textContent = board.counts.blocked || 0;
@@ -872,7 +885,7 @@ function renderProjectWorkspace(board) {
   elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action — this project is complete.";
   elements.projectNextContext.textContent = projectState
     ? `From ${projectState.title} · ${relativeTime(projectState.updatedAt)}`
-    : "Run /wrap to establish the next project action.";
+    : "Run /sesh-wrap to establish the next project action.";
   elements.projectLastCompleted.textContent = completed[0]?.text || projectState?.lastAction || "No completed work recorded yet.";
   elements.projectCurrentWork.textContent = inProgress?.text || nextTasks[0]?.text || "No task is in progress.";
   elements.projectBlockedWork.textContent = blocked?.text || projectState?.unresolved?.[0] || "No blockers recorded.";
@@ -893,7 +906,7 @@ function renderProjectWorkspace(board) {
     empty.append(
       element("span", "project-empty-icon", "✓"),
       element("strong", "", "No open next tasks"),
-      element("small", "", "Run /wrap when new work is discovered.")
+      element("small", "", "Run /sesh-wrap when new work is discovered.")
     );
     elements.projectNextTasks.append(empty);
   }
@@ -909,7 +922,7 @@ function renderProjectWorkspace(board) {
   elements.projectEffortSessions.textContent = sessions.length;
   elements.projectEffortFiles.textContent = fileCount;
   elements.projectLatestSessionTitle.textContent = latestSession?.title || "No wrapped session yet";
-  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /wrap to connect session outcomes to this project.";
+  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sesh-wrap to connect session outcomes to this project.";
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);
@@ -971,6 +984,18 @@ async function openProjectLatestSession() {
   applyView();
 }
 
+async function toggleProjectStar(projectId = state.selectedProjectId) {
+  const project = state.projects.find((item) => item.id === projectId);
+  if (!project) return;
+  const starred = !project.starred;
+  await api(`/api/projects/${encodeURIComponent(project.id)}`, {
+    method: "PATCH",
+    body: { starred }
+  });
+  await refreshBoard();
+  toast(starred ? "Project starred" : "Project unstarred");
+}
+
 function logLevel(type) {
   if (type.includes("error") || type.includes("failure")) return "error";
   if (type.includes("checkpoint") || type.includes("resume")) return "success";
@@ -993,30 +1018,8 @@ function renderProjectList() {
       .some((value) => String(value || "").toLowerCase().includes(query));
   });
   elements.sessionList.replaceChildren();
-  if (state.unassignedCount) {
-    const inbox = document.createElement("button");
-    inbox.className = "session-item project-inbox";
-    const copy = element("span", "session-copy");
-    copy.append(
-      element("strong", "", "Unassigned sessions"),
-      element("span", "", `${state.unassignedCount} waiting for your choice`)
-    );
-    inbox.append(copy, element("span", "session-time", "Inbox"));
-    inbox.addEventListener("click", async () => {
-      state.view = "sessions";
-      state.filter = "unassigned";
-      localStorage.setItem("sessionHub.projectFirstView", "sessions");
-      document.querySelectorAll(".filter").forEach((button) => {
-        const active = button.dataset.filter === "unassigned";
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-pressed", active ? "true" : "false");
-      });
-      await refresh({ preserveSelection: false });
-      closeSidebar();
-    });
-    elements.sessionList.append(inbox);
-  }
   for (const project of projects) {
+    const row = element("div", `session-entry${project.starred ? " starred" : ""}`);
     const button = document.createElement("button");
     button.className = `session-item${project.id === state.selectedProjectId ? " selected" : ""}`;
     button.dataset.id = project.id;
@@ -1033,11 +1036,36 @@ function renderProjectList() {
       await refreshBoard();
       document.querySelector(".sidebar").classList.remove("open");
     });
-    elements.sessionList.append(button);
+    const star = createStarButton(project.starred, "project", () => toggleProjectStar(project.id));
+    row.append(button, star);
+    elements.sessionList.append(row);
   }
   if (!projects.length && !state.unassignedCount) {
     elements.sessionList.append(element("p", "empty-copy", state.projects.length ? "No projects match your search." : "No sessions are tracked as projects yet."));
   }
+}
+
+async function openUnassignedSessions() {
+  state.view = "sessions";
+  state.filter = "unassigned";
+  localStorage.setItem("sessionHub.projectFirstView", "sessions");
+  document.querySelectorAll(".filter").forEach((button) => {
+    const active = button.dataset.filter === "unassigned";
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+  await refresh({ preserveSelection: false });
+  closeSidebar();
+}
+
+function createStarButton(starred, target, onClick) {
+  const button = element("button", `session-star${starred ? " starred" : ""}`, starred ? "★" : "☆");
+  button.type = "button";
+  button.setAttribute("aria-label", `${starred ? "Unstar" : "Star"} ${target}`);
+  button.setAttribute("aria-pressed", starred ? "true" : "false");
+  button.title = `${starred ? "Unstar" : "Star"} ${target}`;
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 function renderBoardCard(task) {
@@ -1191,7 +1219,7 @@ async function action(name) {
     await openSelectedProject();
   } else if (name === "pin") {
     await api(`/api/sessions/${encodeURIComponent(state.selected.id)}`, { method: "PATCH", body: { pinned: !state.selected.pinned } });
-    toast(state.selected.pinned ? "Session unpinned" : "Session pinned");
+    toast(state.selected.pinned ? "Session unstarred" : "Session starred");
     await refresh();
   } else if (name === "archive") {
     await api(`/api/sessions/${encodeURIComponent(state.selected.id)}`, { method: "PATCH", body: { archived: !state.selected.archived } });
