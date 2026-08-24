@@ -633,11 +633,12 @@ function getStats(response) {
 }
 
 async function getApplicationInfo(response) {
+  const copilotExecutable = resolveExecutable("copilot");
   const providers = [{
     id: "copilot",
     name: "GitHub Copilot CLI",
-    detected: Boolean(resolveExecutable("copilot")),
-    configured: existsSync(join(homedir(), ".copilot", "installed-plugins", "_direct", "CopilotSessionHub", "plugin.json"))
+    detected: Boolean(copilotExecutable),
+    configured: copilotPluginConfigured(copilotExecutable)
   }];
   for (const provider of ["claude", "codex", "gemini"]) {
     try {
@@ -1292,6 +1293,21 @@ function resolveExecutable(command) {
     }).split(/\r?\n/).map((value) => value.trim()).find(Boolean) || null;
   } catch {
     return null;
+  }
+}
+
+function copilotPluginConfigured(executable) {
+  if (!executable) return false;
+  try {
+    const plugins = execFileSync(executable, ["plugin", "list"], {
+      encoding: "utf8",
+      timeout: 3000,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "ignore"]
+    });
+    return plugins.includes("sham@smart-ai-human-manager");
+  } catch {
+    return false;
   }
 }
 
