@@ -6,7 +6,7 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 import { platform } from "node:os";
 import { fileURLToPath } from "node:url";
 
-const repositoryUrl = "https://github.com/OAbouHajar/ai-session-hub.git";
+const repositoryUrl = "https://github.com/OAbouHajar/smart-ai-human-manager.git";
 
 export async function runUpdate(config, dependencies = {}) {
   validateUpdateConfig(config);
@@ -207,7 +207,7 @@ function validReleaseUrl(value, version) {
     const url = new URL(value);
     return url.protocol === "https:" &&
       url.hostname === "github.com" &&
-      url.pathname === `/OAbouHajar/ai-session-hub/releases/tag/v${version}`;
+      url.pathname === `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`;
   } catch {
     return false;
   }
@@ -216,7 +216,7 @@ function validReleaseUrl(value, version) {
 function userFacingError(error, phase) {
   const message = error instanceof Error ? error.message : "Unknown update error.";
   if (phase === "download") return "The release could not be downloaded or verified. Check that Git is installed and try again.";
-  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /sam:update again.";
+  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /sham:update again.";
   return message.slice(0, 300);
 }
 

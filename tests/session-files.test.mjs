@@ -25,7 +25,7 @@ test("synchronizes files, exposes safe paths, and searches archived sessions", a
       { sessionId, path: "D:\\private\\outside.js", toolName: "view", turnIndex: 3 }
     ],
     questions: [
-      { sessionId, text: "/sam:wrap", turnIndex: 0 },
+      { sessionId, text: "/sham:wrap", turnIndex: 0 },
       { sessionId, text: "<skill-context name=\"session-wrap\">Internal skill instructions</skill-context>", turnIndex: 1 },
       { sessionId, text: "How can I finish the payment migration?", turnIndex: 2 },
       { sessionId, text: "Can you add tests for the retry path?", turnIndex: 3 }
@@ -589,8 +589,8 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "public", "logo-mark.png"))
   ]);
   const commandNames = ["wrap", "handoff", "reopen", "project", "refine", "plan", "work", "sync", "review", "retro", "update"];
-  const samCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
-  assert.match(html, /<strong>Smart AI Manager<\/strong>/);
+  const shamCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
+  assert.match(html, /<strong>Smart Human-AI Manager<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
   assert.match(html, /<img src="\/logo-mark\.png" alt="">/);
   assert.deepEqual([...logoMark.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
@@ -599,7 +599,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
   assert.match(html, /Where the project stands/);
-  assert.match(html, /SAM Wrap updates this project only when the session is linked/);
+  assert.match(html, /SHAM Wrap updates this project only when the session is linked/);
   assert.match(html, /Unassigned sessions/);
   assert.match(html, /id="projectDialog"/);
   assert.match(html, /id="linkProjectWorkItemButton"/);
@@ -641,13 +641,13 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /providerName/);
   assert.match(app, /function openBoardTaskForm/);
   assert.match(app, /body: \{ text, status \}/);
-  for (const name of commandNames) assert.match(app, new RegExp(`/sam:${name}`));
+  for (const name of commandNames) assert.match(app, new RegExp(`/sham:${name}`));
   assert.match(app, /function refreshUpdateStatus/);
   assert.match(app, /elements\.filesSection\.classList\.toggle\("hidden", !files\.length\)/);
   assert.match(styles, /\.kanban-card \{[^}]*min-width: 0;[^}]*max-width: 100%;[^}]*overflow: hidden;/);
   assert.match(styles, /\.card-text \{[^}]*overflow-wrap: anywhere;/);
   assert.match(hookClient, /body\.update\?\.updateAvailable/);
-  assert.match(hookClient, /Copilot users can run \/sam:update/);
+  assert.match(hookClient, /Copilot users can run \/sham:update/);
   assert.match(hookClient, /api\/update\/install/);
   assert.match(hookClient, /Never run or show a separate installer command/);
   assert.match(hookClient, /updated successfully from/);
@@ -672,8 +672,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(refine, /Ask for confirmation before changing task wording/);
   assert.match(review, /Do not accept work merely because code changed/);
   assert.match(retro, /Avoid generic agile advice/);
-  assert.equal(samCommands.every((command) => /^---[\s\S]+description:/m.test(command)), true);
-  assert.match(installPrompt, /Install AI Session Hub/);
+  assert.equal(shamCommands.every((command) => /^---[\s\S]+description:/m.test(command)), true);
+  assert.match(installPrompt, /Install Smart Human-AI Manager/);
   assert.match(installPrompt, /do not delete or overwrite/i);
   assert.match(installPrompt, /active Copilot session is locking/i);
   assert.match(installPrompt, /api\/health/);

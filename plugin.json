@@ -1,12 +1,12 @@
 {
-  "name": "sam",
-  "description": "Smart AI Manager for session continuity and agile project delivery.",
-  "version": "0.3.7",
+  "name": "sham",
+  "description": "Smart Human-AI Manager for session continuity and agile project delivery.",
+  "version": "0.4.0",
   "author": {
-    "name": "AI Session Hub"
+    "name": "Smart Human-AI Manager"
   },
   "license": "MIT",
-  "keywords": ["sam", "agile", "sessions", "projects", "continuity", "dashboard"],
+  "keywords": ["sham", "human-ai", "agile", "sessions", "projects", "continuity", "dashboard"],
   "commands": "commands/",
   "skills": "skills/",
   "hooks": "hooks.json"

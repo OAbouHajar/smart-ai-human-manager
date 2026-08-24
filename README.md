@@ -1,28 +1,30 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Smart AI Manager — Remember. Resume. Continue." width="480">
+  <img src="public/logo-mark.png" alt="" width="96">
 </p>
 
-<p align="center"><strong>Smart AI Manager — local-first project management built from your coding sessions.</strong></p>
+<h1 align="center">SHAM — Smart Human-AI Manager</h1>
+
+<p align="center"><strong>Local-first human-AI project management built from your coding sessions.</strong></p>
 
 Turn AI conversations into explicit projects with tasks, decisions, progress, effort, and a clear next action.
 
 <p align="center">
-  <a href="https://oabouhajar.github.io/ai-session-hub/"><strong>Visit the website</strong></a>
+  <a href="https://oabouhajar.github.io/smart-ai-human-manager/"><strong>Visit the website</strong></a>
   ·
-  <a href="#quick-start">Install Smart AI Manager</a>
+  <a href="#quick-start">Install Smart Human-AI Manager</a>
 </p>
 
 > Supports **GitHub Copilot CLI**, **Claude Code**, **OpenAI Codex CLI**, and **Google Gemini CLI**.
 >
 > Independent open source software; not an official GitHub, Microsoft, Anthropic, OpenAI, or Google product.
 
-![Smart AI Manager Sessions view](screenshots/sessions-screenshot.png)
+![Smart Human-AI Manager Sessions view](screenshots/sessions-screenshot.png)
 
 ## Start here
 
 | I want to… | Go to |
 |---|---|
-| Install AI Session Hub | [Quick start](#quick-start) |
+| Install Smart Human-AI Manager | [Quick start](#quick-start) |
 | Set up a specific AI CLI | [Provider guides](docs/providers/README.md) |
 | Manage sessions as goal-based projects | [Project workspace](#project-workspace) |
 | Understand wrapping and resume | [Daily workflow](#daily-workflow) |
@@ -64,11 +66,11 @@ Copy this prompt into Copilot, Claude, Codex, or Gemini:
 <summary><strong>Show installation prompt</strong></summary>
 
 ```text
-Install AI Session Hub from https://github.com/OAbouHajar/ai-session-hub on this machine.
+Install Smart Human-AI Manager from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
 
 Detect the operating system first. On macOS, verify git, Node.js 22.13+, and at least one supported AI CLI, then run `./scripts/install.sh --no-open`. On Windows, also verify PowerShell 7 and run `pwsh -File .\scripts\install.ps1 -NoOpen`. Stop on unsupported systems.
 
-Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing Session Hub data and unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.
+Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing SHAM data and unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.
 ```
 
 Full prompts: [macOS](docs/copilot-install-prompt-macos.md) · [Windows](docs/copilot-install-prompt.md)
@@ -82,16 +84,16 @@ Requirements: Git, Node.js 22.13+, a signed-in supported AI CLI, and PowerShell 
 **macOS**
 
 ```bash
-git clone https://github.com/OAbouHajar/ai-session-hub.git
-cd ai-session-hub
+git clone https://github.com/OAbouHajar/smart-ai-human-manager.git
+cd smart-ai-human-manager
 ./scripts/install.sh
 ```
 
 **Windows**
 
 ```powershell
-git clone https://github.com/OAbouHajar/ai-session-hub.git
-cd ai-session-hub
+git clone https://github.com/OAbouHajar/smart-ai-human-manager.git
+cd smart-ai-human-manager
 pwsh -File .\scripts\install.ps1
 ```
 
@@ -101,47 +103,47 @@ The installer detects available providers, preserves existing settings and sessi
 
 | Provider | Tracking | Resume | Wrap interaction | Guides |
 |---|---|---|---|---|
-| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sam:wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
+| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sham:wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
 | Claude Code | Yes | `claude --resume <id>` | “Wrap this session” | [Setup](docs/providers/claude-code/setup.md) · [Usage](docs/providers/claude-code/usage.md) |
 | OpenAI Codex CLI | Yes | `codex resume <id>` | “Wrap this session” | [Setup](docs/providers/codex/setup.md) · [Usage](docs/providers/codex/usage.md) |
 | Google Gemini CLI | Yes | `gemini --resume <id>` | “Wrap this session” | [Setup](docs/providers/gemini/setup.md) · [Usage](docs/providers/gemini/usage.md) |
 
-AI Session Hub uses documented lifecycle hooks rather than unstable provider transcript formats. Historical import is currently available only for supported Copilot CLI history.
+Smart Human-AI Manager uses documented lifecycle hooks rather than unstable provider transcript formats. Historical import is currently available only for supported Copilot CLI history.
 
 ## Daily workflow
 
 1. Start or resume a supported AI CLI session.
-2. Run `/sam:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
-3. Work normally while AI Session Hub tracks lifecycle events.
+2. Run `/sham:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
+3. Work normally while Smart Human-AI Manager tracks lifecycle events.
 4. Before leaving, ask the assistant to **wrap this session** or **checkpoint this session**.
 5. Review project progress, tasks, effort, blockers, and the recommended next action in the dashboard.
 6. Resume the right session when you are ready to continue.
 
-Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but AI Session Hub never merges sessions automatically.
+Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but Smart Human-AI Manager never merges sessions automatically.
 
-Copilot includes **SAM (Smart AI Manager)** commands:
+Copilot includes **SHAM (Smart Human-AI Manager)** commands:
 
 | Command | Purpose |
 |---|---|
-| `/sam:wrap` | Save the session checkpoint and update its linked project |
-| `/sam:handoff` | Wrap with an explicit next-session todo list |
-| `/sam:reopen` | Return a wrapped session to active review |
-| `/sam:project` | Create, link, switch, inspect, unlink, or complete a project |
-| `/sam:refine` | Clarify, split, and prioritize backlog work |
-| `/sam:plan` | Build an ordered plan from unfinished work |
-| `/sam:work` | Execute the best ready project task |
-| `/sam:sync` | Reconcile project state with actual evidence |
-| `/sam:review` | Validate delivered work against its intended outcome |
-| `/sam:retro` | Turn project experience into concrete improvements |
-| `/sam:update` | Download, verify, and install the latest stable release automatically |
+| `/sham:wrap` | Save the session checkpoint and update its linked project |
+| `/sham:handoff` | Wrap with an explicit next-session todo list |
+| `/sham:reopen` | Return a wrapped session to active review |
+| `/sham:project` | Create, link, switch, inspect, unlink, or complete a project |
+| `/sham:refine` | Clarify, split, and prioritize backlog work |
+| `/sham:plan` | Build an ordered plan from unfinished work |
+| `/sham:work` | Execute the best ready project task |
+| `/sham:sync` | Reconcile project state with actual evidence |
+| `/sham:review` | Validate delivered work against its intended outcome |
+| `/sham:retro` | Turn project experience into concrete improvements |
+| `/sham:update` | Download, verify, and install the latest stable release automatically |
 
-**SAM** means **Smart AI Manager**. It combines session continuity with an AI-assisted agile cycle:
+**SHAM** means **Smart Human-AI Manager**. It combines session continuity with an AI-assisted agile cycle:
 
 ```text
 refine → plan → work → sync → review → retro
 ```
 
-The human owns goals, priorities, acceptance, and process decisions. SAM prepares the evidence, keeps the board current, executes approved work, and proposes changes for confirmation.
+The human owns goals, priorities, acceptance, and process decisions. SHAM prepares the evidence, keeps the board current, executes approved work, and proposes changes for confirmation.
 
 ## Project workspace
 
@@ -155,7 +157,7 @@ The project workspace combines:
 - Time, AI credits, effort, and completion insights.
 - Project-level Azure DevOps work-item links.
 
-![AI Session Hub Board view](screenshots/board-screenshot.png)
+![Smart Human-AI Manager Board view](screenshots/board-screenshot.png)
 
 ## How it works
 
@@ -179,7 +181,7 @@ Hooks record lifecycle events and provide the assistant with the local checkpoin
 | Item | macOS | Windows |
 |---|---|---|
 | Session data | `~/Library/Application Support/CopilotSessionHub` | `%LOCALAPPDATA%\CopilotSessionHub` |
-| Application | `~/Library/Application Support/AI Session Hub/app` | `%LOCALAPPDATA%\Programs\CopilotSessionHub` |
+| Application | `~/Library/Application Support/Smart Human-AI Manager/app` | `%LOCALAPPDATA%\Programs\SmartHumanAIManager` |
 
 - The service binds only to `127.0.0.1`.
 - Session data remains local.
@@ -191,9 +193,9 @@ Hooks record lifecycle events and provide the assistant with the local checkpoin
 
 ### Upgrade
 
-When a stable release is available, Session Hub shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
+When a stable release is available, SHAM shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
 
-Copilot users can run `/sam:update` for a one-command upgrade. Session Hub downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
+Copilot users can run `/sham:update` for a one-command upgrade. SHAM downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
 
 To check manually, or when upgrading an older installation that predates update notifications, pull the latest source and rerun the installer:
 

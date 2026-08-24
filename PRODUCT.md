@@ -10,7 +10,7 @@ Developers returning to work they previously did with supported AI coding CLIs. 
 
 ## Product Purpose
 
-AI Session Hub helps a developer answer: “I worked with an AI coding assistant on something before. I do not remember exactly where we left off. Tell me what happened and help me continue.”
+Smart Human-AI Manager helps a developer answer: “I worked with an AI coding assistant on something before. I do not remember exactly where we left off. Tell me what happened and help me continue.”
 
 Success means the developer can search naturally, recognize the right session, understand the goal, completed work, stopping point, and next action, then resume with confidence.
 

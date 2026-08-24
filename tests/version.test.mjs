@@ -19,11 +19,16 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
   assert.equal(pluginVersion, packageVersion);
   assert.equal(marketplace.metadata.version, packageVersion);
   assert.equal(marketplace.plugins[0].version, packageVersion);
-  assert.equal(JSON.parse(pluginJson).name, "sam");
-  assert.equal(marketplace.plugins[0].name, "sam");
+  assert.equal(JSON.parse(pluginJson).name, "sham");
+  assert.equal(marketplace.name, "smart-ai-human-manager");
+  assert.equal(marketplace.plugins[0].name, "sham");
   assert.equal(marketplace.plugins[0].source, ".");
   assert.match(macInstaller, /plugin marketplace add "\$INSTALL_ROOT"/);
   assert.match(windowsInstaller, /plugin marketplace add \$InstallRoot/);
+  assert.ok(
+    macInstaller.indexOf("plugin uninstall sham") <
+      macInstaller.indexOf("plugin marketplace remove smart-ai-human-manager")
+  );
   assert.ok(
     macInstaller.indexOf("plugin uninstall sam") <
       macInstaller.indexOf("plugin marketplace remove ai-session-hub")
@@ -33,6 +38,10 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
       macInstaller.indexOf("plugin marketplace remove ai-session-hub")
   );
   assert.ok(
+    windowsInstaller.indexOf("plugin uninstall sham") <
+      windowsInstaller.indexOf("plugin marketplace remove smart-ai-human-manager")
+  );
+  assert.ok(
     windowsInstaller.indexOf("plugin uninstall sam") <
       windowsInstaller.indexOf("plugin marketplace remove ai-session-hub")
   );
@@ -40,15 +49,21 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
     windowsInstaller.indexOf("plugin uninstall copilot-session-hub") <
       windowsInstaller.indexOf("plugin marketplace remove ai-session-hub")
   );
-  assert.match(macInstaller, /plugin install sam@ai-session-hub/);
-  assert.match(windowsInstaller, /plugin install sam@ai-session-hub/);
+  assert.match(macInstaller, /plugin install sham@smart-ai-human-manager/);
+  assert.match(windowsInstaller, /plugin install sham@smart-ai-human-manager/);
   assert.doesNotMatch(macInstaller, /plugin marketplace add OAbouHajar/);
   assert.doesNotMatch(windowsInstaller, /plugin marketplace add OAbouHajar/);
   assert.match(macInstaller, /rm -rf "\$INSTALL_ROOT\/commands"/);
   assert.match(windowsInstaller, /Remove-Item -LiteralPath \(Join-Path \$InstallRoot "commands"\) -Recurse/);
+  assert.match(macInstaller, /LEGACY_INSTALL_ROOT=.*AI Session Hub\/app/);
+  assert.ok(macInstaller.lastIndexOf('rm -rf "$LEGACY_INSTALL_ROOT"') > macInstaller.indexOf('if [[ "$HEALTHY"'));
+  assert.match(windowsInstaller, /LegacyInstallRoot.*Programs\\CopilotSessionHub/);
+  assert.ok(windowsInstaller.lastIndexOf("Remove-Item -LiteralPath $LegacyInstallRoot") > windowsInstaller.indexOf("if (-not $Healthy)"));
   for (const uninstaller of [macUninstaller, windowsUninstaller]) {
+    assert.match(uninstaller, /plugin uninstall sham/);
     assert.match(uninstaller, /plugin uninstall sam/);
     assert.match(uninstaller, /plugin uninstall copilot-session-hub/);
+    assert.match(uninstaller, /plugin marketplace remove smart-ai-human-manager/);
     assert.match(uninstaller, /plugin marketplace remove ai-session-hub/);
   }
 });

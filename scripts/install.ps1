@@ -4,9 +4,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$InstallRoot = Join-Path $env:LOCALAPPDATA "Programs\CopilotSessionHub"
+$InstallRoot = Join-Path $env:LOCALAPPDATA "Programs\SmartHumanAIManager"
+$LegacyInstallRoot = Join-Path $env:LOCALAPPDATA "Programs\CopilotSessionHub"
 $StartupFolder = [Environment]::GetFolderPath("Startup")
-$StartupScript = Join-Path $StartupFolder "Copilot Session Hub.cmd"
+$StartupScript = Join-Path $StartupFolder "Smart Human-AI Manager.cmd"
+$LegacyStartupScript = Join-Path $StartupFolder "Copilot Session Hub.cmd"
 $UpdateCheck = if ($env:COPILOT_SESSION_HUB_UPDATE_CHECK -eq "0") { "0" } else { "1" }
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
@@ -63,11 +65,19 @@ if ($LASTEXITCODE -ne 0) {
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
     try {
+        copilot plugin uninstall sham 2>$null | Out-Null
+    } catch {
+    }
+    try {
         copilot plugin uninstall sam 2>$null | Out-Null
     } catch {
     }
     try {
         copilot plugin uninstall copilot-session-hub 2>$null | Out-Null
+    } catch {
+    }
+    try {
+        copilot plugin marketplace remove smart-ai-human-manager 2>$null | Out-Null
     } catch {
     }
     try {
@@ -85,12 +95,12 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
     }
     if (-not $MarketplaceReady) {
         Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
-        throw "AI Session Hub was updated, but its verified local Copilot plugin marketplace could not be registered. Exit active Copilot CLI sessions and rerun this installer."
+        throw "Smart Human-AI Manager was updated, but its verified local Copilot plugin marketplace could not be registered. Exit active Copilot CLI sessions and rerun this installer."
     }
 
     $PluginInstalled = $false
     for ($Attempt = 0; $Attempt -lt 5; $Attempt++) {
-        $InstallOutput = copilot plugin install sam@ai-session-hub 2>&1
+        $InstallOutput = copilot plugin install sham@smart-ai-human-manager 2>&1
         if ($LASTEXITCODE -eq 0) {
             $PluginInstalled = $true
             break
@@ -101,7 +111,7 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
         $InstallMessage = ($InstallOutput | Out-String).Trim()
         Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
         throw @"
-AI Session Hub application files were updated, but the Copilot plugin could not be refreshed.
+Smart Human-AI Manager application files were updated, but the Copilot plugin could not be refreshed.
 This usually means an active Copilot session is using the plugin files.
 
 Exit all Copilot CLI sessions, then run:
@@ -128,13 +138,16 @@ for ($Attempt = 0; $Attempt -lt 20; $Attempt++) {
     }
 }
 if (-not $Healthy) {
-    throw "Session Hub did not become healthy on http://127.0.0.1:43120."
+    throw "SHAM did not become healthy on http://127.0.0.1:43120."
 }
+
+Remove-Item -LiteralPath $LegacyStartupScript -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $LegacyInstallRoot -Recurse -Force -ErrorAction SilentlyContinue
 
 if (-not $NoOpen) {
     Start-Process "http://127.0.0.1:43120"
 }
 
-Write-Host "AI Session Hub installed." -ForegroundColor Green
+Write-Host "Smart Human-AI Manager installed." -ForegroundColor Green
 Write-Host "Dashboard: http://127.0.0.1:43120"
-Write-Host "Restart each supported AI CLI so the Session Hub hooks are loaded."
+Write-Host "Restart each supported AI CLI so the SHAM hooks are loaded."

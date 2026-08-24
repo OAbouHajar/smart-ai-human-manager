@@ -190,7 +190,7 @@ function writeJsonAtomicSync(path, value) {
 const updateChecker = createUpdateChecker({
   currentVersion: appVersion,
   releaseUrl: process.env.COPILOT_SESSION_HUB_RELEASES_URL ||
-    "https://api.github.com/repos/OAbouHajar/ai-session-hub/releases/latest",
+    "https://api.github.com/repos/OAbouHajar/smart-ai-human-manager/releases/latest",
   enabled: process.env.COPILOT_SESSION_HUB_UPDATE_CHECK !== "0",
   readCache: () => readUpdateCache(),
   writeCache: (status) => db.prepare(
@@ -297,7 +297,7 @@ async function prepareUpdateInstall(data, response) {
   if (!update.enabled) return json(response, 409, { error: "Automatic update checks are disabled." });
   if (update.error) return json(response, 502, { error: update.error });
   if (!update.updateAvailable) {
-    return json(response, 409, { error: `AI Session Hub ${appVersion} is already up to date.` });
+    return json(response, 409, { error: `Smart Human-AI Manager ${appVersion} is already up to date.` });
   }
   if (!/^\d+\.\d+\.\d+$/.test(update.latestVersion || "")) {
     return json(response, 502, { error: "The release version is invalid." });
@@ -536,7 +536,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`AI Session Hub: ${baseUrl}`);
+  console.log(`Smart Human-AI Manager: ${baseUrl}`);
   resumePendingUpdate();
 });
 
@@ -661,8 +661,8 @@ async function getApplicationInfo(response) {
     version: appVersion,
     platform: platform(),
     providers,
-    repositoryUrl: "https://github.com/OAbouHajar/ai-session-hub",
-    releasesUrl: "https://github.com/OAbouHajar/ai-session-hub/releases"
+    repositoryUrl: "https://github.com/OAbouHajar/smart-ai-human-manager",
+    releasesUrl: "https://github.com/OAbouHajar/smart-ai-human-manager/releases"
   });
 }
 

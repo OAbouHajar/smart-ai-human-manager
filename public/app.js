@@ -22,57 +22,57 @@ let modalReturnFocus = null;
 
 const sessionHubCommands = [
   {
-    command: "/sam:wrap",
+    command: "/sham:wrap",
     title: "Wrap this session",
     description: "Update the project outcome, completed work, unfinished tasks, and recommended next action."
   },
   {
-    command: "/sam:handoff",
+    command: "/sham:handoff",
     title: "Wrap with a todo list",
     description: "Save the session plus an explicit list of what you want to do next time."
   },
   {
-    command: "/sam:reopen",
+    command: "/sham:reopen",
     title: "Remove from Wrapped",
     description: "Mark the session as needing wrap again without deleting its saved continuity data."
   },
   {
-    command: "/sam:update",
-    title: "Update Smart AI Manager automatically",
+    command: "/sham:update",
+    title: "Update Smart Human-AI Manager automatically",
     description: "Download and verify the latest stable release, then install it automatically after this AI CLI exits."
   },
   {
-    command: "/sam:project",
+    command: "/sham:project",
     title: "Manage this session's project",
     description: "Create, link, switch, inspect, unlink, or complete an explicit goal-based project."
   },
   {
-    command: "/sam:refine",
+    command: "/sham:refine",
     title: "Refine the backlog",
     description: "Clarify, split, prioritize, and prepare upcoming project tasks with explicit acceptance outcomes."
   },
   {
-    command: "/sam:plan",
+    command: "/sham:plan",
     title: "Generate an execution plan",
     description: "Analyze unfinished chat work, order it, and populate the project board."
   },
   {
-    command: "/sam:work",
+    command: "/sham:work",
     title: "Execute the next task",
     description: "Choose the best actionable card, move it to In Progress, execute it, and update the board."
   },
   {
-    command: "/sam:sync",
+    command: "/sham:sync",
     title: "Synchronize board progress",
     description: "Move completed, blocked, and discovered work based on actual conversation evidence."
   },
   {
-    command: "/sam:review",
+    command: "/sham:review",
     title: "Review delivered outcomes",
     description: "Validate completed work against its intended result and actual implementation evidence."
   },
   {
-    command: "/sam:retro",
+    command: "/sham:retro",
     title: "Run a project retrospective",
     description: "Turn evidence from completed work, blockers, and rework into concrete improvements."
   },
@@ -208,7 +208,7 @@ function bindEvents() {
     else await refresh({ preserveSelection: false });
   }, 180));
   elements.refreshButton.addEventListener("click", () => refresh());
-  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sam:update"));
+  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sham:update"));
   elements.dismissUpdate.addEventListener("click", dismissUpdate);
   elements.resumeMainButton.addEventListener("click", resumeSelected);
   elements.openCopilotButton.addEventListener("click", resumeSelected);
@@ -438,9 +438,9 @@ async function refreshUpdateStatus() {
     elements.copyUpdateCommand.classList.add("hidden");
     elements.dismissUpdate.classList.add("hidden");
     const messages = {
-      preparing: [`Preparing Smart AI Manager ${job.toVersion}`, "Downloading and verifying the stable release."],
-      waiting_for_exit: [`Smart AI Manager ${job.toVersion} is ready`, "Exit active AI CLI sessions. Installation will finish automatically."],
-      installing: [`Installing Smart AI Manager ${job.toVersion}`, "The dashboard will restart automatically."]
+      preparing: [`Preparing Smart Human-AI Manager ${job.toVersion}`, "Downloading and verifying the stable release."],
+      waiting_for_exit: [`Smart Human-AI Manager ${job.toVersion} is ready`, "Exit active AI CLI sessions. Installation will finish automatically."],
+      installing: [`Installing Smart Human-AI Manager ${job.toVersion}`, "The dashboard will restart automatically."]
     };
     [elements.updateTitle.textContent, elements.updateDetail.textContent] = messages[job.state];
     setTimeout(refreshUpdateStatus, 2000);
@@ -455,14 +455,14 @@ async function refreshUpdateStatus() {
     elements.copyUpdateCommand.classList.toggle("hidden", succeeded);
     elements.dismissUpdate.classList.remove("hidden");
     elements.updateTitle.textContent = succeeded
-      ? `Updated to Smart AI Manager ${job.toVersion}`
-      : `Smart AI Manager ${job.toVersion} could not be installed`;
+      ? `Updated to Smart Human-AI Manager ${job.toVersion}`
+      : `Smart Human-AI Manager ${job.toVersion} could not be installed`;
     elements.updateDetail.textContent = succeeded
       ? (job.state === "succeeded_with_warnings"
         ? job.warning || "The app updated, but one or more integrations need attention."
         : `Previous version: ${job.fromVersion}`)
-      : job.error || "Run /sam:update to try again.";
-    elements.updateReleaseLink.href = job.releaseUrl || "https://github.com/OAbouHajar/ai-session-hub/releases";
+      : job.error || "Run /sham:update to try again.";
+    elements.updateReleaseLink.href = job.releaseUrl || "https://github.com/OAbouHajar/smart-ai-human-manager/releases";
     return;
   }
   elements.updateReleaseLink.classList.remove("hidden");
@@ -472,9 +472,9 @@ async function refreshUpdateStatus() {
   const visible = status.updateAvailable && dismissedVersion !== status.latestVersion;
   elements.updateBanner.classList.toggle("hidden", !visible);
   if (!visible) return;
-  elements.updateTitle.textContent = `Smart AI Manager ${status.latestVersion} is available`;
+  elements.updateTitle.textContent = `Smart Human-AI Manager ${status.latestVersion} is available`;
   elements.updateDetail.textContent = `Installed version: ${status.currentVersion}`;
-  elements.updateReleaseLink.href = status.releaseUrl || "https://github.com/OAbouHajar/ai-session-hub/releases";
+  elements.updateReleaseLink.href = status.releaseUrl || "https://github.com/OAbouHajar/smart-ai-human-manager/releases";
 }
 
 function dismissUpdate() {
@@ -549,7 +549,7 @@ function renderDetail() {
   elements.emptyState.classList.add("hidden");
   elements.detailContent.classList.remove("hidden");
   elements.sessionTitle.textContent = session.title;
-  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sam:wrap before leaving this session.";
+  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sham:wrap before leaving this session.";
   elements.statusBadge.textContent = session.status;
   elements.statusBadge.className = `badge ${session.status}`;
   elements.providerBadge.textContent = session.providerName || "AI CLI";
@@ -559,7 +559,7 @@ function renderDetail() {
   elements.projectBadge.textContent = session.project ? `Project: ${session.project.title}` : "Unassigned";
   elements.importedBadge.classList.toggle("hidden", !session.imported);
   elements.reviewBadge.classList.toggle("hidden", !session.needsReview);
-  elements.nextAction.textContent = session.nextAction || "Run /sam:wrap to create a recommended next step.";
+  elements.nextAction.textContent = session.nextAction || "Run /sham:wrap to create a recommended next step.";
   elements.lastAction.textContent = session.lastAction || "No checkpoint has been saved yet.";
   elements.repoChip.querySelector("span").textContent = basename(session.repository) || basename(session.cwd) || "Workspace";
   elements.repoChip.title = session.cwd || "No working directory";
@@ -753,7 +753,7 @@ function renderEmpty() {
     elements.emptyAction.dataset.action = "clear-search";
   } else if (state.filter === "wrapped") {
     elements.emptyTitle.textContent = "No wrapped sessions yet";
-    elements.emptyCopy.textContent = "Run /sam:wrap in a Copilot session to save its summary, stopping point, and next action.";
+    elements.emptyCopy.textContent = "Run /sham:wrap in a Copilot session to save its summary, stopping point, and next action.";
     elements.emptyAction.textContent = "Show active sessions";
     elements.emptyAction.dataset.action = "show-active";
   } else {
@@ -813,7 +813,7 @@ async function refreshBoard() {
   elements.projectWorkspaceTitle.textContent = hasProject ? "Loading project…" : "Your projects";
   elements.projectWorkspaceSummary.textContent = hasProject
     ? "Collecting the latest wrapped session state."
-    : "Create an explicit goal here or run /sam:project from an AI session.";
+    : "Create an explicit goal here or run /sham:project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectWorkItems.replaceChildren();
@@ -827,7 +827,7 @@ async function refreshBoard() {
   state.board = board;
   renderProjectWorkspace(board);
   elements.coachStrip.classList.remove("hidden");
-  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sam:plan to generate an ordered execution plan.";
+  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sham:plan to generate an ordered execution plan.";
   elements.boardOpenCount.textContent = board.total - (board.counts.done || 0);
   elements.boardProgressCount.textContent = board.counts.in_progress || 0;
   elements.boardBlockedCount.textContent = board.counts.blocked || 0;
@@ -900,7 +900,7 @@ function renderProjectWorkspace(board) {
   elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action — this project is complete.";
   elements.projectNextContext.textContent = projectState
     ? `From ${projectState.title} · ${relativeTime(projectState.updatedAt)}`
-    : "Run /sam:wrap to establish the next project action.";
+    : "Run /sham:wrap to establish the next project action.";
   elements.projectLastCompleted.textContent = completed[0]?.text || projectState?.lastAction || "No completed work recorded yet.";
   elements.projectCurrentWork.textContent = inProgress?.text || nextTasks[0]?.text || "No task is in progress.";
   elements.projectBlockedWork.textContent = blocked?.text || projectState?.unresolved?.[0] || "No blockers recorded.";
@@ -921,7 +921,7 @@ function renderProjectWorkspace(board) {
     empty.append(
       element("span", "project-empty-icon", "✓"),
       element("strong", "", "No open next tasks"),
-      element("small", "", "Run /sam:wrap when new work is discovered.")
+      element("small", "", "Run /sham:wrap when new work is discovered.")
     );
     elements.projectNextTasks.append(empty);
   }
@@ -937,7 +937,7 @@ function renderProjectWorkspace(board) {
   elements.projectEffortSessions.textContent = sessions.length;
   elements.projectEffortFiles.textContent = fileCount;
   elements.projectLatestSessionTitle.textContent = latestSession?.title || "No wrapped session yet";
-  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sam:wrap to connect session outcomes to this project.";
+  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sham:wrap to connect session outcomes to this project.";
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);

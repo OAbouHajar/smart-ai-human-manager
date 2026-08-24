@@ -41,18 +41,21 @@ if [[ "$PROVIDER_COUNT" -eq 0 ]]; then
 fi
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-INSTALL_ROOT="$HOME/Library/Application Support/AI Session Hub/app"
+INSTALL_ROOT="$HOME/Library/Application Support/Smart Human-AI Manager/app"
+LEGACY_INSTALL_ROOT="$HOME/Library/Application Support/AI Session Hub/app"
 DATA_ROOT="$HOME/Library/Application Support/CopilotSessionHub"
 if [[ -f "$HOME/.copilot-session-hub/sessions.db" && ! -f "$DATA_ROOT/sessions.db" ]]; then
   DATA_ROOT="$HOME/.copilot-session-hub"
 fi
 LAUNCH_AGENTS="$HOME/Library/LaunchAgents"
-PLIST_PATH="$LAUNCH_AGENTS/com.ai-session-hub.plist"
-LABEL="com.ai-session-hub"
+PLIST_PATH="$LAUNCH_AGENTS/com.smart-human-ai-manager.plist"
+LEGACY_PLIST_PATH="$LAUNCH_AGENTS/com.ai-session-hub.plist"
+LABEL="com.smart-human-ai-manager"
 DOMAIN="gui/$(id -u)"
 SERVER_PATH="$INSTALL_ROOT/server/server.mjs"
 
 launchctl bootout "$DOMAIN" "$PLIST_PATH" >/dev/null 2>&1 || true
+launchctl bootout "$DOMAIN" "$LEGACY_PLIST_PATH" >/dev/null 2>&1 || true
 curl --silent --show-error --max-time 2 --request POST \
   "http://127.0.0.1:43120/api/shutdown" >/dev/null 2>&1 || true
 for _ in {1..20}; do
@@ -120,8 +123,10 @@ start_service() {
 node "$INSTALL_ROOT/scripts/provider-hooks.mjs" install "$INSTALL_ROOT"
 
 if command -v copilot >/dev/null 2>&1; then
+  copilot plugin uninstall sham >/dev/null 2>&1 || true
   copilot plugin uninstall sam >/dev/null 2>&1 || true
   copilot plugin uninstall copilot-session-hub >/dev/null 2>&1 || true
+  copilot plugin marketplace remove smart-ai-human-manager >/dev/null 2>&1 || true
   copilot plugin marketplace remove ai-session-hub >/dev/null 2>&1 || true
   MARKETPLACE_READY=false
   for _ in {1..3}; do
@@ -133,14 +138,14 @@ if command -v copilot >/dev/null 2>&1; then
   done
   if [[ "$MARKETPLACE_READY" != true ]]; then
     start_service
-    echo "AI Session Hub was updated, but its verified local Copilot plugin marketplace could not be registered." >&2
+    echo "Smart Human-AI Manager was updated, but its verified local Copilot plugin marketplace could not be registered." >&2
     echo "Exit active Copilot CLI sessions and rerun this installer." >&2
     exit 1
   fi
 
   PLUGIN_INSTALLED=false
   for _ in {1..5}; do
-    if INSTALL_OUTPUT="$(copilot plugin install sam@ai-session-hub 2>&1)"; then
+    if INSTALL_OUTPUT="$(copilot plugin install sham@smart-ai-human-manager 2>&1)"; then
       PLUGIN_INSTALLED=true
       break
     fi
@@ -149,7 +154,7 @@ if command -v copilot >/dev/null 2>&1; then
   if [[ "$PLUGIN_INSTALLED" != true ]]; then
     start_service
     cat >&2 <<EOF
-AI Session Hub application files were updated, but the Copilot plugin could not be refreshed.
+Smart Human-AI Manager application files were updated, but the Copilot plugin could not be refreshed.
 This usually means an active Copilot session is using the plugin files.
 
 Exit all Copilot CLI sessions, then run:
@@ -174,15 +179,18 @@ for _ in {1..20}; do
   fi
 done
 if [[ "$HEALTHY" != "true" ]]; then
-  echo "AI Session Hub did not become healthy on http://127.0.0.1:43120." >&2
+  echo "Smart Human-AI Manager did not become healthy on http://127.0.0.1:43120." >&2
   exit 1
 fi
+
+rm -rf "$LEGACY_INSTALL_ROOT"
+rm -f "$LEGACY_PLIST_PATH"
 
 if [[ "$NO_OPEN" != "true" ]]; then
   open "http://127.0.0.1:43120"
 fi
 
-echo "AI Session Hub installed."
+echo "Smart Human-AI Manager installed."
 echo "Dashboard: http://127.0.0.1:43120"
 echo "Data: $DATA_ROOT"
-echo "Restart each supported AI CLI so the Session Hub hooks are loaded."
+echo "Restart each supported AI CLI so the SHAM hooks are loaded."

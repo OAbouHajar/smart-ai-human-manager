@@ -24,7 +24,7 @@ Run the platform installer from the repository:
 pwsh -File .\scripts\install.ps1
 ```
 
-When `codex` is available on `PATH`, the installer merges AI Session Hub handlers into:
+When `codex` is available on `PATH`, the installer merges Smart Human-AI Manager handlers into:
 
 ```text
 ~/.codex/hooks.json
@@ -32,7 +32,7 @@ When `codex` is available on `PATH`, the installer merges AI Session Hub handler
 
 If `CODEX_HOME` is set, that directory is used instead. Existing hooks are preserved.
 
-Restart Codex after installation. Codex requires non-managed hooks to be reviewed before they run. Open `/hooks`, review the AI Session Hub entries, and trust them.
+Restart Codex after installation. Codex requires non-managed hooks to be reviewed before they run. Open `/hooks`, review the Smart Human-AI Manager entries, and trust them.
 
 ## Verify
 

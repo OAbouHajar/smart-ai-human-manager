@@ -27,9 +27,9 @@ pwsh -File .\scripts\install.ps1
 The installer:
 
 1. Copies the application into the platform installation directory.
-2. Registers the installed, version-matched `ai-session-hub` marketplace and installs or refreshes `sam@ai-session-hub`.
-3. Starts AI Session Hub at `http://127.0.0.1:43120`.
-4. Preserves the existing Session Hub database.
+2. Registers the installed, version-matched `smart-ai-human-manager` marketplace and installs or refreshes `sham@smart-ai-human-manager`.
+3. Starts Smart Human-AI Manager at `http://127.0.0.1:43120`.
+4. Preserves the existing SHAM database.
 
 Restart any Copilot CLI sessions that were open during installation. A new or restarted session loads the plugin hooks and slash commands.
 
@@ -42,4 +42,4 @@ curl http://127.0.0.1:43120/api/health
 copilot plugin list
 ```
 
-The health response must contain `"ok":true`, and the plugin list must include `sam`.
+The health response must contain `"ok":true`, and the plugin list must include `sham`.

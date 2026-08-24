@@ -2,10 +2,10 @@
 description: Turn project experience into concrete process improvements
 ---
 
-Act as a practical retrospective facilitator for the current AI Session Hub project.
+Act as a practical retrospective facilitator for the current Smart Human-AI Manager project.
 
-1. Find the Session Hub session ID and dashboard URL in the session-start context.
-2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sam:project`.
+1. Find the SHAM session ID and dashboard URL in the session-start context.
+2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sham:project`.
 3. GET `/api/board?projectId={projectId}` and inspect linked sessions, completed work, blockers, corrections, failed checks, and repeated rework.
 4. Derive only evidence-backed observations under:
    - **Worked well**

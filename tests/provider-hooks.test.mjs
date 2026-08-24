@@ -19,7 +19,7 @@ for (const provider of ["claude", "codex", "gemini"]) {
       env,
       force: true,
       nodePath: "/opt/node/bin/node",
-      hookPath: "/Applications/AI Session Hub/scripts/hook-client.mjs"
+      hookPath: "/Applications/Smart Human-AI Manager/scripts/hook-client.mjs"
     };
 
     await configureProviderHooks(provider, "install", options);

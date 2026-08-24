@@ -6,14 +6,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const dataDir = await mkdtemp(join(tmpdir(), "copilot-session-hub-"));
+const dataDir = await mkdtemp(join(tmpdir(), "smart-ai-human-manager-"));
 const port = 43121;
 const baseUrl = `http://127.0.0.1:${port}`;
 const currentVersion = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).version;
 const updateRunner = fileURLToPath(new URL("fixtures/update-runner-stub.mjs", import.meta.url));
 const releaseUrl = `data:application/json,${encodeURIComponent(JSON.stringify({
-  tag_name: "v0.4.0",
-  html_url: "https://github.com/OAbouHajar/ai-session-hub/releases/tag/v0.4.0",
+  tag_name: "v0.4.1",
+  html_url: "https://github.com/OAbouHajar/smart-ai-human-manager/releases/tag/v0.4.1",
   published_at: "2026-08-18T08:00:00Z"
 }))}`;
 const server = spawn(process.execPath, ["server/server.mjs"], {
@@ -43,7 +43,7 @@ test("reports installed and available stable versions", async () => {
 
   const update = await fetch(`${baseUrl}/api/update?refresh=1`).then((response) => response.json());
   assert.equal(update.currentVersion, currentVersion);
-  assert.equal(update.latestVersion, "0.4.0");
+  assert.equal(update.latestVersion, "0.4.1");
   assert.equal(update.updateAvailable, true);
   assert.equal(update.error, "");
 });
@@ -67,7 +67,7 @@ test("prepares an update and continues it when the initiating session exits", as
 
   const job = await waitForUpdateState("waiting_for_exit");
   assert.equal(job.fromVersion, currentVersion);
-  assert.equal(job.toVersion, "0.4.0");
+  assert.equal(job.toVersion, "0.4.1");
   const config = JSON.parse(await readFile(join(dataDir, "update", "job.json"), "utf8"));
   assert.equal(config.cancelPath, join(dataDir, "update", "cancel"));
   assert.equal(config.deadline - config.createdAt, 4 * 60 * 60 * 1000);
@@ -93,7 +93,7 @@ test("prepares an update and continues it when the initiating session exits", as
   assert.equal(response.status, 200);
   const startResult = await response.json();
   assert.equal(startResult.updateJob.state, "succeeded");
-  assert.equal(startResult.updateJob.toVersion, "0.4.0");
+  assert.equal(startResult.updateJob.toVersion, "0.4.1");
 });
 
 test("rejects inactive sessions and accepts cancellation before installation", async () => {
@@ -148,8 +148,8 @@ test("tracks, checkpoints, and updates a Copilot session", async () => {
     assert.equal(response.status, 200);
     const info = await response.json();
     assert.match(info.version, /^\d+\.\d+\.\d+$/);
-    assert.equal(info.repositoryUrl, "https://github.com/OAbouHajar/ai-session-hub");
-    assert.equal(info.releasesUrl, "https://github.com/OAbouHajar/ai-session-hub/releases");
+    assert.equal(info.repositoryUrl, "https://github.com/OAbouHajar/smart-ai-human-manager");
+    assert.equal(info.releasesUrl, "https://github.com/OAbouHajar/smart-ai-human-manager/releases");
     assert.deepEqual(info.providers.map((provider) => provider.id), ["copilot", "claude", "codex", "gemini"]);
     assert.equal(info.providers.every((provider) =>
       typeof provider.detected === "boolean" && typeof provider.configured === "boolean"

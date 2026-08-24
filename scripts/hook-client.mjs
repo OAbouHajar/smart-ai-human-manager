@@ -29,23 +29,23 @@ if (!response) {
 if (eventName === "sessionStart") {
   const body = await response.json();
   const updateNotice = body.update?.updateAvailable
-    ? ` AI Session Hub ${body.update.latestVersion} is available (installed: ${body.update.currentVersion}). ` +
-      `Mention this once at a natural stopping point. Copilot users can run /sam:update. ` +
+    ? ` Smart Human-AI Manager ${body.update.latestVersion} is available (installed: ${body.update.currentVersion}). ` +
+      `Mention this once at a natural stopping point. Copilot users can run /sham:update. ` +
       `For a natural-language update request, confirm with the user, then POST ${url}/api/update/install with ` +
       `{"sessionId":${JSON.stringify(body.sessionId)}} and poll ${url}/api/update/job until waiting_for_exit or failed. ` +
       `Never run or show a separate installer command.`
     : "";
   const updateResult = ["succeeded", "succeeded_with_warnings"].includes(body.updateJob?.state)
-    ? ` AI Session Hub updated successfully from ${body.updateJob.fromVersion} to ${body.updateJob.toVersion}. ` +
+    ? ` Smart Human-AI Manager updated successfully from ${body.updateJob.fromVersion} to ${body.updateJob.toVersion}. ` +
       `${body.updateJob.state === "succeeded_with_warnings" ? `Some integrations need attention: ${body.updateJob.error} ` : ""}Tell the user once.`
     : body.updateJob?.state === "failed"
-      ? ` The scheduled AI Session Hub update failed: ${body.updateJob.error} Tell the user once and direct them to the dashboard.`
+      ? ` The scheduled Smart Human-AI Manager update failed: ${body.updateJob.error} Tell the user once and direct them to the dashboard.`
       : "";
   const projectContext = body.project
     ? `This session belongs to the "${body.project.title}" project. Make the checkpoint describe how this session changed that project. `
-    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /sam:project to create or choose one. ";
+    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /sham:project to create or choose one. ";
   const context =
-    `AI Session Hub is tracking this ${providerName(provider)} session. Session ID: ${body.sessionId}. ` +
+    `Smart Human-AI Manager is tracking this ${providerName(provider)} session. Session ID: ${body.sessionId}. ` +
     `Checkpoint endpoint: ${url}/api/sessions/${encodeURIComponent(body.sessionId)}/checkpoint. ` +
     `Dashboard: ${url}. When the user asks to wrap, checkpoint, pause, or hand off, save a structured checkpoint there. ` +
     projectContext +

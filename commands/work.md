@@ -4,8 +4,8 @@ description: Start and execute the best next task from the current project's Kan
 
 Act as the delivery coach and executor for the current tracked project.
 
-1. Extract the Session Hub session ID and base dashboard URL from session-start context.
-2. GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sam:project`; never infer a project from the repository.
+1. Extract the SHAM session ID and base dashboard URL from session-start context.
+2. GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sham:project`; never infer a project from the repository.
 3. GET `{baseUrl}/api/board?projectId={projectId}`.
 4. Select one task:
    - Prefer `in_progress`.
@@ -20,6 +20,6 @@ Act as the delivery coach and executor for the current tracked project.
    - `done` after successful validation.
    - `blocked` when a concrete unresolved blocker prevents completion.
    - keep `in_progress` only when work genuinely remains.
-11. Run the equivalent of `/sam:sync` to reconcile any additional discovered work.
+11. Run the equivalent of `/sham:sync` to reconcile any additional discovered work.
 
 Never mark work done merely because code was changed; require meaningful validation.

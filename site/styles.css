@@ -168,28 +168,28 @@ h3 { font-size: 1.25rem; }
 .continuity h2 { margin: 0; font-size: clamp(2rem, 3.5vw, 3.2rem); }
 .continuity > p { margin: 0; color: var(--soft); }
 
-.sam { padding: 6.5rem 0; scroll-margin-top: 2rem; }
-.sam-groups {
+.sham { padding: 6.5rem 0; scroll-margin-top: 2rem; }
+.sham-groups {
   display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.75fr); gap: 1rem;
   max-width: 980px; margin: 0 auto;
 }
-.sam-group {
+.sham-group {
   padding: 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
 }
-.sam-group .section-label {
+.sham-group .section-label {
   color: var(--teal); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
 }
-.sam-group h3 { margin: 0.35rem 0 1.2rem; }
-.sam-commands { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
-.sam-group .sam-commands { justify-content: flex-start; }
-.sam-commands code {
+.sham-group h3 { margin: 0.35rem 0 1.2rem; }
+.sham-commands { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+.sham-group .sham-commands { justify-content: flex-start; }
+.sham-commands code {
   padding: 0.7rem 1rem; color: var(--teal); background: rgba(102, 231, 199, 0.08);
   border: 1px solid rgba(102, 231, 199, 0.25); border-radius: 999px;
   font: 700 0.82rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-.sam-cycle { margin: 1.5rem auto 0; color: var(--soft); text-align: center; }
-.sam-cycle code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.sam-cycle a { color: var(--teal); font-weight: 750; }
+.sham-cycle { margin: 1.5rem auto 0; color: var(--soft); text-align: center; }
+.sham-cycle code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.sham-cycle a { color: var(--teal); font-weight: 750; }
 
 .install { padding: 6.5rem 0; scroll-margin-top: 2rem; }
 .prompt {
@@ -239,7 +239,7 @@ footer a:hover { color: var(--text); }
   .hero { padding-top: 4.5rem; }
   h1 { font-size: clamp(2.6rem, 11vw, 3.8rem); }
   .session-to-project { grid-template-columns: 1fr; }
-  .sam-groups { grid-template-columns: 1fr; }
+  .sham-groups { grid-template-columns: 1fr; }
   .flow-arrow { transform: rotate(90deg); text-align: center; }
   .section-heading, .continuity { grid-template-columns: 1fr; display: grid; gap: 1.2rem; }
   .metric-card { position: static; display: inline-block; margin-top: 0.7rem; margin-right: 0.5rem; }
@@ -249,7 +249,7 @@ footer a:hover { color: var(--text); }
   .site-header, main > section, footer { width: min(calc(100% - 1.5rem), var(--max)); }
   .workflow-grid, .insight-grid, .quick-value { grid-template-columns: 1fr; }
   .actions { display: grid; }
-  .positioning, .workflow, .workspace, .measure, .sam, .install { padding: 5.5rem 0; }
+  .positioning, .workflow, .workspace, .measure, .sham, .install { padding: 5.5rem 0; }
   .continuity { padding: 1.5rem; }
   .local-first { align-items: flex-start; padding: 1.4rem; }
   .local-first img { width: 3.4rem; height: 3.4rem; }

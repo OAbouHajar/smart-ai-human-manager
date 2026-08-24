@@ -2,7 +2,7 @@
 description: Save a high-quality continuity checkpoint for the current Copilot session
 ---
 
-Wrap the current session into AI Session Hub.
+Wrap the current session into Smart Human-AI Manager.
 
 1. Use the current conversation and tool history to produce:
    - A concise session title.
@@ -13,7 +13,7 @@ Wrap the current session into AI Session Hub.
    - Any known project tasks completed during this session, using the existing task wording when it is available.
    - Any unresolved questions, blockers, or important decisions.
    - Files actually viewed, created, or edited during this session, using repository-relative paths when possible.
-2. Find the Session Hub session ID and checkpoint endpoint in the context added when this session started.
+2. Find the SHAM session ID and checkpoint endpoint in the context added when this session started.
 3. POST the checkpoint as JSON using an available HTTP client (`Invoke-RestMethod` on Windows or `curl` on macOS). Use this shape:
 
 ```json
@@ -40,8 +40,8 @@ Wrap the current session into AI Session Hub.
    - If no unfinished requested work remains, set `nextAction` to "No pending action — this session is complete." and use an empty `tasks` array.
    - `lastAction` must be the most recent meaningful completed and verified outcome, not merely the latest command.
    - Use the session-start context to determine project membership. If the session belongs to a project, make `summary`, `lastAction`, `nextAction`, `tasks`, and `completedTasks` describe how this session changed that explicit project.
-   - If the session is unassigned, save it independently. Do not infer project membership from its repository or working directory and do not create a project automatically. The user can run `/sam:project` later.
+   - If the session is unassigned, save it independently. Do not infer project membership from its repository or working directory and do not create a project automatically. The user can run `/sham:project` later.
 6. Do not include secrets, credentials, access tokens, or raw tool output.
 7. If the POST fails, state the error clearly and do not claim the checkpoint was saved.
-8. Inspect the successful checkpoint response. If `update.updateAvailable` is true, show one short notice after the checkpoint result: `AI Session Hub {latestVersion} is available (installed: {currentVersion}). Run /sam:update to prepare it safely.`
+8. Inspect the successful checkpoint response. If `update.updateAvailable` is true, show one short notice after the checkpoint result: `Smart Human-AI Manager {latestVersion} is available (installed: {currentVersion}). Run /sham:update to prepare it safely.`
 9. After a successful save, show the recommended next action and the dashboard URL. Do not exit Copilot automatically.

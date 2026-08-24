@@ -6,7 +6,6 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "site/**"
-      - "assets/logo.png"
       - "public/logo-mark.png"
       - "screenshots/**"
   workflow_dispatch:
@@ -32,12 +31,11 @@ jobs:
         run: |
           mkdir -p _site/assets _site/screenshots
           cp site/index.html site/styles.css site/app.js _site/
-          cp assets/logo.png _site/assets/
           cp public/logo-mark.png _site/assets/
           cp screenshots/sessions-screenshot.png _site/screenshots/
           cp screenshots/questions-screenshot.png _site/screenshots/
           cp screenshots/board-screenshot.png _site/screenshots/
-          cp screenshots/sam-board.png _site/screenshots/
+          cp screenshots/sham-board.png _site/screenshots/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

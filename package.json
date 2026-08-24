@@ -1,17 +1,17 @@
 {
-  "name": "copilot-session-hub",
-  "version": "0.3.7",
+  "name": "smart-ai-human-manager",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Local-first AI project management built from coding sessions",
+  "description": "Local-first human-AI project management built from coding sessions",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OAbouHajar/ai-session-hub.git"
+    "url": "https://github.com/OAbouHajar/smart-ai-human-manager.git"
   },
-  "homepage": "https://github.com/OAbouHajar/ai-session-hub#readme",
+  "homepage": "https://github.com/OAbouHajar/smart-ai-human-manager#readme",
   "bugs": {
-    "url": "https://github.com/OAbouHajar/ai-session-hub/issues"
+    "url": "https://github.com/OAbouHajar/smart-ai-human-manager/issues"
   },
   "scripts": {
     "start": "node server/server.mjs",

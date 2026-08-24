@@ -49,7 +49,7 @@ export function createUpdateChecker({
         headers: {
           accept: "application/vnd.github+json",
           "x-github-api-version": "2022-11-28",
-          "user-agent": `ai-session-hub/${currentVersion}`
+          "user-agent": `smart-ai-human-manager/${currentVersion}`
         },
         signal: AbortSignal.timeout(timeoutMs)
       });
@@ -115,7 +115,7 @@ function versionParts(value) {
 function validReleasePage(value, version) {
   try {
     const url = new URL(value);
-    const expectedPath = `/OAbouHajar/ai-session-hub/releases/tag/v${version}`;
+    const expectedPath = `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`;
     return url.protocol === "https:" && url.hostname === "github.com" && url.pathname === expectedPath
       ? url.href
       : "";

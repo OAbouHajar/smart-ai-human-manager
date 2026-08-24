@@ -1,17 +1,17 @@
 {
-  "name": "ai-session-hub",
+  "name": "smart-ai-human-manager",
   "owner": {
-    "name": "AI Session Hub"
+    "name": "Smart Human-AI Manager"
   },
   "metadata": {
-    "description": "Official plugins for AI Session Hub",
-    "version": "0.3.7"
+    "description": "Official plugins for Smart Human-AI Manager",
+    "version": "0.4.0"
   },
   "plugins": [
     {
-      "name": "sam",
-      "description": "Smart AI Manager for session continuity and agile project delivery.",
-      "version": "0.3.7",
+      "name": "sham",
+      "description": "Smart Human-AI Manager for session continuity and agile project delivery.",
+      "version": "0.4.0",
       "source": "."
     }
   ]

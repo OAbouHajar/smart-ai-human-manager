@@ -1,10 +1,10 @@
 ---
-description: Update AI Session Hub safely with one command
+description: Update Smart Human-AI Manager safely with one command
 ---
 
-Schedule the latest stable AI Session Hub update. The user must not need to run a second script or handle a temporary path.
+Schedule the latest stable Smart Human-AI Manager update. The user must not need to run a second script or handle a temporary path.
 
-1. Find the dashboard URL in the Session Hub context added when this session started.
+1. Find the dashboard URL in the SHAM context added when this session started.
 2. GET `{dashboardUrl}/api/update?refresh=1`.
 3. Stop and report clearly when:
    - update checks are disabled;
@@ -15,7 +15,7 @@ Schedule the latest stable AI Session Hub update. The user must not need to run 
 6. After confirmation, POST `{dashboardUrl}/api/update/install` with exactly:
 
 ```json
-{ "sessionId": "<current Session Hub session ID>" }
+{ "sessionId": "<current SHAM session ID>" }
 ```
 
 7. Poll GET `{dashboardUrl}/api/update/job` until the job is `waiting_for_exit` or `failed`. Stop after 90 seconds and report the current state if preparation is still running. The user can cancel a preparing or waiting job through POST `{dashboardUrl}/api/update/cancel`.
@@ -25,6 +25,6 @@ Schedule the latest stable AI Session Hub update. The user must not need to run 
    - they should exit all active supported AI CLI sessions;
    - installation and dashboard restart will then happen automatically;
    - the next AI CLI session will report success or failure.
-10. Do not run another installer command, clone a repository yourself, or show a temporary path. Existing Session Hub data and unrelated provider settings are preserved.
+10. Do not run another installer command, clone a repository yourself, or show a temporary path. Existing SHAM data and unrelated provider settings are preserved.
 
 Never install a branch, prerelease, draft, or version other than the validated latest stable release.
