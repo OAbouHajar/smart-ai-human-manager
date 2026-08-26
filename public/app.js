@@ -7,6 +7,7 @@ const state = {
   editField: null,
   view: localStorage.getItem("sessionHub.projectFirstView") || "board",
   projectTab: localStorage.getItem("sessionHub.projectTab") || "overview",
+  projectFilter: localStorage.getItem("sessionHub.projectFilter") || "active",
   projects: [],
   selectedProjectId: localStorage.getItem("sessionHub.projectId"),
   board: null,
@@ -45,6 +46,11 @@ const sessionHubCommands = [
     command: "/sham:project",
     title: "Manage this session's project",
     description: "Create, link, switch, inspect, unlink, or complete an explicit goal-based project."
+  },
+  {
+    command: "/sham:archive",
+    title: "Archive or restore a project",
+    description: "Remove a project from active views without deleting its sessions, tasks, evidence, or history."
   },
   {
     command: "/sham:refine",
@@ -303,6 +309,13 @@ function bindEvents() {
     applyView();
   });
   elements.createProjectButton.addEventListener("click", () => openProjectDialog());
+  elements.projectArchiveFilterButton.addEventListener("click", async () => {
+    state.projectFilter = state.projectFilter === "archived" ? "active" : "archived";
+    localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
+    state.selectedProjectId = "";
+    await refreshBoard();
+  });
+  elements.projectArchiveButton.addEventListener("click", toggleProjectArchive);
   elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
@@ -798,7 +811,7 @@ function applyView() {
 }
 
 async function refreshBoard() {
-  state.projects = await api("/api/projects");
+  state.projects = await api(`/api/projects?filter=${encodeURIComponent(state.projectFilter)}`);
   const preferred = state.projects.some((project) => project.id === state.selectedProjectId)
     ? state.selectedProjectId
     : (state.selected?.projectId && state.projects.some((project) => project.id === state.selected.projectId)
@@ -816,6 +829,8 @@ async function refreshBoard() {
     : "Create an explicit goal here or run /sham:project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
+  elements.projectArchiveButton.disabled = !hasProject;
+  elements.projectArchiveFilterButton.textContent = state.projectFilter === "archived" ? "Active projects" : "Archived projects";
   elements.projectWorkItems.replaceChildren();
   if (!hasProject) {
     state.board = null;
@@ -895,6 +910,12 @@ function renderProjectWorkspace(board) {
     : project.status === "complete" || (board.total > 0 && board.counts.done === board.total)
       ? "Complete"
       : "In progress";
+  if (project.status === "archived") elements.projectStatusLabel.textContent = "Archived";
+  elements.projectArchiveButton.textContent = project.status === "archived" ? "Restore project" : "Archive project";
+  elements.linkProjectWorkItemButton.disabled = project.status === "archived";
+  document.querySelectorAll("[data-add-board-task]").forEach((button) => {
+    button.disabled = project.status === "archived";
+  });
   elements.openProjectButton.disabled = !sessions.length;
   elements.startProjectAction.disabled = !sessions.length;
   elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action — this project is complete.";
@@ -1011,6 +1032,26 @@ async function toggleProjectStar(projectId = state.selectedProjectId) {
   toast(starred ? "Project starred" : "Project unstarred");
 }
 
+async function toggleProjectArchive() {
+  const project = state.board?.project;
+  if (!project) return;
+  const restoring = project.status === "archived";
+  const openTaskCount = state.board.total - (state.board.counts.done || 0);
+  const detail = restoring
+    ? `Restore "${project.title}" to active projects?`
+    : `Archive "${project.title}"? ${openTaskCount} unfinished ${openTaskCount === 1 ? "task" : "tasks"} will be preserved.`;
+  if (!window.confirm(detail)) return;
+  await api(`/api/projects/${encodeURIComponent(project.id)}`, {
+    method: "PATCH",
+    body: restoring
+      ? { status: "active" }
+      : { status: "archived", confirmArchive: true }
+  });
+  toast(restoring ? "Project restored" : "Project archived");
+  state.selectedProjectId = "";
+  await refreshBoard();
+}
+
 function logLevel(type) {
   if (type.includes("error") || type.includes("failure")) return "error";
   if (type.includes("checkpoint") || type.includes("resume")) return "success";
@@ -1056,7 +1097,10 @@ function renderProjectList() {
     elements.sessionList.append(row);
   }
   if (!projects.length && !state.unassignedCount) {
-    elements.sessionList.append(element("p", "empty-copy", state.projects.length ? "No projects match your search." : "No sessions are tracked as projects yet."));
+    const emptyText = state.projectFilter === "archived"
+      ? "No archived projects."
+      : "No sessions are tracked as projects yet.";
+    elements.sessionList.append(element("p", "empty-copy", state.projects.length ? "No projects match your search." : emptyText));
   }
 }
 
@@ -1084,8 +1128,9 @@ function createStarButton(starred, target, onClick) {
 }
 
 function renderBoardCard(task) {
+  const archived = state.board?.project?.status === "archived";
   const card = element("article", `kanban-card${task.status === "done" ? " done-card" : ""}`);
-  card.draggable = true;
+  card.draggable = !archived;
   card.dataset.taskId = task.id;
   card.addEventListener("dragstart", (event) => {
     event.dataTransfer.setData("text/plain", String(task.id));
@@ -1113,6 +1158,7 @@ function renderBoardCard(task) {
   meta.append(element("span", "", basename(task.repository) || basename(task.cwd) || "Workspace"));
   const select = document.createElement("select");
   select.className = "card-status";
+  select.disabled = archived;
   Object.entries(boardStatusLabels).forEach(([value, label]) => {
     const option = document.createElement("option");
     option.value = value;
@@ -1252,6 +1298,8 @@ async function openSelectedProject() {
     await openProjectDialog(state.selected.id);
     return;
   }
+  state.projectFilter = state.selected.project?.status === "archived" ? "archived" : "active";
+  localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
   state.selectedProjectId = state.selected.projectId;
   localStorage.setItem("sessionHub.projectId", state.selected.projectId);
   state.view = "board";
@@ -1309,6 +1357,8 @@ async function createProjectFromDialog(event) {
       sessionId: state.projectDialogSessionId || undefined
     }
   });
+  state.projectFilter = "active";
+  localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
   state.selectedProjectId = project.id;
   localStorage.setItem("sessionHub.projectId", project.id);
   closeProjectDialog();
@@ -1327,6 +1377,8 @@ async function linkProjectFromDialog() {
     method: "POST",
     body: { sessionId }
   });
+  state.projectFilter = "active";
+  localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
   state.selectedProjectId = projectId;
   localStorage.setItem("sessionHub.projectId", projectId);
   closeProjectDialog();

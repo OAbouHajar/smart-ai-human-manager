@@ -471,7 +471,7 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === "/api/sessions" && request.method === "GET") return listSessions(url, response);
     if (url.pathname === "/api/stats" && request.method === "GET") return getStats(response);
     if (url.pathname === "/api/board" && request.method === "GET") return getBoard(url, response);
-    if (url.pathname === "/api/projects" && request.method === "GET") return getProjects(response);
+    if (url.pathname === "/api/projects" && request.method === "GET") return getProjects(url, response);
     if (url.pathname === "/api/projects" && request.method === "POST") return createProject(await body(request), response);
     if (url.pathname === "/api/project-suggestions" && request.method === "GET") return getProjectSuggestions(url, response);
     if (url.pathname === "/api/import-history" && request.method === "POST") {
@@ -670,11 +670,11 @@ async function getApplicationInfo(response) {
 function getBoard(url, response) {
   const projectId = url.searchParams.get("projectId") || url.searchParams.get("sessionId");
   if (!projectId) return json(response, 200, { tasks: [], counts: emptyBoardCounts(), total: 0, project: null, workItems: [] });
-  let projectRow = db.prepare("SELECT * FROM projects WHERE id = ? AND status <> 'archived'").get(projectId);
+  let projectRow = db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId);
   if (!projectRow) {
     const legacySession = db.prepare("SELECT project_id FROM sessions WHERE id = ?").get(projectId);
     if (legacySession?.project_id) {
-      projectRow = db.prepare("SELECT * FROM projects WHERE id = ? AND status <> 'archived'").get(legacySession.project_id);
+      projectRow = db.prepare("SELECT * FROM projects WHERE id = ?").get(legacySession.project_id);
     }
   }
   if (!projectRow) return json(response, 404, { error: "Project workspace not found" });
@@ -730,7 +730,16 @@ function getBoard(url, response) {
   });
 }
 
-function getProjects(response) {
+function getProjects(url, response) {
+  const filter = url.searchParams.get("filter") || "active";
+  if (!["active", "archived", "all"].includes(filter)) {
+    return json(response, 400, { error: "Invalid project filter" });
+  }
+  const statusWhere = filter === "archived"
+    ? "p.status = 'archived'"
+    : filter === "all"
+      ? "1 = 1"
+      : "p.status <> 'archived'";
   const rows = db.prepare(`
     SELECT p.*,
       (SELECT COUNT(*) FROM sessions s WHERE s.project_id = p.id AND s.archived = 0) AS session_count,
@@ -741,7 +750,7 @@ function getProjects(response) {
         WHERE w.project_id = p.id OR (w.project_id = '' AND s.project_id = p.id AND s.archived = 0)) AS work_item_count,
       COALESCE((SELECT MAX(s.updated_at) FROM sessions s WHERE s.project_id = p.id AND s.archived = 0), p.updated_at) AS activity_at
     FROM projects p
-    WHERE p.status <> 'archived'
+    WHERE ${statusWhere}
     ORDER BY p.starred DESC, CASE p.status WHEN 'active' THEN 0 WHEN 'complete' THEN 1 ELSE 2 END, activity_at DESC
   `).all().map((row) => ({
     ...projectRecord(row),
@@ -805,6 +814,22 @@ function updateProject(id, data, response) {
   if (data.status !== undefined) {
     const status = ["active", "complete", "archived"].includes(data.status) ? data.status : "";
     if (!status) return json(response, 400, { error: "Invalid project status" });
+    if (status === "archived" && existing.status !== "archived" && !data.confirmArchive) {
+      const openTasks = db.prepare(`
+        SELECT COUNT(*) AS count
+        FROM tasks t
+        LEFT JOIN sessions s ON s.id = t.session_id
+        WHERE (t.project_id = ? OR (t.project_id = '' AND s.project_id = ? AND s.archived = 0))
+          AND t.status <> 'done'
+      `).get(id, id).count;
+      if (openTasks) {
+        return json(response, 409, {
+          error: "Project has unfinished tasks",
+          code: "PROJECT_HAS_UNFINISHED_TASKS",
+          openTaskCount: openTasks
+        });
+      }
+    }
     updates.push("status = ?");
     values.push(status);
   }
@@ -856,6 +881,8 @@ function unlinkProjectSession(projectId, sessionId, response) {
 }
 
 function addProjectTask(projectId, data, response) {
+  const project = db.prepare("SELECT id FROM projects WHERE id = ? AND status <> 'archived'").get(projectId);
+  if (!project) return json(response, 404, { error: "Project not found" });
   const session = db.prepare(`
     SELECT * FROM sessions WHERE project_id = ? AND archived = 0
     ORDER BY updated_at DESC LIMIT 1

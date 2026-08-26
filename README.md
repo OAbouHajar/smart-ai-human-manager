@@ -129,6 +129,7 @@ Copilot includes **SHAM (Smart Human-AI Manager)** commands:
 | `/sham:handoff` | Wrap with an explicit next-session todo list |
 | `/sham:reopen` | Return a wrapped session to active review |
 | `/sham:project` | Create, link, switch, inspect, unlink, or complete a project |
+| `/sham:archive` | Archive or restore a project without deleting its history |
 | `/sham:refine` | Clarify, split, and prioritize backlog work |
 | `/sham:plan` | Build an ordered plan from unfinished work |
 | `/sham:work` | Execute the best ready project task |
@@ -148,6 +149,8 @@ The human owns goals, priorities, acceptance, and process decisions. SHAM prepar
 ## Project workspace
 
 Create projects around goals—not repositories. One repository can have separate projects for a release, a feature, an investigation, or any other workstream. Each session belongs to at most one primary project and can be moved or returned to Unassigned at any time.
+
+Archive finished or paused projects to remove them from active views while preserving every linked session, task, decision, metric, and file record. Archived projects remain available in the dashboard and can be restored at any time.
 
 The project workspace combines:
 

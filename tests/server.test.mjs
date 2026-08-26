@@ -10,10 +10,11 @@ const dataDir = await mkdtemp(join(tmpdir(), "smart-ai-human-manager-"));
 const port = 43121;
 const baseUrl = `http://127.0.0.1:${port}`;
 const currentVersion = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).version;
+const availableVersion = currentVersion.replace(/(\d+)$/, (patch) => String(Number(patch) + 1));
 const updateRunner = fileURLToPath(new URL("fixtures/update-runner-stub.mjs", import.meta.url));
 const releaseUrl = `data:application/json,${encodeURIComponent(JSON.stringify({
-  tag_name: "v0.4.1",
-  html_url: "https://github.com/OAbouHajar/smart-ai-human-manager/releases/tag/v0.4.1",
+  tag_name: `v${availableVersion}`,
+  html_url: `https://github.com/OAbouHajar/smart-ai-human-manager/releases/tag/v${availableVersion}`,
   published_at: "2026-08-18T08:00:00Z"
 }))}`;
 const server = spawn(process.execPath, ["server/server.mjs"], {
@@ -43,7 +44,7 @@ test("reports installed and available stable versions", async () => {
 
   const update = await fetch(`${baseUrl}/api/update?refresh=1`).then((response) => response.json());
   assert.equal(update.currentVersion, currentVersion);
-  assert.equal(update.latestVersion, "0.4.1");
+  assert.equal(update.latestVersion, availableVersion);
   assert.equal(update.updateAvailable, true);
   assert.equal(update.error, "");
 });
@@ -67,7 +68,7 @@ test("prepares an update and continues it when the initiating session exits", as
 
   const job = await waitForUpdateState("waiting_for_exit");
   assert.equal(job.fromVersion, currentVersion);
-  assert.equal(job.toVersion, "0.4.1");
+  assert.equal(job.toVersion, availableVersion);
   const config = JSON.parse(await readFile(join(dataDir, "update", "job.json"), "utf8"));
   assert.equal(config.cancelPath, join(dataDir, "update", "cancel"));
   assert.equal(config.deadline - config.createdAt, 4 * 60 * 60 * 1000);
@@ -93,7 +94,7 @@ test("prepares an update and continues it when the initiating session exits", as
   assert.equal(response.status, 200);
   const startResult = await response.json();
   assert.equal(startResult.updateJob.state, "succeeded");
-  assert.equal(startResult.updateJob.toVersion, "0.4.1");
+  assert.equal(startResult.updateJob.toVersion, availableVersion);
 });
 
 test("rejects inactive sessions and accepts cancellation before installation", async () => {

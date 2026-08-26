@@ -566,6 +566,37 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
       body: { status: "complete" }
     });
     assert.equal(completedProject.status, "complete");
+
+    const blockedArchive = await request(server, `/api/projects/${releaseProject.id}`, {
+      method: "PATCH",
+      expectedStatus: 409,
+      body: { status: "archived" }
+    });
+    assert.equal(blockedArchive.code, "PROJECT_HAS_UNFINISHED_TASKS");
+    assert.equal(blockedArchive.openTaskCount, 2);
+
+    const archivedProject = await request(server, `/api/projects/${releaseProject.id}`, {
+      method: "PATCH",
+      body: { status: "archived", confirmArchive: true }
+    });
+    assert.equal(archivedProject.status, "archived");
+    assert.equal((await request(server, "/api/projects")).some((project) => project.id === releaseProject.id), false);
+    const archivedProjects = await request(server, "/api/projects?filter=archived");
+    assert.equal(archivedProjects.some((project) => project.id === releaseProject.id), true);
+    const archivedBoard = await request(server, `/api/board?projectId=${releaseProject.id}`);
+    assert.equal(archivedBoard.project.status, "archived");
+    assert.equal(archivedBoard.sessions.length, 1);
+    await request(server, `/api/projects/${releaseProject.id}/tasks`, {
+      method: "POST",
+      expectedStatus: 404,
+      body: { text: "Should not be added", status: "next" }
+    });
+
+    const restoredProject = await request(server, `/api/projects/${releaseProject.id}`, {
+      method: "PATCH",
+      body: { status: "active" }
+    });
+    assert.equal(restoredProject.status, "active");
   } finally {
     await stopServer(server, fixture);
   }
@@ -588,7 +619,7 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
     readFile(join(root, "public", "logo-mark.png"))
   ]);
-  const commandNames = ["wrap", "handoff", "reopen", "project", "refine", "plan", "work", "sync", "review", "retro", "update"];
+  const commandNames = ["wrap", "handoff", "reopen", "project", "archive", "refine", "plan", "work", "sync", "review", "retro", "update"];
   const shamCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
   assert.match(html, /<strong>Smart Human-AI Manager<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
@@ -604,6 +635,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="projectDialog"/);
   assert.match(html, /id="linkProjectWorkItemButton"/);
   assert.match(html, /id="projectWorkItems"/);
+  assert.match(html, /id="projectArchiveButton"/);
+  assert.match(html, /id="projectArchiveFilterButton"/);
   assert.match(app, /createStarButton\(project\.starred, "project"/);
   assert.match(app, /createStarButton\(session\.pinned, "session"/);
   assert.match(app, /^function createStarButton\(/m);
@@ -621,6 +654,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /function projectMetaChip/);
   assert.match(app, /function renderProjectWorkItems/);
   assert.match(app, /function toggleProjectStar/);
+  assert.match(app, /function toggleProjectArchive/);
   assert.match(app, /project-empty-tasks/);
   assert.match(app, /\/api\/projects\/\$\{encodeURIComponent\(state\.selectedProjectId\)\}\/work-items/);
   assert.match(app, /sessionHub\.projectFirstView/);
@@ -855,13 +889,19 @@ async function stopServer(server, fixture) {
 }
 
 async function request(server, path, options = {}) {
+  const expectedStatus = options.expectedStatus || 200;
+  const { expectedStatus: _, ...fetchOptions } = options;
   const response = await fetch(`${server.baseUrl}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers: options.body ? { "content-type": "application/json", ...options.headers } : options.headers,
     body: options.body ? JSON.stringify(options.body) : undefined
   });
   const result = await response.json();
-  assert.equal(response.ok, true, `${options.method || "GET"} ${path} -> ${response.status}: ${JSON.stringify(result)}`);
+  if (options.expectedStatus) {
+    assert.equal(response.status, expectedStatus, `${options.method || "GET"} ${path} -> ${response.status}: ${JSON.stringify(result)}`);
+  } else {
+    assert.equal(response.ok, true, `${options.method || "GET"} ${path} -> ${response.status}: ${JSON.stringify(result)}`);
+  }
   return result;
 }
 
