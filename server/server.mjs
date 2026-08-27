@@ -140,6 +140,12 @@ ensureColumn("sessions", "files_sync_error", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "provider", "TEXT NOT NULL DEFAULT 'copilot'");
 ensureColumn("sessions", "external_id", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("session_files", "source", "TEXT NOT NULL DEFAULT 'history'");
+ensureColumn("sessions", "checkpoint_source", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("sessions", "checkpoint_trigger", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("sessions", "checkpointed_at", "INTEGER");
+ensureColumn("sessions", "auto_checkpointed_at", "INTEGER");
+ensureColumn("sessions", "auto_checkpoint_trigger", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("sessions", "provider_checkpoint_synced_at", "INTEGER");
 db.exec("UPDATE sessions SET external_id = id WHERE external_id = ''");
 ensureColumn("tasks", "status", "TEXT NOT NULL DEFAULT 'next'");
 db.exec("UPDATE tasks SET status = CASE WHEN completed = 1 THEN 'done' ELSE 'next' END WHERE status IS NULL OR status = ''");
@@ -447,6 +453,8 @@ const server = http.createServer(async (request, response) => {
     const url = new URL(request.url, baseUrl);
     if (url.pathname === "/api/health") return json(response, 200, { ok: true, version: appVersion });
     if (url.pathname === "/api/info" && request.method === "GET") return getApplicationInfo(response);
+    if (url.pathname === "/api/settings" && request.method === "GET") return getSettings(response);
+    if (url.pathname === "/api/settings" && request.method === "PATCH") return updateSettings(await body(request), response);
     if (url.pathname === "/api/update" && request.method === "GET") {
       if (url.searchParams.get("refresh") === "1") {
         const status = await updateChecker.check({ force: true });
@@ -951,7 +959,7 @@ function handleHook(provider, eventName, payload, response) {
   if (!externalId) return json(response, 400, { error: "Missing sessionId" });
   const id = provider === "copilot" ? externalId : `${provider}:${externalId}`;
   const timestamp = Number(payload.timestamp) || Date.now();
-  const existing = db.prepare("SELECT id FROM sessions WHERE id = ?").get(id);
+  const existing = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
   if (!existing) {
     const git = gitContext(payload.cwd);
     db.prepare(`
@@ -964,23 +972,36 @@ function handleHook(provider, eventName, payload, response) {
     );
   }
 
-  if (eventName === "sessionStart") {
-    db.prepare("UPDATE sessions SET status = 'active', source = ?, cwd = ?, updated_at = ?, ended_at = NULL, end_reason = NULL WHERE id = ?")
-      .run(payload.source || "startup", payload.cwd || "", timestamp, id);
-  } else if (eventName === "agentStop") {
-    db.prepare("UPDATE sessions SET status = 'active', transcript_path = ?, updated_at = ? WHERE id = ?")
-      .run(payload.transcriptPath || "", timestamp, id);
-  } else if (eventName === "sessionEnd") {
-    db.prepare("UPDATE sessions SET status = 'paused', ended_at = ?, end_reason = ?, updated_at = ? WHERE id = ?")
-      .run(timestamp, payload.reason || "user_exit", timestamp, id);
-  } else if (eventName === "preCompact") {
-    db.prepare("UPDATE sessions SET compacted_at = ?, transcript_path = ?, updated_at = ? WHERE id = ?")
-      .run(timestamp, payload.transcriptPath || "", timestamp, id);
+  const current = existing || db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
+  const lifecycleApplied = timestamp >= current.updated_at;
+  if (lifecycleApplied) {
+    if (eventName === "sessionStart") {
+      db.prepare("UPDATE sessions SET status = 'active', source = ?, cwd = ?, updated_at = ?, ended_at = NULL, end_reason = NULL WHERE id = ?")
+        .run(payload.source || "startup", payload.cwd || "", timestamp, id);
+    } else if (eventName === "agentStop") {
+      db.prepare("UPDATE sessions SET status = 'active', transcript_path = ?, updated_at = ? WHERE id = ?")
+        .run(payload.transcriptPath || "", timestamp, id);
+    } else if (eventName === "sessionEnd") {
+      db.prepare("UPDATE sessions SET status = 'paused', ended_at = ?, end_reason = ?, updated_at = ? WHERE id = ?")
+        .run(timestamp, payload.reason || "user_exit", timestamp, id);
+    } else if (eventName === "preCompact") {
+      db.prepare("UPDATE sessions SET compacted_at = ?, transcript_path = ?, updated_at = ? WHERE id = ?")
+        .run(timestamp, payload.transcriptPath || "", timestamp, id);
+    }
   }
 
-  addEvent(id, eventName, eventDetail(eventName, payload), timestamp);
   if (provider === "copilot" && ["agentStop", "preCompact", "sessionEnd"].includes(eventName)) syncSessionFiles(id);
-  if (eventName === "sessionEnd") signalUpdateInstall(id);
+  let autoWrapped = false;
+  if (readAutoWrapSettings().enabled) {
+    if (provider === "copilot" && ["preCompact", "agentStop"].includes(eventName)) {
+      autoWrapped = syncCopilotGeneratedCheckpoint(id, timestamp);
+    }
+    if (lifecycleApplied && (eventName === "preCompact" || eventName === "sessionEnd")) {
+      autoWrapped = autoCheckpoint(id, eventName, payload, timestamp) || autoWrapped;
+    }
+  }
+  addEvent(id, eventName, eventDetail(eventName, payload), timestamp);
+  if (eventName === "sessionEnd" && lifecycleApplied) signalUpdateInstall(id);
   broadcast("sessions-changed", { id, eventName });
   const update = updateChecker.cachedStatus();
   const updateJob = eventName === "sessionStart" ? takeUpdateCompletionNotice() : null;
@@ -992,6 +1013,7 @@ function handleHook(provider, eventName, payload, response) {
     ok: true,
     sessionId: id,
     project: project ? projectRecord(project) : null,
+    autoWrapped,
     update: update.updateAvailable ? update : null,
     updateJob
   });
@@ -1034,11 +1056,12 @@ function checkpoint(id, data, response) {
     db.prepare(`
       UPDATE sessions SET title = ?, summary = ?, last_action = ?, next_action = ?,
         unresolved = ?, decisions = ?, needs_review = 0, updated_at = ?,
-        ai_credits = ?, current_tokens = ?, context_limit = ?, model = ?, context_tier = ?, metrics_at = ?
+        ai_credits = ?, current_tokens = ?, context_limit = ?, model = ?, context_tier = ?, metrics_at = ?,
+        checkpoint_source = 'manual', checkpoint_trigger = 'manual', checkpointed_at = ?
       WHERE id = ?
     `).run(
       title, summary, lastAction, nextAction, JSON.stringify(unresolved), JSON.stringify(decisions), now,
-      metrics.aiCredits, metrics.currentTokens, metrics.contextLimit, metrics.model, metrics.contextTier, metrics.capturedAt,
+      metrics.aiCredits, metrics.currentTokens, metrics.contextLimit, metrics.model, metrics.contextTier, metrics.capturedAt, now,
       id
     );
     if (tasks) {
@@ -1056,6 +1079,7 @@ function checkpoint(id, data, response) {
         existingText.add(key);
         added++;
       }
+
     }
     if (completedTasks.length) {
       const completedKeys = new Set(completedTasks.map((task) => task.toLocaleLowerCase()));
@@ -1088,6 +1112,134 @@ function checkpoint(id, data, response) {
   scheduleUpdateCheck();
 }
 
+function autoCheckpoint(id, trigger, payload, timestamp) {
+  const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
+  if (!session) return false;
+  const latestCheckpointAt = Math.max(
+    Number(session.checkpointed_at) || 0,
+    Number(session.auto_checkpointed_at) || 0
+  );
+  const providerCheckpoint = trigger === "providerCheckpoint";
+  if (
+    providerCheckpoint
+      ? session.checkpoint_source === "manual"
+        ? timestamp <= (Number(session.checkpointed_at) || 0)
+        : timestamp < latestCheckpointAt
+      : timestamp <= latestCheckpointAt
+  ) return false;
+  if (
+    trigger === "sessionEnd" &&
+    latestCheckpointAt &&
+    timestamp - latestCheckpointAt < 5 * 60 * 1000
+  ) return false;
+
+  const provided = payload && typeof payload === "object"
+    ? (payload.checkpoint && typeof payload.checkpoint === "object" ? payload.checkpoint : payload)
+    : {};
+  const manual = session.checkpoint_source === "manual";
+  const providedSummary = cleanText(provided.overview ?? provided.summary, 3000);
+  const providedLastAction = cleanText(provided.workDone ?? provided.work_done ?? provided.lastAction, 1000);
+  const summary = manual ? session.summary : providedSummary || session.summary;
+  const lastAction = manual ? session.last_action : providedLastAction || session.last_action;
+  const nextTask = db.prepare(`
+    SELECT text FROM tasks
+    WHERE session_id = ? AND status <> 'done'
+    ORDER BY CASE status WHEN 'in_progress' THEN 0 WHEN 'next' THEN 1 WHEN 'blocked' THEN 2 ELSE 3 END, position, id
+    LIMIT 1
+  `).get(id)?.text || "";
+  const providedNextAction = cleanText(provided.nextSteps ?? provided.next_steps ?? provided.nextAction, 1000);
+  const nextAction = manual
+    ? session.next_action
+    : providedNextAction || session.next_action || nextTask;
+
+  db.prepare(`
+    UPDATE sessions SET summary = ?, last_action = ?, next_action = ?, needs_review = 0,
+      checkpoint_source = ?, checkpoint_trigger = ?, checkpointed_at = ?,
+      auto_checkpoint_trigger = ?, auto_checkpointed_at = ?, updated_at = ?
+    WHERE id = ?
+  `).run(
+    summary,
+    lastAction,
+    nextAction,
+    manual ? session.checkpoint_source : "automatic",
+    manual ? session.checkpoint_trigger : trigger,
+    manual ? session.checkpointed_at : Math.max(timestamp, Number(session.checkpointed_at) || 0),
+    trigger,
+    Math.max(timestamp, Number(session.auto_checkpointed_at) || 0),
+    Math.max(timestamp, Number(session.updated_at) || 0),
+    id
+  );
+  if (session.project_id) {
+    db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(timestamp, session.project_id);
+  }
+  const triggerLabel = {
+    preCompact: "context compaction",
+    sessionEnd: "session exit",
+    providerCheckpoint: "provider checkpoint"
+  }[trigger] || trigger;
+  addEvent(id, "auto-checkpoint", `Automatic checkpoint saved from ${triggerLabel}`, timestamp);
+  return true;
+}
+
+function readAutoWrapSettings() {
+  const value = db.prepare("SELECT value FROM app_metadata WHERE key = 'auto_wrap_settings'").get()?.value;
+  if (!value) return { enabled: false, consented: false };
+  try {
+    const settings = JSON.parse(value);
+    return {
+      enabled: settings.enabled === true,
+      consented: settings.consented === true
+    };
+  } catch {
+    db.prepare("DELETE FROM app_metadata WHERE key = 'auto_wrap_settings'").run();
+    return { enabled: false, consented: false };
+  }
+}
+
+function getSettings(response) {
+  json(response, 200, { autoWrap: readAutoWrapSettings() });
+}
+
+function updateSettings(data, response) {
+  if (typeof data.autoWrapEnabled !== "boolean") {
+    return json(response, 400, { error: "autoWrapEnabled must be true or false" });
+  }
+  const settings = { enabled: data.autoWrapEnabled, consented: true };
+  db.prepare("INSERT OR REPLACE INTO app_metadata(key, value) VALUES ('auto_wrap_settings', ?)").run(JSON.stringify(settings));
+  broadcast("settings-changed", { autoWrap: settings });
+  json(response, 200, { autoWrap: settings });
+}
+
+function syncCopilotGeneratedCheckpoint(id, timestamp) {
+  if (!existsSync(historyPath)) return false;
+  let history;
+  try {
+    history = new DatabaseSync(historyPath, { readOnly: true });
+    const hasCheckpoints = history.prepare(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'checkpoints'"
+    ).get();
+    if (!hasCheckpoints) return false;
+    const checkpoint = history.prepare(`
+      SELECT title, overview, work_done, next_steps, created_at
+      FROM checkpoints
+      WHERE session_id = ?
+      ORDER BY checkpoint_number DESC, created_at DESC
+      LIMIT 1
+    `).get(id);
+    if (!checkpoint) return false;
+    const createdAt = parseTimestamp(checkpoint.created_at) || timestamp;
+    const session = db.prepare("SELECT provider_checkpoint_synced_at FROM sessions WHERE id = ?").get(id);
+    if (session?.provider_checkpoint_synced_at && createdAt <= session.provider_checkpoint_synced_at) return false;
+    db.prepare("UPDATE sessions SET provider_checkpoint_synced_at = ? WHERE id = ?").run(createdAt, id);
+    return autoCheckpoint(id, "providerCheckpoint", { checkpoint }, createdAt);
+  } catch (error) {
+    console.error("Could not synchronize Copilot checkpoint:", error.message);
+    return false;
+  } finally {
+    history?.close();
+  }
+}
+
 function updateSession(id, data, response) {
   const allowed = {
     title: ["title", (value) => cleanText(value, 120)],
@@ -1108,8 +1260,13 @@ function updateSession(id, data, response) {
     values.push(allowed[key][1](value));
   }
   if (!updates.length) return json(response, 400, { error: "No supported fields supplied" });
+  const updatedAt = Date.now();
+  if (["summary", "lastAction", "nextAction"].some((key) => Object.hasOwn(data, key))) {
+    updates.push("checkpoint_source = 'manual'", "checkpoint_trigger = 'dashboard-edit'", "checkpointed_at = ?");
+    values.push(updatedAt);
+  }
   updates.push("updated_at = ?");
-  values.push(Date.now(), id);
+  values.push(updatedAt, id);
   const result = db.prepare(`UPDATE sessions SET ${updates.join(", ")} WHERE id = ?`).run(...values);
   if (!result.changes) return json(response, 404, { error: "Session not found" });
   if (data.isProject !== undefined) setLegacyProjectTracking(id, Boolean(data.isProject));
@@ -1466,6 +1623,11 @@ function sessionRecord(row) {
     needsReview: Boolean(row.needs_review),
     transcriptPath: row.transcript_path,
     compactedAt: row.compacted_at,
+    checkpointSource: row.checkpoint_source || "",
+    checkpointTrigger: row.checkpoint_trigger || "",
+    checkpointedAt: row.checkpointed_at,
+    autoCheckpointTrigger: row.auto_checkpoint_trigger || "",
+    autoCheckpointedAt: row.auto_checkpointed_at,
     imported: Boolean(row.imported),
     isProject: Boolean(row.is_project),
     projectId: row.project_id || "",

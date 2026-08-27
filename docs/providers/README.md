@@ -12,3 +12,5 @@ Smart Human-AI Manager detects supported AI CLIs during installation and adds on
 The dashboard is shared by every provider at `http://127.0.0.1:43120`.
 
 Only Copilot historical sessions are currently imported. Claude, Codex, and Gemini tracking begins when a session starts after their hooks are installed and loaded.
+
+With explicit user consent, all supported providers can automatically preserve the latest known session state before context compaction and on session exit. Auto-wrap is off by default. Provider-generated summaries are reused when exposed reliably; manual wrapping remains the best option for an intentional semantic handoff. Project creation and assignment always remain human-controlled.

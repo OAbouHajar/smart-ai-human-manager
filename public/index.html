@@ -123,6 +123,13 @@
               <div id="infoProviders" class="info-providers"></div>
             </div>
             <div class="info-section">
+              <span class="info-label">Automation</span>
+              <label class="setting-toggle">
+                <span><strong>Auto-wrap sessions</strong><small>Checkpoint before compaction and on exit. Projects are never created or assigned automatically.</small></span>
+                <input id="autoWrapToggle" type="checkbox">
+              </label>
+            </div>
+            <div class="info-section">
               <span class="info-label">Updates</span>
               <strong id="infoUpdateTitle">Checking for updates…</strong>
               <span id="infoUpdateDetail" class="muted"></span>
@@ -149,6 +156,16 @@
         </button>
       </aside>
 
+      <aside id="autoWrapPrompt" class="update-banner consent-banner hidden" aria-live="polite">
+        <span class="update-icon" aria-hidden="true">✓</span>
+        <div>
+          <strong>Automatically preserve session continuity?</strong>
+          <span>SHAM can checkpoint before compaction and on exit. It will never create or assign projects automatically.</span>
+        </div>
+        <button id="enableAutoWrap" class="button primary">Enable auto-wrap</button>
+        <button id="declineAutoWrap" class="button quiet">Not now</button>
+      </aside>
+
       <section id="emptyState" class="empty-state hidden">
         <div class="empty-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-5l-2 2-2-2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5h10V7H7v2Zm0 4h7v-2H7v2Z"/></svg>
@@ -167,6 +184,7 @@
             <span id="projectBadge" class="context-badge hidden">Project</span>
             <span id="importedBadge" class="context-badge hidden">Imported</span>
             <span id="reviewBadge" class="context-badge warning hidden">Needs wrap</span>
+            <span id="checkpointBadge" class="context-badge hidden">Checkpoint</span>
           </div>
           <div class="editable-title-row">
             <h1 id="sessionTitle">Select a session</h1>

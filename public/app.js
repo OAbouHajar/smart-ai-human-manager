@@ -17,7 +17,8 @@ const state = {
   commandIndex: 0,
   update: null,
   updateJob: null,
-  info: null
+  info: null,
+  settings: null
 };
 let modalReturnFocus = null;
 
@@ -120,7 +121,7 @@ const elements = Object.fromEntries(
   [...document.querySelectorAll("[id]")].map((element) => [element.id, element])
 );
 
-await Promise.all([refresh(), refreshUpdateStatus()]);
+await Promise.all([refresh(), refreshUpdateStatus(), refreshSettings()]);
 connectEvents();
 bindEvents();
 applyView();
@@ -179,6 +180,23 @@ function renderApplicationInfo() {
     );
     elements.infoProviders.append(row);
   }
+  elements.autoWrapToggle.checked = state.settings?.autoWrap?.enabled === true;
+}
+
+async function refreshSettings() {
+  state.settings = await api("/api/settings");
+  elements.autoWrapToggle.checked = state.settings.autoWrap.enabled;
+  elements.autoWrapPrompt.classList.toggle("hidden", state.settings.autoWrap.consented);
+}
+
+async function setAutoWrap(enabled) {
+  state.settings = await api("/api/settings", {
+    method: "PATCH",
+    body: { autoWrapEnabled: enabled }
+  });
+  elements.autoWrapToggle.checked = enabled;
+  elements.autoWrapPrompt.classList.add("hidden");
+  toast(enabled ? "Automatic session wrapping enabled" : "Automatic session wrapping disabled");
 }
 
 async function refreshInfoUpdate(force) {
@@ -292,6 +310,9 @@ function bindEvents() {
   elements.infoButton.addEventListener("click", toggleInfoPanel);
   elements.closeInfo.addEventListener("click", closeInfoPanel);
   elements.refreshInfoUpdate.addEventListener("click", () => refreshInfoUpdate(true));
+  elements.autoWrapToggle.addEventListener("change", () => setAutoWrap(elements.autoWrapToggle.checked));
+  elements.enableAutoWrap.addEventListener("click", () => setAutoWrap(true));
+  elements.declineAutoWrap.addEventListener("click", () => setAutoWrap(false));
   elements.commandPaletteButton.addEventListener("click", openCommandPalette);
   elements.commandSearch.addEventListener("input", () => {
     state.commandIndex = 0;
@@ -431,6 +452,7 @@ function connectEvents() {
   const stream = new EventSource("/api/events");
   stream.addEventListener("sessions-changed", () => state.view === "board" ? refreshBoard() : refresh());
   stream.addEventListener("update-changed", refreshUpdateStatus);
+  stream.addEventListener("settings-changed", refreshSettings);
 }
 
 async function refreshUpdateStatus() {
@@ -572,6 +594,11 @@ function renderDetail() {
   elements.projectBadge.textContent = session.project ? `Project: ${session.project.title}` : "Unassigned";
   elements.importedBadge.classList.toggle("hidden", !session.imported);
   elements.reviewBadge.classList.toggle("hidden", !session.needsReview);
+  elements.checkpointBadge.classList.toggle("hidden", !session.checkpointSource || session.needsReview);
+  elements.checkpointBadge.textContent = session.checkpointSource === "automatic" ? "Auto-wrapped" : "Manually wrapped";
+  elements.checkpointBadge.title = session.checkpointedAt
+    ? `${session.checkpointSource === "automatic" ? "Automatic" : "Manual"} checkpoint ${relativeTime(session.checkpointedAt)}`
+    : "";
   elements.nextAction.textContent = session.nextAction || "Run /sham:wrap to create a recommended next step.";
   elements.lastAction.textContent = session.lastAction || "No checkpoint has been saved yet.";
   elements.repoChip.querySelector("span").textContent = basename(session.repository) || basename(session.cwd) || "Workspace";
@@ -974,7 +1001,11 @@ function renderProjectSessions(sessions) {
       element("strong", "", session.title),
       element("span", "", session.summary || session.lastAction || "No checkpoint summary"),
       element("span", "", formatDuration(session.startedAt, session.endedAt || session.updatedAt)),
-      element("em", session.needsReview ? "needs-wrap" : "", session.needsReview ? "Needs wrap" : "Wrapped")
+      element(
+        "em",
+        session.needsReview ? "needs-wrap" : "",
+        session.needsReview ? "Needs wrap" : session.checkpointSource === "automatic" ? "Auto-wrapped" : "Wrapped"
+      )
     );
     row.addEventListener("click", async () => {
       state.view = "sessions";

@@ -250,6 +250,11 @@ kbd {
 .info-providers { display: grid; gap: 0.45rem; }
 .info-provider { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .info-provider-state { padding: 0.2rem 0.45rem; border-radius: 999px; font-size: 0.66rem; font-weight: 650; }
+.setting-toggle { display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; }
+.setting-toggle > span { display: grid; gap: 0.2rem; }
+.setting-toggle small { color: var(--cp-text-muted); line-height: 1.4; }
+.setting-toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--cp-accent); }
+.consent-banner { border-color: color-mix(in oklch, var(--cp-accent) 35%, var(--cp-border)); }
 .info-provider-state.configured { color: var(--cp-success); background: color-mix(in oklch, var(--cp-success) 12%, transparent); }
 .info-provider-state.detected { color: var(--cp-warning); background: color-mix(in oklch, var(--cp-warning) 12%, transparent); }
 .info-provider-state.missing { color: var(--cp-text-muted); background: var(--cp-surface-soft); }

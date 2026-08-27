@@ -32,6 +32,9 @@ for (const provider of ["claude", "codex", "gemini"]) {
     const serializedHooks = JSON.stringify(config.hooks);
     assert.equal(serializedHooks.includes("hook-client.mjs"), true);
     assert.equal(serializedHooks.includes(provider), true);
+    const compactEvent = provider === "gemini" ? "PreCompress" : "PreCompact";
+    assert.equal(Array.isArray(config.hooks[compactEvent]), true);
+    assert.equal(Array.isArray(config.hooks.SessionEnd), true);
     assert.equal(
       config.hooks.SessionStart[1].hooks[0].timeout,
       provider === "gemini" ? 8000 : 8

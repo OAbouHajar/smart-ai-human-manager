@@ -420,6 +420,204 @@ test("returns an actionable conflict when the resume workspace is missing", asyn
   }
 });
 
+test("auto-wrap requires consent and preserves human control across providers", async () => {
+  const fixture = await createFixture();
+  const startedAt = Date.now();
+  createHistory(fixture.historyPath, {
+    checkpoints: [{
+      sessionId: "copilot-auto-wrap",
+      title: "Copilot generated title",
+      overview: "Copilot generated summary",
+      workDone: "Copilot generated work",
+      nextSteps: "Copilot generated next action",
+      checkpointNumber: 1,
+      createdAt: new Date(startedAt + 100).toISOString()
+    }]
+  });
+  const server = await startServer(fixture);
+  try {
+    const initialSettings = await request(server, "/api/settings");
+    assert.deepEqual(initialSettings.autoWrap, { enabled: false, consented: false });
+
+    await request(server, "/api/hooks/copilot/sessionStart", {
+      method: "POST",
+      body: { sessionId: "consent-check", cwd: fixture.directory, timestamp: startedAt }
+    });
+    const disabledResult = await request(server, "/api/hooks/copilot/preCompact", {
+      method: "POST",
+      body: { sessionId: "consent-check", timestamp: startedAt + 100, summary: "Must not be saved" }
+    });
+    assert.equal(disabledResult.autoWrapped, false);
+    let detail = await request(server, "/api/sessions/consent-check");
+    assert.equal(detail.needsReview, true);
+    assert.equal(detail.checkpointSource, "");
+    assert.equal(detail.projectId, "");
+
+    const enabledSettings = await request(server, "/api/settings", {
+      method: "PATCH",
+      body: { autoWrapEnabled: true }
+    });
+    assert.deepEqual(enabledSettings.autoWrap, { enabled: true, consented: true });
+
+    for (const [index, provider] of ["copilot", "claude", "codex", "gemini"].entries()) {
+      const externalId = `${provider}-auto-wrap`;
+      const sessionId = provider === "copilot" ? externalId : `${provider}:${externalId}`;
+      await request(server, `/api/hooks/${provider}/sessionStart`, {
+        method: "POST",
+        body: { sessionId: externalId, cwd: fixture.directory, timestamp: startedAt + index * 1000 }
+      });
+      const wrapped = await request(server, `/api/hooks/${provider}/preCompact`, {
+        method: "POST",
+        body: {
+          sessionId: externalId,
+          timestamp: startedAt + index * 1000 + 100,
+          summary: `${provider} automatic summary`,
+          nextAction: `${provider} next action`
+        }
+      });
+      assert.equal(wrapped.autoWrapped, true);
+      detail = await request(server, `/api/sessions/${encodeURIComponent(sessionId)}`);
+      assert.equal(detail.summary, provider === "copilot" ? "Copilot generated summary" : `${provider} automatic summary`);
+      assert.equal(detail.nextAction, provider === "copilot" ? "Copilot generated next action" : `${provider} next action`);
+      assert.equal(detail.checkpointSource, "automatic");
+      assert.equal(detail.checkpointTrigger, provider === "copilot" ? "providerCheckpoint" : "preCompact");
+      assert.equal(detail.needsReview, false);
+      assert.equal(detail.projectId, "");
+    }
+
+    await request(server, "/api/sessions/copilot-auto-wrap/checkpoint", {
+      method: "POST",
+      body: { summary: "Human-authored wrap", nextAction: "Human-approved next action" }
+    });
+    const recentExit = await request(server, "/api/hooks/copilot/sessionEnd", {
+      method: "POST",
+      body: { sessionId: "copilot-auto-wrap", timestamp: Date.now(), reason: "user_exit" }
+    });
+    assert.equal(recentExit.autoWrapped, false);
+    detail = await request(server, "/api/sessions/copilot-auto-wrap");
+    assert.equal(detail.summary, "Human-authored wrap");
+    assert.equal(detail.checkpointSource, "manual");
+
+    const laterAutomatic = await request(server, "/api/hooks/copilot/preCompact", {
+      method: "POST",
+      body: {
+        sessionId: "copilot-auto-wrap",
+        timestamp: Date.now() + 6 * 60 * 1000,
+        summary: "Automatic summary must not replace the human wrap",
+        nextAction: "Automatic next action must not replace the human decision"
+      }
+    });
+    assert.equal(laterAutomatic.autoWrapped, true);
+    detail = await request(server, "/api/sessions/copilot-auto-wrap");
+    assert.equal(detail.summary, "Human-authored wrap");
+    assert.equal(detail.nextAction, "Human-approved next action");
+    assert.equal(detail.checkpointSource, "manual");
+    assert.equal(detail.autoCheckpointTrigger, "preCompact");
+
+    const staleAutomatic = await request(server, "/api/hooks/copilot/preCompact", {
+      method: "POST",
+      body: {
+        sessionId: "copilot-auto-wrap",
+        timestamp: startedAt,
+        summary: "Stale queued hook"
+      }
+    });
+    assert.equal(staleAutomatic.autoWrapped, false);
+    detail = await request(server, "/api/sessions/copilot-auto-wrap");
+    assert.equal(detail.summary, "Human-authored wrap");
+
+    await request(server, "/api/hooks/copilot/preCompact", {
+      method: "POST",
+      body: {
+        sessionId: "consent-check",
+        timestamp: startedAt + 20_000,
+        summary: "Newer automatic summary"
+      }
+    });
+    const history = new DatabaseSync(fixture.historyPath);
+    history.prepare(`
+      INSERT INTO checkpoints(session_id, checkpoint_number, title, overview, work_done, next_steps, created_at)
+      VALUES (?, 1, '', ?, '', '', ?)
+    `).run("consent-check", "Older provider summary", new Date(startedAt + 10_000).toISOString());
+    history.close();
+    const staleProvider = await request(server, "/api/hooks/copilot/agentStop", {
+      method: "POST",
+      body: { sessionId: "consent-check", timestamp: startedAt + 30_000 }
+    });
+    assert.equal(staleProvider.autoWrapped, false);
+    detail = await request(server, "/api/sessions/consent-check");
+    assert.equal(detail.summary, "Newer automatic summary");
+    await request(server, "/api/hooks/copilot/sessionEnd", {
+      method: "POST",
+      body: { sessionId: "consent-check", timestamp: startedAt + 10_000 }
+    });
+    detail = await request(server, "/api/sessions/consent-check");
+    assert.equal(detail.status, "active");
+    assert.equal(detail.endedAt, null);
+
+    await request(server, "/api/sessions/claude%3Aclaude-auto-wrap/checkpoint", {
+      method: "POST",
+      body: { summary: "", lastAction: "", nextAction: "" }
+    });
+    await request(server, "/api/hooks/claude/preCompact", {
+      method: "POST",
+      body: {
+        sessionId: "claude-auto-wrap",
+        timestamp: Date.now() + 7 * 60 * 1000,
+        summary: "Do not refill an intentionally empty summary",
+        lastAction: "Do not refill an intentionally empty action",
+        nextAction: "Do not refill an intentionally empty next action"
+      }
+    });
+    detail = await request(server, "/api/sessions/claude%3Aclaude-auto-wrap");
+    assert.equal(detail.summary, "");
+    assert.equal(detail.lastAction, "");
+    assert.equal(detail.nextAction, "");
+    assert.equal(detail.checkpointSource, "manual");
+
+    await request(server, "/api/sessions/gemini%3Agemini-auto-wrap", {
+      method: "PATCH",
+      body: { summary: "Human dashboard edit", nextAction: "Human dashboard decision" }
+    });
+    await request(server, "/api/hooks/gemini/preCompact", {
+      method: "POST",
+      body: {
+        sessionId: "gemini-auto-wrap",
+        timestamp: Date.now() + 8 * 60 * 1000,
+        summary: "Automatic replacement",
+        nextAction: "Automatic replacement"
+      }
+    });
+    detail = await request(server, "/api/sessions/gemini%3Agemini-auto-wrap");
+    assert.equal(detail.summary, "Human dashboard edit");
+    assert.equal(detail.nextAction, "Human dashboard decision");
+    assert.equal(detail.checkpointSource, "manual");
+    assert.equal(detail.checkpointTrigger, "dashboard-edit");
+
+    await request(server, "/api/hooks/claude/sessionStart", {
+      method: "POST",
+      body: { sessionId: "exit-fallback", cwd: fixture.directory, timestamp: startedAt }
+    });
+    const exitFallback = await request(server, "/api/hooks/claude/sessionEnd", {
+      method: "POST",
+      body: { sessionId: "exit-fallback", timestamp: startedAt + 6 * 60 * 1000, summary: "Exit fallback summary" }
+    });
+    assert.equal(exitFallback.autoWrapped, true);
+    detail = await request(server, "/api/sessions/claude%3Aexit-fallback");
+    assert.equal(detail.checkpointTrigger, "sessionEnd");
+    assert.equal(detail.summary, "Exit fallback summary");
+    assert.equal(detail.projectId, "");
+
+    await request(server, "/api/settings", {
+      method: "PATCH",
+      body: { autoWrapEnabled: false }
+    });
+    assert.deepEqual((await request(server, "/api/settings")).autoWrap, { enabled: false, consented: true });
+  } finally {
+    await stopServer(server, fixture);
+  }
+});
+
 test("projects are explicit, keep unassigned sessions separate, and enforce one primary project", async () => {
   const fixture = await createFixture();
   const server = await startServer(fixture);
@@ -635,6 +833,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="projectDialog"/);
   assert.match(html, /id="linkProjectWorkItemButton"/);
   assert.match(html, /id="projectWorkItems"/);
+  assert.match(html, /id="autoWrapPrompt"/);
+  assert.match(html, /id="autoWrapToggle"/);
   assert.match(html, /id="projectArchiveButton"/);
   assert.match(html, /id="projectArchiveFilterButton"/);
   assert.match(app, /createStarButton\(project\.starred, "project"/);
@@ -654,6 +854,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /function projectMetaChip/);
   assert.match(app, /function renderProjectWorkItems/);
   assert.match(app, /function toggleProjectStar/);
+  assert.match(app, /function setAutoWrap/);
+  assert.match(app, /\/api\/settings/);
   assert.match(app, /function toggleProjectArchive/);
   assert.match(app, /project-empty-tasks/);
   assert.match(app, /\/api\/projects\/\$\{encodeURIComponent\(state\.selectedProjectId\)\}\/work-items/);
@@ -748,7 +950,7 @@ async function createFixture() {
   };
 }
 
-function createHistory(path, { sessions = [], files = [], questions = [] } = {}) {
+function createHistory(path, { sessions = [], files = [], questions = [], checkpoints = [] } = {}) {
   const db = new DatabaseSync(path);
   db.exec(`
     CREATE TABLE sessions (
@@ -774,6 +976,15 @@ function createHistory(path, { sessions = [], files = [], questions = [] } = {})
       user_message TEXT,
       assistant_response TEXT
     );
+    CREATE TABLE checkpoints (
+      session_id TEXT,
+      checkpoint_number INTEGER,
+      title TEXT,
+      overview TEXT,
+      work_done TEXT,
+      next_steps TEXT,
+      created_at TEXT
+    );
   `);
   const insertSession = db.prepare(`
     INSERT INTO sessions(id, cwd, repository, branch, summary, created_at, updated_at, host_type)
@@ -786,6 +997,10 @@ function createHistory(path, { sessions = [], files = [], questions = [] } = {})
   const insertQuestion = db.prepare(`
     INSERT INTO turns(session_id, turn_index, user_message, assistant_response)
     VALUES (?, ?, ?, '')
+  `);
+  const insertCheckpoint = db.prepare(`
+    INSERT INTO checkpoints(session_id, checkpoint_number, title, overview, work_done, next_steps, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const now = new Date().toISOString();
   for (const session of sessions) {
@@ -810,6 +1025,17 @@ function createHistory(path, { sessions = [], files = [], questions = [] } = {})
   }
   for (const question of questions) {
     insertQuestion.run(question.sessionId, question.turnIndex ?? 0, question.text);
+  }
+  for (const checkpoint of checkpoints) {
+    insertCheckpoint.run(
+      checkpoint.sessionId,
+      checkpoint.checkpointNumber ?? 1,
+      checkpoint.title ?? "",
+      checkpoint.overview ?? "",
+      checkpoint.workDone ?? "",
+      checkpoint.nextSteps ?? "",
+      checkpoint.createdAt ?? now
+    );
   }
   db.close();
 }
