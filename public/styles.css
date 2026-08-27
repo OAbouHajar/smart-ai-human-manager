@@ -165,6 +165,10 @@ kbd {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 0.35rem 0.6rem; color: var(--cp-text-muted); font-size: 0.72rem; font-weight: 650;
 }
+.sidebar-heading-actions { display: inline-flex; align-items: center; gap: 0.15rem; }
+.project-sidebar-action { display: none; }
+.sidebar.board-mode .project-sidebar-action { display: grid; }
+.project-sidebar-action.active { color: var(--cp-accent); background: var(--cp-accent-soft); }
 .session-list { flex: 1; min-height: 0; overflow-y: auto; padding-right: 0.2rem; }
 .session-entry { position: relative; }
 .session-item {
@@ -519,10 +523,11 @@ button.context-link { cursor: pointer; }
 .project-workspace-header {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 2rem; padding-bottom: 1.25rem;
 }
-.project-header-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
+.project-header-actions { position: relative; display: flex; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem; }
 .project-header-actions .button {
   min-height: 2.35rem; padding: 0 1rem; font-size: 0.75rem; line-height: 1; white-space: nowrap;
 }
+.project-action-menu { top: 2.75rem; z-index: 20; }
 .project-status-line { min-height: 1.6rem; display: flex; align-items: center; gap: 0.65rem; color: var(--cp-text-muted); font-size: 0.7rem; }
 .project-status {
   display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.5rem;
@@ -709,6 +714,11 @@ button.context-link { cursor: pointer; }
   font-size: 0.62rem; font-style: normal;
 }
 .project-session-row em.needs-wrap { color: var(--cp-warning); background: color-mix(in oklch, var(--cp-warning) 12%, transparent); }
+.project-session-dialog { width: min(42rem, 100%); }
+.project-session-dialog > .muted { margin: 0.65rem 0 1rem; }
+.project-session-dialog > label:not(.project-auto-wrap-choice) { display: block; margin-bottom: 0.35rem; color: var(--cp-text-muted); font-size: 0.7rem; font-weight: 700; }
+.project-session-dialog select { width: 100%; min-height: 2.5rem; padding: 0 0.65rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: var(--radius-sm); }
+.project-session-dialog .project-auto-wrap-choice { margin-top: 0.85rem; }
 .project-insights-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
 .project-insight { min-width: 0; padding: 1.2rem; }
 .project-insight span, .project-insight strong, .project-insight small { display: block; }

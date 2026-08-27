@@ -51,9 +51,17 @@
 
       <div class="sidebar-heading">
         <span id="sidebarHeadingLabel">Recent work</span>
-        <button id="refreshButton" class="icon-button" title="Refresh sessions" aria-label="Refresh sessions">
-          <svg viewBox="0 0 24 24"><path d="M19 8a7 7 0 1 0 1 6h-2.1A5 5 0 1 1 17.5 9H14l4-4 4 4h-3Z"/></svg>
-        </button>
+        <span class="sidebar-heading-actions">
+          <button id="projectArchiveFilterButton" class="icon-button project-sidebar-action" title="Show archived projects" aria-label="Show archived projects" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M4 3h16l2 4v3h-1v10H3V10H2V7l2-4Zm1.3 2-1 2h15.4l-1-2H5.3ZM5 10v8h14v-8H5Zm4 2h6v2H9v-2Z"/></svg>
+          </button>
+          <button id="createProjectButton" class="icon-button project-sidebar-action" title="New project" aria-label="New project">
+            <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+          </button>
+          <button id="refreshButton" class="icon-button" title="Refresh sessions" aria-label="Refresh sessions">
+            <svg viewBox="0 0 24 24"><path d="M19 8a7 7 0 1 0 1 6h-2.1A5 5 0 1 1 17.5 9H14l4-4 4 4h-3Z"/></svg>
+          </button>
+        </span>
       </div>
       <div id="sessionList" class="session-list" aria-live="polite"></div>
 
@@ -323,10 +331,13 @@
             <div id="projectWorkItems" class="project-work-items"></div>
           </div>
           <div class="project-header-actions">
-            <button id="projectArchiveFilterButton" class="button secondary">Archived projects</button>
-            <button id="createProjectButton" class="button primary">New project</button>
-            <button id="openProjectButton" class="button secondary">Open latest session</button>
-            <button id="projectArchiveButton" class="button secondary">Archive project</button>
+            <button id="openProjectButton" class="button primary">Open latest session</button>
+            <button id="projectMoreButton" class="icon-button bordered" aria-label="More project actions" aria-expanded="false">
+              <svg viewBox="0 0 24 24"><path d="M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+            </button>
+            <div id="projectMoreMenu" class="menu project-action-menu hidden">
+              <button id="projectArchiveButton">Archive project</button>
+            </div>
           </div>
         </header>
         <div id="noProjects" class="no-projects hidden">
@@ -455,6 +466,7 @@
         <section id="projectSessionsPanel" class="project-panel hidden">
           <div class="project-section-heading">
             <div><span class="section-label">Project history</span><h2>Sessions that moved this project</h2></div>
+            <button id="addProjectSessionButton" class="button secondary">+ Add session</button>
           </div>
           <div id="projectSessionList" class="project-session-list"></div>
         </section>
@@ -528,6 +540,29 @@
         <button class="button primary">Create and link session</button>
       </form>
     </div>
+  </div>
+
+  <div id="projectSessionDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="projectSessionDialogTitle">
+    <form id="projectSessionForm" class="dialog project-session-dialog">
+      <div class="dialog-title-row">
+        <div><span class="section-label">Project sessions</span><h2 id="projectSessionDialogTitle">Add a session</h2></div>
+        <button type="button" id="closeProjectSessionDialog" class="icon-button" aria-label="Close session selector">
+          <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <p id="projectSessionDialogContext" class="muted">Choose an unassigned session to link to this project.</p>
+      <label for="projectSessionSelect">Unassigned session</label>
+      <select id="projectSessionSelect"></select>
+      <p id="projectSessionEmpty" class="empty-copy hidden">There are no unassigned sessions available.</p>
+      <label class="project-auto-wrap-choice">
+        <input id="projectSessionAutoWrap" type="checkbox">
+        Auto-wrap this session before compaction and on exit
+      </label>
+      <div class="dialog-actions">
+        <button id="cancelProjectSessionDialog" type="button" class="button secondary">Cancel</button>
+        <button id="linkSelectedProjectSession" class="button primary">Add to project</button>
+      </div>
+    </form>
   </div>
 
   <div id="commandPalette" class="dialog-backdrop hidden">

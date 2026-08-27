@@ -733,6 +733,11 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
       body: { sessionId: secondSession, autoWrap: false }
     });
     assert.equal((await request(server, `/api/sessions/${secondSession}`)).autoWrapEnabled, false);
+    await request(server, `/api/projects/${releaseProject.id}/sessions`, {
+      method: "POST",
+      expectedStatus: 409,
+      body: { sessionId: secondSession, autoWrap: true, requireUnassigned: true }
+    });
     await request(server, `/api/sessions/${secondSession}/checkpoint`, {
       method: "POST",
       body: {
@@ -895,7 +900,19 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="workItemForm"[\s\S]*<\/form>\s*<\/div>\s*<\/div>\s*<div id="projectDialog"/);
   assert.match(html, /id="projectOverviewPanel"/);
   assert.match(html, /id="projectSessionList"/);
+  assert.match(html, /id="addProjectSessionButton"/);
+  assert.match(html, /id="projectSessionDialog"/);
+  assert.match(html, /id="projectSessionSelect"/);
+  assert.match(html, /id="projectSessionAutoWrap"/);
+  assert.match(html, /id="projectMoreButton"/);
+  assert.match(html, /id="projectMoreMenu"/);
   assert.match(app, /function renderProjectWorkspace/);
+  assert.match(app, /function openProjectSessionDialog/);
+  assert.match(app, /function linkSelectedProjectSession/);
+  assert.match(app, /\/api\/sessions\?filter=unassigned/);
+  assert.match(app, /requireUnassigned: true/);
+  assert.match(app, /projectSessionDialogProjectId/);
+  assert.match(app, /projectSessionDialogRequest/);
   assert.match(app, /projectMetaChip\("sessions"/);
   assert.match(app, /projectMetaChip\("branch"/);
   assert.match(app, /projectMetaChip\("folder"/);

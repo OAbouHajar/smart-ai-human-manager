@@ -12,6 +12,8 @@ const state = {
   selectedProjectId: localStorage.getItem("sessionHub.projectId"),
   board: null,
   projectDialogSessionId: "",
+  projectSessionDialogProjectId: "",
+  projectSessionDialogRequest: 0,
   workItemTarget: "session",
   unassignedCount: 0,
   commandIndex: 0,
@@ -220,6 +222,25 @@ async function refreshInfoUpdate(force) {
   }
 }
 
+function isDialogOpen() {
+  return [...document.querySelectorAll(".dialog-backdrop")].some((dialog) => !dialog.classList.contains("hidden"));
+}
+
+function trapDialogFocus(event, dialog) {
+  const focusable = [...dialog.querySelectorAll("button:not(:disabled), select:not(:disabled), input:not(:disabled), textarea:not(:disabled), a[href]")]
+    .filter((element) => !element.classList.contains("hidden"));
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function bindEvents() {
   document.querySelectorAll(".filter").forEach((button) => {
     button.addEventListener("click", async () => {
@@ -257,16 +278,23 @@ function bindEvents() {
     if (!elements.moreButton.contains(event.target) && !elements.moreMenu.contains(event.target)) {
       elements.moreMenu.classList.add("hidden");
     }
+    if (!elements.projectMoreButton.contains(event.target) && !elements.projectMoreMenu.contains(event.target)) {
+      elements.projectMoreMenu.classList.add("hidden");
+      elements.projectMoreButton.setAttribute("aria-expanded", "false");
+    }
     if (!elements.infoButton.contains(event.target) && !elements.infoPanel.contains(event.target)) {
       closeInfoPanel();
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+    if (event.key === "Tab" && !elements.projectSessionDialog.classList.contains("hidden")) {
+      trapDialogFocus(event, elements.projectSessionDialog);
+    }
+    if (event.key === "/" && !isDialogOpen() && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
       event.preventDefault();
       elements.searchInput.focus();
     }
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k" && !isDialogOpen()) {
       event.preventDefault();
       openCommandPalette();
     }
@@ -286,6 +314,7 @@ function bindEvents() {
       closeDialog();
       closeWorkItemDialog();
       closeProjectDialog();
+      closeProjectSessionDialog();
       closeCommandPalette();
       closeInfoPanel();
       closeSidebar();
@@ -335,13 +364,23 @@ function bindEvents() {
     applyView();
   });
   elements.createProjectButton.addEventListener("click", () => openProjectDialog());
+  elements.addProjectSessionButton.addEventListener("click", openProjectSessionDialog);
   elements.projectArchiveFilterButton.addEventListener("click", async () => {
     state.projectFilter = state.projectFilter === "archived" ? "active" : "archived";
     localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
     state.selectedProjectId = "";
     await refreshBoard();
   });
-  elements.projectArchiveButton.addEventListener("click", toggleProjectArchive);
+  elements.projectMoreButton.addEventListener("click", () => {
+    const opening = elements.projectMoreMenu.classList.contains("hidden");
+    elements.projectMoreMenu.classList.toggle("hidden", !opening);
+    elements.projectMoreButton.setAttribute("aria-expanded", opening ? "true" : "false");
+  });
+  elements.projectArchiveButton.addEventListener("click", async () => {
+    elements.projectMoreMenu.classList.add("hidden");
+    elements.projectMoreButton.setAttribute("aria-expanded", "false");
+    await toggleProjectArchive();
+  });
   elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
@@ -350,6 +389,12 @@ function bindEvents() {
   elements.createProjectForm.addEventListener("submit", createProjectFromDialog);
   elements.linkProjectButton.addEventListener("click", linkProjectFromDialog);
   elements.unlinkProjectButton.addEventListener("click", unlinkProjectFromDialog);
+  elements.projectSessionForm.addEventListener("submit", linkSelectedProjectSession);
+  elements.closeProjectSessionDialog.addEventListener("click", closeProjectSessionDialog);
+  elements.cancelProjectSessionDialog.addEventListener("click", closeProjectSessionDialog);
+  elements.projectSessionDialog.addEventListener("click", (event) => {
+    if (event.target === elements.projectSessionDialog) closeProjectSessionDialog();
+  });
   elements.startProjectAction.addEventListener("click", openProjectNextSession);
   elements.openLatestProjectSession.addEventListener("click", openProjectLatestSession);
   document.querySelectorAll("[data-project-tab]").forEach((button) => {
@@ -864,7 +909,12 @@ async function refreshBoard() {
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectArchiveButton.disabled = !hasProject;
-  elements.projectArchiveFilterButton.textContent = state.projectFilter === "archived" ? "Active projects" : "Archived projects";
+  const showingArchived = state.projectFilter === "archived";
+  elements.projectArchiveFilterButton.classList.toggle("active", showingArchived);
+  elements.projectArchiveFilterButton.title = showingArchived ? "Show active projects" : "Show archived projects";
+  elements.projectArchiveFilterButton.setAttribute("aria-label", elements.projectArchiveFilterButton.title);
+  elements.projectArchiveFilterButton.setAttribute("aria-pressed", showingArchived ? "true" : "false");
+  elements.projectMoreButton.disabled = !hasProject;
   elements.projectWorkItems.replaceChildren();
   if (!hasProject) {
     state.board = null;
@@ -946,6 +996,7 @@ function renderProjectWorkspace(board) {
       : "In progress";
   if (project.status === "archived") elements.projectStatusLabel.textContent = "Archived";
   elements.projectArchiveButton.textContent = project.status === "archived" ? "Restore project" : "Archive project";
+  elements.addProjectSessionButton.disabled = project.status === "archived";
   elements.linkProjectWorkItemButton.disabled = project.status === "archived";
   document.querySelectorAll("[data-add-board-task]").forEach((button) => {
     button.disabled = project.status === "archived";
@@ -1022,6 +1073,9 @@ function renderProjectSessions(sessions) {
     });
     elements.projectSessionList.append(row);
   });
+  if (!sessions.length) {
+    elements.projectSessionList.append(element("p", "board-empty", "No sessions are linked to this project yet."));
+  }
 }
 
 function renderProjectInsights({ sessions, duration, credits, files, board, progress }) {
@@ -1449,6 +1503,71 @@ async function unlinkProjectFromDialog() {
   closeProjectDialog();
   await refresh({ preserveSelection: true });
   toast("Session moved to Unassigned");
+}
+
+async function openProjectSessionDialog() {
+  if (!state.selectedProjectId || state.board?.project?.status === "archived") return;
+  modalReturnFocus = document.activeElement;
+  const projectId = state.selectedProjectId;
+  const projectTitle = projectName(state.board.project);
+  const requestId = ++state.projectSessionDialogRequest;
+  state.projectSessionDialogProjectId = projectId;
+  const sessions = await api("/api/sessions?filter=unassigned");
+  if (requestId !== state.projectSessionDialogRequest) return;
+  if (state.selectedProjectId !== projectId || state.board?.project?.id !== projectId || state.board.project.status === "archived") {
+    state.projectSessionDialogProjectId = "";
+    toast("The selected project changed. Open Add session again.", true);
+    return;
+  }
+  elements.projectSessionDialogTitle.textContent = `Add a session to ${projectTitle}`;
+  elements.projectSessionSelect.replaceChildren();
+  sessions.forEach((session) => {
+    const option = document.createElement("option");
+    option.value = session.id;
+    option.textContent = `${session.title} · ${session.providerName || "AI CLI"} · ${basename(session.repository) || basename(session.cwd) || "No workspace"}`;
+    elements.projectSessionSelect.append(option);
+  });
+  const hasSessions = sessions.length > 0;
+  elements.projectSessionSelect.classList.toggle("hidden", !hasSessions);
+  elements.projectSessionEmpty.classList.toggle("hidden", hasSessions);
+  elements.linkSelectedProjectSession.disabled = !hasSessions;
+  elements.projectSessionAutoWrap.checked = state.settings?.autoWrap?.enabled === true;
+  elements.projectSessionAutoWrap.closest("label").classList.toggle("hidden", !hasSessions);
+  elements.projectSessionDialog.classList.remove("hidden");
+  (hasSessions ? elements.projectSessionSelect : elements.closeProjectSessionDialog).focus();
+}
+
+function closeProjectSessionDialog() {
+  const wasOpen = !elements.projectSessionDialog.classList.contains("hidden");
+  elements.projectSessionDialog.classList.add("hidden");
+  state.projectSessionDialogRequest += 1;
+  state.projectSessionDialogProjectId = "";
+  if (wasOpen) modalReturnFocus?.focus();
+}
+
+async function linkSelectedProjectSession(event) {
+  event.preventDefault();
+  const sessionId = elements.projectSessionSelect.value;
+  const projectId = state.projectSessionDialogProjectId;
+  if (!sessionId || !projectId) return;
+  if (projectId !== state.selectedProjectId || state.board?.project?.id !== projectId || state.board.project.status === "archived") {
+    closeProjectSessionDialog();
+    toast("The selected project changed. Open Add session again.", true);
+    return;
+  }
+  elements.linkSelectedProjectSession.disabled = true;
+  try {
+    await api(`/api/projects/${encodeURIComponent(projectId)}/sessions`, {
+      method: "POST",
+      body: { sessionId, autoWrap: elements.projectSessionAutoWrap.checked, requireUnassigned: true }
+    });
+    closeProjectSessionDialog();
+    await refreshBoard();
+    setProjectTab("sessions");
+    toast("Session added to project");
+  } finally {
+    elements.linkSelectedProjectSession.disabled = false;
+  }
 }
 
 async function resumeSelected() {

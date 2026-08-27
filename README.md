@@ -159,6 +159,7 @@ The project workspace combines:
 - A concise overview of current state, next action, blockers, and progress.
 - A Kanban board with **Backlog**, **Next**, **In progress**, **Blocked**, and **Done**.
 - Every explicitly linked session and its file evidence.
+- A session picker in the **Sessions** tab for linking an existing unassigned session with an explicit auto-wrap choice.
 - Time, AI credits, effort, and completion insights.
 - Project-level Azure DevOps work-item links.
 

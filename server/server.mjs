@@ -869,12 +869,23 @@ function linkProjectSession(projectId, data, response) {
   if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
     return json(response, 400, { error: "autoWrap must be true or false" });
   }
+  if (data.requireUnassigned !== undefined && typeof data.requireUnassigned !== "boolean") {
+    return json(response, 400, { error: "requireUnassigned must be true or false" });
+  }
+  if (data.requireUnassigned && session.project_id) {
+    return json(response, 409, { error: "Session is no longer unassigned" });
+  }
   const now = Date.now();
   db.exec("BEGIN");
   try {
     const autoWrapMode = typeof data.autoWrap === "boolean" ? (data.autoWrap ? "on" : "off") : session.auto_wrap_mode;
-    db.prepare("UPDATE sessions SET project_id = ?, auto_wrap_mode = ?, updated_at = ? WHERE id = ?")
+    const assignmentCondition = data.requireUnassigned ? " AND project_id = ''" : "";
+    const result = db.prepare(`UPDATE sessions SET project_id = ?, auto_wrap_mode = ?, updated_at = ? WHERE id = ?${assignmentCondition}`)
       .run(projectId, autoWrapMode, now, sessionId);
+    if (!result.changes) {
+      db.exec("ROLLBACK");
+      return json(response, 409, { error: "Session is no longer unassigned" });
+    }
     db.prepare(`
       UPDATE projects SET
         repository = CASE WHEN repository = '' THEN ? ELSE repository END,
