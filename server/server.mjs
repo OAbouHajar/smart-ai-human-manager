@@ -1270,10 +1270,14 @@ function updateSession(id, data, response) {
     needsReview: ["needs_review", (value) => value ? 1 : 0],
     status: ["status", (value) => ["active", "paused", "complete"].includes(value) ? value : "paused"],
     isProject: ["is_project", (value) => value ? 1 : 0],
-    autoWrap: ["auto_wrap_mode", (value) => value ? "on" : "off"]
+    autoWrap: ["auto_wrap_mode", (value) => value ? "on" : "off"],
+    autoWrapMode: ["auto_wrap_mode", (value) => value]
   };
   if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
     return json(response, 400, { error: "autoWrap must be true or false" });
+  }
+  if (data.autoWrapMode !== undefined && !["on", "off", "inherit"].includes(data.autoWrapMode)) {
+    return json(response, 400, { error: "autoWrapMode must be on, off, or inherit" });
   }
   const updates = [];
   const values = [];

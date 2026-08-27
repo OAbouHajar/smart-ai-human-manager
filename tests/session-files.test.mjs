@@ -463,6 +463,32 @@ test("auto-wrap requires consent and preserves human control across providers", 
       body: { sessionId: "consent-check", timestamp: startedAt + 200, summary: "Still must not be saved" }
     });
     assert.equal(unassignedWithGlobalDefault.autoWrapped, false);
+    detail = await request(server, "/api/sessions/consent-check");
+    assert.equal(detail.autoWrapMode, "inherit");
+    assert.equal(detail.autoWrapEnabled, false);
+    detail = await request(server, "/api/sessions/consent-check", {
+      method: "PATCH",
+      body: { autoWrapMode: "on" }
+    });
+    assert.equal(detail.autoWrapMode, "on");
+    assert.equal(detail.autoWrapEnabled, true);
+    detail = await request(server, "/api/sessions/consent-check", {
+      method: "PATCH",
+      body: { autoWrapMode: "off" }
+    });
+    assert.equal(detail.autoWrapMode, "off");
+    assert.equal(detail.autoWrapEnabled, false);
+    detail = await request(server, "/api/sessions/consent-check", {
+      method: "PATCH",
+      body: { autoWrapMode: "inherit" }
+    });
+    assert.equal(detail.autoWrapMode, "inherit");
+    assert.equal(detail.autoWrapEnabled, false);
+    await request(server, "/api/sessions/consent-check", {
+      method: "PATCH",
+      expectedStatus: 400,
+      body: { autoWrapMode: "sometimes" }
+    });
 
     for (const [index, provider] of ["copilot", "claude", "codex", "gemini"].entries()) {
       const externalId = `${provider}-auto-wrap`;
@@ -837,7 +863,7 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
     readFile(join(root, "public", "logo-mark.png"))
   ]);
-  const commandNames = ["wrap", "handoff", "reopen", "project", "archive", "refine", "plan", "work", "sync", "review", "retro", "update"];
+  const commandNames = ["wrap", "handoff", "reopen", "project", "archive", "auto-wrap", "refine", "plan", "work", "sync", "review", "retro", "update"];
   const shamCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
   assert.match(html, /<strong>Smart Human-AI Manager<\/strong>/);
   assert.match(html, /<link rel="icon" href="\/logo-mark\.png"/);
@@ -922,6 +948,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(project, /one primary project/);
   assert.match(project, /Never infer or create a project from the repository/);
   assert.match(project, /api\/project-suggestions/);
+  assert.match(shamCommands[commandNames.indexOf("auto-wrap")], /explicit argument[\s\S]*not `on`, `off`, `status`, or `default`/);
   assert.match(reopen, /"needsReview": true/);
   assert.match(reopen, /Do not clear or replace/);
   assert.match(update, /\/api\/update\/install/);

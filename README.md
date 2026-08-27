@@ -131,6 +131,7 @@ Copilot includes **SHAM (Smart Human-AI Manager)** commands:
 | `/sham:reopen` | Return a wrapped session to active review |
 | `/sham:project` | Create, link, switch, inspect, unlink, or complete a project |
 | `/sham:archive` | Archive or restore a project without deleting its history |
+| `/sham:auto-wrap on\|off\|status\|default` | Control automatic wrapping for the current session |
 | `/sham:refine` | Clarify, split, and prioritize backlog work |
 | `/sham:plan` | Build an ordered plan from unfinished work |
 | `/sham:work` | Execute the best ready project task |

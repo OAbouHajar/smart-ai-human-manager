@@ -54,6 +54,11 @@ const sessionHubCommands = [
     description: "Remove a project from active views without deleting its sessions, tasks, evidence, or history."
   },
   {
+    command: "/sham:auto-wrap",
+    title: "Control auto-wrap for this session",
+    description: "Use on, off, status, or default to manage automatic continuity checkpoints."
+  },
+  {
     command: "/sham:refine",
     title: "Refine the backlog",
     description: "Clarify, split, prioritize, and prepare upcoming project tasks with explicit acceptance outcomes."

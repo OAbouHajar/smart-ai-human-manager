@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Official plugins for Smart Human-AI Manager",
-    "version": "0.6.1"
+    "version": "0.6.2"
   },
   "plugins": [
     {
       "name": "sham",
       "description": "Smart Human-AI Manager for session continuity and agile project delivery.",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "source": "."
     }
   ]
