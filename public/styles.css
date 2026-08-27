@@ -255,6 +255,8 @@ kbd {
 .setting-toggle small { color: var(--cp-text-muted); line-height: 1.4; }
 .setting-toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--cp-accent); }
 .consent-banner { border-color: color-mix(in oklch, var(--cp-accent) 35%, var(--cp-border)); }
+.project-auto-wrap-choice { display: flex; align-items: center; gap: 0.5rem; color: var(--cp-text-soft); font-size: 0.75rem; }
+.project-auto-wrap-choice input { accent-color: var(--cp-accent); }
 .info-provider-state.configured { color: var(--cp-success); background: color-mix(in oklch, var(--cp-success) 12%, transparent); }
 .info-provider-state.detected { color: var(--cp-warning); background: color-mix(in oklch, var(--cp-warning) 12%, transparent); }
 .info-provider-state.missing { color: var(--cp-text-muted); background: var(--cp-surface-soft); }

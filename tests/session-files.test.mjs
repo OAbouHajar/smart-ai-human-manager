@@ -458,6 +458,11 @@ test("auto-wrap requires consent and preserves human control across providers", 
       body: { autoWrapEnabled: true }
     });
     assert.deepEqual(enabledSettings.autoWrap, { enabled: true, consented: true });
+    const unassignedWithGlobalDefault = await request(server, "/api/hooks/copilot/preCompact", {
+      method: "POST",
+      body: { sessionId: "consent-check", timestamp: startedAt + 200, summary: "Still must not be saved" }
+    });
+    assert.equal(unassignedWithGlobalDefault.autoWrapped, false);
 
     for (const [index, provider] of ["copilot", "claude", "codex", "gemini"].entries()) {
       const externalId = `${provider}-auto-wrap`;
@@ -465,6 +470,10 @@ test("auto-wrap requires consent and preserves human control across providers", 
       await request(server, `/api/hooks/${provider}/sessionStart`, {
         method: "POST",
         body: { sessionId: externalId, cwd: fixture.directory, timestamp: startedAt + index * 1000 }
+      });
+      await request(server, `/api/sessions/${encodeURIComponent(sessionId)}`, {
+        method: "PATCH",
+        body: { autoWrap: true }
       });
       const wrapped = await request(server, `/api/hooks/${provider}/preCompact`, {
         method: "POST",
@@ -526,6 +535,10 @@ test("auto-wrap requires consent and preserves human control across providers", 
     detail = await request(server, "/api/sessions/copilot-auto-wrap");
     assert.equal(detail.summary, "Human-authored wrap");
 
+    await request(server, "/api/sessions/consent-check", {
+      method: "PATCH",
+      body: { autoWrap: true }
+    });
     await request(server, "/api/hooks/copilot/preCompact", {
       method: "POST",
       body: {
@@ -597,6 +610,10 @@ test("auto-wrap requires consent and preserves human control across providers", 
     await request(server, "/api/hooks/claude/sessionStart", {
       method: "POST",
       body: { sessionId: "exit-fallback", cwd: fixture.directory, timestamp: startedAt }
+    });
+    await request(server, "/api/sessions/claude%3Aexit-fallback", {
+      method: "PATCH",
+      body: { autoWrap: true }
     });
     const exitFallback = await request(server, "/api/hooks/claude/sessionEnd", {
       method: "POST",
@@ -671,12 +688,14 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
       body: {
         title: "Prepare v0.4 release",
         description: "Ship the next stable version.",
-        sessionId: firstSession
+        sessionId: firstSession,
+        autoWrap: true
       }
     });
     let board = await request(server, `/api/board?projectId=${releaseProject.id}`);
     assert.equal(board.sessions.length, 1);
     assert.equal(board.sessions[0].id, firstSession);
+    assert.equal((await request(server, `/api/sessions/${firstSession}`)).autoWrapEnabled, true);
 
     const suggestions = await request(server, `/api/project-suggestions?sessionId=${secondSession}`);
     assert.equal(suggestions[0].id, releaseProject.id);
@@ -685,8 +704,9 @@ test("projects are explicit, keep unassigned sessions separate, and enforce one 
 
     await request(server, `/api/projects/${releaseProject.id}/sessions`, {
       method: "POST",
-      body: { sessionId: secondSession }
+      body: { sessionId: secondSession, autoWrap: false }
     });
+    assert.equal((await request(server, `/api/sessions/${secondSession}`)).autoWrapEnabled, false);
     await request(server, `/api/sessions/${secondSession}/checkpoint`, {
       method: "POST",
       body: {
@@ -835,6 +855,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="projectWorkItems"/);
   assert.match(html, /id="autoWrapPrompt"/);
   assert.match(html, /id="autoWrapToggle"/);
+  assert.match(html, /id="projectAutoWrapChoice"/);
+  assert.match(html, /data-action="auto-wrap"/);
   assert.match(html, /id="projectArchiveButton"/);
   assert.match(html, /id="projectArchiveFilterButton"/);
   assert.match(app, /createStarButton\(project\.starred, "project"/);

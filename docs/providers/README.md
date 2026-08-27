@@ -13,4 +13,4 @@ The dashboard is shared by every provider at `http://127.0.0.1:43120`.
 
 Only Copilot historical sessions are currently imported. Claude, Codex, and Gemini tracking begins when a session starts after their hooks are installed and loaded.
 
-With explicit user consent, all supported providers can automatically preserve the latest known session state before context compaction and on session exit. Auto-wrap is off by default. Provider-generated summaries are reused when exposed reliably; manual wrapping remains the best option for an intentional semantic handoff. Project creation and assignment always remain human-controlled.
+With explicit user consent, all supported providers can automatically preserve the latest known session state before context compaction and on session exit. Auto-wrap is off by default and can be selected when linking a session to a project or changed from the session menu. The global preference applies only as a default for deliberately linked project sessions; unassigned sessions remain manual. Provider-generated summaries are reused when exposed reliably, while project creation and assignment always remain human-controlled.

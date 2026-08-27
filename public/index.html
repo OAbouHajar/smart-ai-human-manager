@@ -107,6 +107,7 @@
             <button data-action="folder">Open folder</button>
             <button data-action="import-history">Import session history</button>
             <button data-action="archive">Archive session</button>
+            <button data-action="auto-wrap">Enable auto-wrap</button>
           </div>
           <aside id="infoPanel" class="info-panel hidden" aria-label="Smart Human-AI Manager information">
             <header>
@@ -125,7 +126,7 @@
             <div class="info-section">
               <span class="info-label">Automation</span>
               <label class="setting-toggle">
-                <span><strong>Auto-wrap sessions</strong><small>Checkpoint before compaction and on exit. Projects are never created or assigned automatically.</small></span>
+                <span><strong>Auto-wrap linked project sessions</strong><small>Use as the default for sessions you deliberately link. Unassigned sessions remain manual.</small></span>
                 <input id="autoWrapToggle" type="checkbox">
               </label>
             </div>
@@ -160,7 +161,7 @@
         <span class="update-icon" aria-hidden="true">✓</span>
         <div>
           <strong>Automatically preserve session continuity?</strong>
-          <span>SHAM can checkpoint before compaction and on exit. It will never create or assign projects automatically.</span>
+          <span>SHAM can auto-wrap sessions you deliberately link to projects. Unassigned sessions remain manual.</span>
         </div>
         <button id="enableAutoWrap" class="button primary">Enable auto-wrap</button>
         <button id="declineAutoWrap" class="button quiet">Not now</button>
@@ -514,6 +515,7 @@
       <div class="project-link-controls">
         <label for="projectLinkSelect">Existing project</label>
         <select id="projectLinkSelect"></select>
+        <label class="project-auto-wrap-choice"><input id="projectAutoWrapChoice" type="checkbox"> Auto-wrap this session before compaction and on exit</label>
         <button id="linkProjectButton" type="button" class="button secondary">Link session</button>
         <button id="unlinkProjectButton" type="button" class="button quiet hidden">Move to Unassigned</button>
       </div>

@@ -146,6 +146,7 @@ ensureColumn("sessions", "checkpointed_at", "INTEGER");
 ensureColumn("sessions", "auto_checkpointed_at", "INTEGER");
 ensureColumn("sessions", "auto_checkpoint_trigger", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "provider_checkpoint_synced_at", "INTEGER");
+ensureColumn("sessions", "auto_wrap_mode", "TEXT NOT NULL DEFAULT 'inherit'");
 db.exec("UPDATE sessions SET external_id = id WHERE external_id = ''");
 ensureColumn("tasks", "status", "TEXT NOT NULL DEFAULT 'next'");
 db.exec("UPDATE tasks SET status = CASE WHEN completed = 1 THEN 'done' ELSE 'next' END WHERE status IS NULL OR status = ''");
@@ -773,6 +774,9 @@ function getProjects(url, response) {
 function createProject(data, response) {
   const title = cleanText(data.title, 120);
   if (!title) return json(response, 400, { error: "Project title is required" });
+  if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
+    return json(response, 400, { error: "autoWrap must be true or false" });
+  }
   const sessionId = cleanText(data.sessionId, 300);
   const session = sessionId ? db.prepare("SELECT * FROM sessions WHERE id = ? AND archived = 0").get(sessionId) : null;
   if (sessionId && !session) return json(response, 404, { error: "Session not found" });
@@ -794,7 +798,10 @@ function createProject(data, response) {
       INSERT INTO projects(id, title, description, status, repository, cwd, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(project.id, project.title, project.description, project.status, project.repository, project.cwd, now, now);
-    if (session) db.prepare("UPDATE sessions SET project_id = ? WHERE id = ?").run(id, session.id);
+    if (session) {
+      const autoWrapMode = typeof data.autoWrap === "boolean" ? (data.autoWrap ? "on" : "off") : session.auto_wrap_mode;
+      db.prepare("UPDATE sessions SET project_id = ?, auto_wrap_mode = ? WHERE id = ?").run(id, autoWrapMode, session.id);
+    }
     db.exec("COMMIT");
   } catch (error) {
     db.exec("ROLLBACK");
@@ -859,10 +866,15 @@ function linkProjectSession(projectId, data, response) {
   const sessionId = cleanText(data.sessionId, 300);
   const session = db.prepare("SELECT * FROM sessions WHERE id = ? AND archived = 0").get(sessionId);
   if (!session) return json(response, 404, { error: "Session not found" });
+  if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
+    return json(response, 400, { error: "autoWrap must be true or false" });
+  }
   const now = Date.now();
   db.exec("BEGIN");
   try {
-    db.prepare("UPDATE sessions SET project_id = ?, updated_at = ? WHERE id = ?").run(projectId, now, sessionId);
+    const autoWrapMode = typeof data.autoWrap === "boolean" ? (data.autoWrap ? "on" : "off") : session.auto_wrap_mode;
+    db.prepare("UPDATE sessions SET project_id = ?, auto_wrap_mode = ?, updated_at = ? WHERE id = ?")
+      .run(projectId, autoWrapMode, now, sessionId);
     db.prepare(`
       UPDATE projects SET
         repository = CASE WHEN repository = '' THEN ? ELSE repository END,
@@ -992,7 +1004,7 @@ function handleHook(provider, eventName, payload, response) {
 
   if (provider === "copilot" && ["agentStop", "preCompact", "sessionEnd"].includes(eventName)) syncSessionFiles(id);
   let autoWrapped = false;
-  if (readAutoWrapSettings().enabled) {
+  if (autoWrapEnabledForSession(id)) {
     if (provider === "copilot" && ["preCompact", "agentStop"].includes(eventName)) {
       autoWrapped = syncCopilotGeneratedCheckpoint(id, timestamp);
     }
@@ -1196,6 +1208,13 @@ function readAutoWrapSettings() {
   }
 }
 
+function autoWrapEnabledForSession(id) {
+  const session = db.prepare("SELECT project_id, auto_wrap_mode FROM sessions WHERE id = ?").get(id);
+  if (!session || session.auto_wrap_mode === "off") return false;
+  if (session.auto_wrap_mode === "on") return true;
+  return Boolean(session.project_id && readAutoWrapSettings().enabled);
+}
+
 function getSettings(response) {
   json(response, 200, { autoWrap: readAutoWrapSettings() });
 }
@@ -1250,8 +1269,12 @@ function updateSession(id, data, response) {
     archived: ["archived", (value) => value ? 1 : 0],
     needsReview: ["needs_review", (value) => value ? 1 : 0],
     status: ["status", (value) => ["active", "paused", "complete"].includes(value) ? value : "paused"],
-    isProject: ["is_project", (value) => value ? 1 : 0]
+    isProject: ["is_project", (value) => value ? 1 : 0],
+    autoWrap: ["auto_wrap_mode", (value) => value ? "on" : "off"]
   };
+  if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
+    return json(response, 400, { error: "autoWrap must be true or false" });
+  }
   const updates = [];
   const values = [];
   for (const [key, value] of Object.entries(data)) {
@@ -1628,6 +1651,9 @@ function sessionRecord(row) {
     checkpointedAt: row.checkpointed_at,
     autoCheckpointTrigger: row.auto_checkpoint_trigger || "",
     autoCheckpointedAt: row.auto_checkpointed_at,
+    autoWrapMode: row.auto_wrap_mode || "inherit",
+    autoWrapEnabled: row.auto_wrap_mode === "on" ||
+      (row.auto_wrap_mode !== "off" && Boolean(row.project_id) && readAutoWrapSettings().enabled),
     imported: Boolean(row.imported),
     isProject: Boolean(row.is_project),
     projectId: row.project_id || "",

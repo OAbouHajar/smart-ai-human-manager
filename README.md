@@ -116,7 +116,7 @@ Smart Human-AI Manager uses documented lifecycle hooks rather than unstable prov
 1. Start or resume a supported AI CLI session.
 2. Run `/sham:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
 3. Work normally while Smart Human-AI Manager tracks lifecycle events.
-4. Choose whether to enable auto-wrap when the dashboard asks. It is off until you consent. Use **wrap this session** or `/sham:wrap` whenever you want a richer, intentional handoff.
+4. When linking a session to a project, choose whether that session should auto-wrap. Unassigned sessions stay manual unless you enable them individually. Use **wrap this session** or `/sham:wrap` whenever you want a richer, intentional handoff.
 5. Review project progress, tasks, effort, blockers, and the recommended next action in the dashboard.
 6. Resume the right session when you are ready to continue.
 
@@ -178,7 +178,7 @@ Local SQLite continuity store
 Searchable browser dashboard
 ```
 
-Hooks record lifecycle events and provide the assistant with the local checkpoint endpoint. If you explicitly enable auto-wrap, SHAM checkpoints on context compaction and uses session exit as a fallback. When Copilot exposes a generated checkpoint, SHAM synchronizes its summary into the automatic wrap. Manual wraps remain authoritative and can enrich or replace automatic continuity data. SHAM never creates or assigns projects automatically.
+Hooks record lifecycle events and provide the assistant with the local checkpoint endpoint. Auto-wrap can be enabled for an individual session when you link it to a project or from its session menu. The global preference is only a default for deliberately linked project sessions; it never auto-wraps every unassigned session. When Copilot exposes a generated checkpoint, SHAM synchronizes its summary into the automatic wrap. Manual wraps remain authoritative. SHAM never creates or assigns projects automatically.
 
 ## Data and privacy
 

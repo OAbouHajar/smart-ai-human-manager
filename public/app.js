@@ -619,6 +619,8 @@ function renderDetail() {
   pinButton.textContent = session.pinned ? "Unstar session" : "Star session";
   const archiveButton = elements.moreMenu.querySelector('[data-action="archive"]');
   archiveButton.textContent = session.archived ? "Restore session" : "Archive session";
+  const autoWrapButton = elements.moreMenu.querySelector('[data-action="auto-wrap"]');
+  autoWrapButton.textContent = session.autoWrapEnabled ? "Disable auto-wrap" : "Enable auto-wrap";
 }
 
 function renderFiles() {
@@ -1317,6 +1319,13 @@ async function action(name) {
     await api(`/api/sessions/${encodeURIComponent(state.selected.id)}`, { method: "PATCH", body: { archived: !state.selected.archived } });
     toast(state.selected.archived ? "Session restored" : "Session archived");
     await refresh({ preserveSelection: false });
+  } else if (name === "auto-wrap") {
+    await api(`/api/sessions/${encodeURIComponent(state.selected.id)}`, {
+      method: "PATCH",
+      body: { autoWrap: !state.selected.autoWrapEnabled }
+    });
+    toast(state.selected.autoWrapEnabled ? "Auto-wrap disabled for this session" : "Auto-wrap enabled for this session");
+    await selectSession(state.selected.id);
   } else if (name === "folder") {
     await api(`/api/sessions/${encodeURIComponent(state.selected.id)}/folder`, { method: "POST" });
     toast("Opened working directory");
@@ -1365,6 +1374,10 @@ async function openProjectDialog(sessionId = "") {
   elements.linkProjectButton.disabled = !projects.length;
   elements.linkProjectButton.textContent = session?.projectId ? "Move session" : "Link session";
   elements.unlinkProjectButton.classList.toggle("hidden", !session?.projectId);
+  elements.projectAutoWrapChoice.checked = session?.autoWrapMode === "inherit"
+    ? state.settings?.autoWrap?.enabled === true
+    : Boolean(session?.autoWrapEnabled);
+  elements.projectAutoWrapChoice.closest("label").classList.toggle("hidden", !session);
   elements.newProjectTitle.value = "";
   elements.newProjectDescription.value = "";
   elements.projectDialog.classList.remove("hidden");
@@ -1385,7 +1398,8 @@ async function createProjectFromDialog(event) {
     body: {
       title: elements.newProjectTitle.value,
       description: elements.newProjectDescription.value,
-      sessionId: state.projectDialogSessionId || undefined
+      sessionId: state.projectDialogSessionId || undefined,
+      autoWrap: state.projectDialogSessionId ? elements.projectAutoWrapChoice.checked : undefined
     }
   });
   state.projectFilter = "active";
@@ -1406,7 +1420,7 @@ async function linkProjectFromDialog() {
   if (!projectId || !sessionId) return;
   await api(`/api/projects/${encodeURIComponent(projectId)}/sessions`, {
     method: "POST",
-    body: { sessionId }
+    body: { sessionId, autoWrap: elements.projectAutoWrapChoice.checked }
   });
   state.projectFilter = "active";
   localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
