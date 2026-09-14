@@ -881,7 +881,11 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Find a project or session/);
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
-  assert.match(html, /Where the project stands/);
+  assert.match(html, /What changed and what needs attention/);
+  assert.match(html, /This project is private to this machine/);
+  assert.match(html, /Shared projects synchronize this board|This board is private until you explicitly share the project/);
+  assert.doesNotMatch(html, /data-project-tab="board"/);
+  assert.match(html, /id="projectBoardPanel" class="project-board-section"/);
   assert.match(html, /Context Workspace updates this project only when the session is linked/);
   assert.match(html, /Unassigned sessions/);
   assert.match(html, /id="projectDialog"/);
