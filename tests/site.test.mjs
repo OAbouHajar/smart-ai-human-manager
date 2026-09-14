@@ -28,7 +28,7 @@ test("landing page presents the project and AI-first installation path", async (
   assert.match(html, /OpenAI Codex/);
   assert.match(html, /Google Gemini/);
   assert.match(html, /screenshots\/board-screenshot\.png/);
-  assert.match(html, /assets\/context-workspace-mark\.svg/);
+  assert.match(html, /assets\/context-workspace-logo\.png/);
   assert.match(html, /Existing `\/sham:\*` commands remain available/);
   assert.match(script, /copyHeroPrompt/);
   assert.match(script, /copyPrompt/);
@@ -36,7 +36,7 @@ test("landing page presents the project and AI-first installation path", async (
   assert.match(workflow, /actions\/deploy-pages@v4/);
   assert.match(workflow, /questions-screenshot\.png/);
   assert.match(workflow, /board-screenshot\.png/);
-  assert.match(workflow, /context-workspace-mark\.svg/);
+  assert.match(workflow, /context-workspace-logo\.png/);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/);
 });
 

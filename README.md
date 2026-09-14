@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/context-workspace-mark.svg" alt="" width="96">
+  <img src="public/context-workspace-logo.png" alt="" width="112">
 </p>
 
 <h1 align="center">Context Workspace</h1>

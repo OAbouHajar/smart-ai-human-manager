@@ -866,7 +866,7 @@ test("static UI presents explicit projects first and preserves session tools", a
     readFile(join(root, "commands", "review.md"), "utf8"),
     readFile(join(root, "commands", "retro.md"), "utf8"),
     readFile(join(root, "docs", "copilot-install-prompt.md"), "utf8"),
-    readFile(join(root, "public", "context-workspace-mark.svg"), "utf8")
+    readFile(join(root, "public", "context-workspace-logo.png"))
   ]);
   const commandNames = [
     "wrap", "handoff", "reopen", "project", "project-share", "project-push", "project-pull",
@@ -874,9 +874,9 @@ test("static UI presents explicit projects first and preserves session tools", a
   ];
   const shamCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
   assert.match(html, /<strong>Context Workspace<\/strong>/);
-  assert.match(html, /<link rel="icon" href="\/context-workspace-mark\.svg"/);
-  assert.match(html, /<img src="\/context-workspace-mark\.svg" alt="">/);
-  assert.match(logoMark, /<svg[\s\S]*Context Workspace/);
+  assert.match(html, /<link rel="icon" href="\/context-workspace-logo\.png"/);
+  assert.match(html, /<img src="\/context-workspace-logo\.png" alt="">/);
+  assert.deepEqual([...logoMark.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
   assert.match(html, /Where AI sessions become shared work/);
   assert.match(html, /Find a project or session/);
   assert.match(html, /Task, project, folder, or file/);
@@ -1021,8 +1021,8 @@ test("returns anti-framing headers on UI and API responses", async () => {
       assert.equal(response.headers.get("content-security-policy"), "frame-ancestors 'none'");
       if (path === "/") assert.equal(response.headers.get("cache-control"), "no-cache");
     }
-    const logo = await fetch(`${server.baseUrl}/context-workspace-mark.svg`);
-    assert.equal(logo.headers.get("content-type"), "image/svg+xml");
+    const logo = await fetch(`${server.baseUrl}/context-workspace-logo.png`);
+    assert.equal(logo.headers.get("content-type"), "image/png");
   } finally {
     await stopServer(server, fixture);
   }
