@@ -1817,13 +1817,16 @@ function resolveExecutable(command) {
 function copilotPluginConfigured(executable) {
   if (!executable) return false;
   try {
-    const plugins = execFileSync(executable, ["plugin", "list"], {
+    const command = process.platform === "win32" && executable.toLowerCase().endsWith(".ps1")
+      ? ["pwsh.exe", ["-NoProfile", "-File", executable, "plugin", "list"]]
+      : [executable, ["plugin", "list"]];
+    const plugins = execFileSync(command[0], command[1], {
       encoding: "utf8",
       timeout: 3000,
       windowsHide: true,
       stdio: ["ignore", "pipe", "ignore"]
     });
-    return plugins.includes("sham@context-workspace");
+    return plugins.includes("cw@context-workspace") || plugins.includes("sham@context-workspace");
   } catch {
     return false;
   }
