@@ -6,7 +6,7 @@ on:
     paths:
       - ".github/workflows/pages.yml"
       - "site/**"
-      - "public/logo-mark.png"
+      - "public/context-workspace-mark.svg"
       - "screenshots/**"
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
         run: |
           mkdir -p _site/assets _site/screenshots
           cp site/index.html site/styles.css site/app.js _site/
-          cp public/logo-mark.png _site/assets/
+          cp public/context-workspace-mark.svg _site/assets/
           cp screenshots/sessions-screenshot.png _site/screenshots/
           cp screenshots/questions-screenshot.png _site/screenshots/
           cp screenshots/board-screenshot.png _site/screenshots/

@@ -1,11 +1,11 @@
 ---
-description: Control automatic wrapping for the current Smart Human-AI Manager session
+description: Control automatic wrapping for the current Context Workspace session
 ---
 
 Control auto-wrap for the current tracked session. Supported arguments are `on`, `off`, `status`, and `default`.
 
-1. Find the SHAM session ID and dashboard URL in the session-start context.
-2. Read the argument immediately following `/sham:auto-wrap`, case-insensitively.
+1. Find the Context Workspace session ID and dashboard URL in the session-start context.
+2. Read the argument immediately following `/cw:auto-wrap`, case-insensitively.
 3. GET `/api/sessions/{sessionId}`. Stop clearly if the tracked session does not exist.
 4. Perform the requested operation:
    - **`on`:** PATCH `/api/sessions/{sessionId}` with `{ "autoWrapMode": "on" }`.

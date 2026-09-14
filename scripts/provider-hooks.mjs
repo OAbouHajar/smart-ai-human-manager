@@ -90,7 +90,7 @@ function providerHandler(provider, eventName, nodePath, hookPath) {
     timeout: provider === "gemini" ? 8000 : 8
   };
   if (provider === "gemini") {
-    handler.name = "Smart Human-AI Manager";
+    handler.name = "Context Workspace";
     handler.description = "Track local AI CLI session continuity";
   }
   return handler;
@@ -138,7 +138,7 @@ async function readConfig(path) {
 
 async function writeConfig(path, value) {
   await mkdir(dirname(path), { recursive: true });
-  const temporaryPath = `${path}.smart-ai-human-manager.tmp`;
+  const temporaryPath = `${path}.context-workspace.tmp`;
   await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await rename(temporaryPath, path);
 }

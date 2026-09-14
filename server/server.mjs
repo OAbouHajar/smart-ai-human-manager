@@ -14,14 +14,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = join(root, "public");
 const packageMetadata = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const appVersion = packageMetadata.version;
-const port = Number(process.env.COPILOT_SESSION_HUB_PORT) || 43120;
+const port = Number(environmentValue("CONTEXT_WORKSPACE_PORT", "COPILOT_SESSION_HUB_PORT")) || 43120;
 const baseUrl = `http://127.0.0.1:${port}`;
 const antiFramingHeaders = {
   "content-security-policy": "frame-ancestors 'none'",
   "x-frame-options": "DENY"
 };
-const dataDir = process.env.COPILOT_SESSION_HUB_DATA || defaultDataDir();
-const historyPath = process.env.COPILOT_SESSION_HUB_HISTORY_DB || join(homedir(), ".copilot", "session-store.db");
+const dataDir = environmentValue("CONTEXT_WORKSPACE_DATA", "COPILOT_SESSION_HUB_DATA") || defaultDataDir();
+const historyPath = environmentValue("CONTEXT_WORKSPACE_HISTORY_DB", "COPILOT_SESSION_HUB_HISTORY_DB") ||
+  join(homedir(), ".copilot", "session-store.db");
 const updateJobDir = join(dataDir, "update");
 const updateJobConfigPath = join(updateJobDir, "job.json");
 const updateJobStatusPath = join(updateJobDir, "status.json");
@@ -125,7 +126,19 @@ ensureColumn("sessions", "context_tier", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "metrics_at", "INTEGER");
 ensureColumn("sessions", "initial_question", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("projects", "starred", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("projects", "ticket_prefix", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("projects", "share_remote", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("projects", "share_branch", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("projects", "share_path", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("projects", "shared_at", "INTEGER");
+ensureColumn("projects", "share_pushed_at", "INTEGER");
+ensureColumn("projects", "share_pulled_at", "INTEGER");
+ensureColumn("projects", "share_revision", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("tasks", "project_id", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "ticket_id", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "description", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "owner", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "updated_at", "INTEGER");
 ensureColumn("work_items", "project_id", "TEXT NOT NULL DEFAULT ''");
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id, position);
@@ -156,6 +169,7 @@ if (aicUnitVersion !== "2") {
   db.prepare("INSERT OR REPLACE INTO app_metadata(key, value) VALUES ('aic_unit_version', '2')").run();
 }
 migrateLegacyProjects();
+initializeProjectTicketPrefixes();
 
 function migrateLegacyProjects() {
   const legacySessions = db.prepare("SELECT * FROM sessions WHERE is_project = 1 AND project_id = ''").all();
@@ -188,6 +202,13 @@ function migrateLegacyProjects() {
   }
 }
 
+function initializeProjectTicketPrefixes() {
+  const update = db.prepare("UPDATE projects SET ticket_prefix = ? WHERE id = ?");
+  for (const project of db.prepare("SELECT id, title FROM projects WHERE ticket_prefix = ''").all()) {
+    update.run(deriveTicketPrefix(project.title), project.id);
+  }
+}
+
 function writeJsonAtomicSync(path, value) {
   const temporaryPath = `${path}.tmp`;
   writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -196,9 +217,9 @@ function writeJsonAtomicSync(path, value) {
 
 const updateChecker = createUpdateChecker({
   currentVersion: appVersion,
-  releaseUrl: process.env.COPILOT_SESSION_HUB_RELEASES_URL ||
+  releaseUrl: environmentValue("CONTEXT_WORKSPACE_RELEASES_URL", "COPILOT_SESSION_HUB_RELEASES_URL") ||
     "https://api.github.com/repos/OAbouHajar/smart-ai-human-manager/releases/latest",
-  enabled: process.env.COPILOT_SESSION_HUB_UPDATE_CHECK !== "0",
+  enabled: environmentValue("CONTEXT_WORKSPACE_UPDATE_CHECK", "COPILOT_SESSION_HUB_UPDATE_CHECK") !== "0",
   readCache: () => readUpdateCache(),
   writeCache: (status) => db.prepare(
     "INSERT OR REPLACE INTO app_metadata(key, value) VALUES ('update_status', ?)"
@@ -208,7 +229,7 @@ let lastUpdateError = "";
 let updateInstallScheduling = false;
 const clients = new Set();
 await replayPendingEvents();
-const initialImport = process.env.COPILOT_SESSION_HUB_IMPORT_HISTORY === "0"
+const initialImport = environmentValue("CONTEXT_WORKSPACE_IMPORT_HISTORY", "COPILOT_SESSION_HUB_IMPORT_HISTORY") === "0"
   ? { imported: 0 }
   : importHistory();
 if (initialImport.imported) {
@@ -304,7 +325,7 @@ async function prepareUpdateInstall(data, response) {
   if (!update.enabled) return json(response, 409, { error: "Automatic update checks are disabled." });
   if (update.error) return json(response, 502, { error: update.error });
   if (!update.updateAvailable) {
-    return json(response, 409, { error: `Smart Human-AI Manager ${appVersion} is already up to date.` });
+    return json(response, 409, { error: `Context Workspace ${appVersion} is already up to date.` });
   }
   if (!/^\d+\.\d+\.\d+$/.test(update.latestVersion || "")) {
     return json(response, 502, { error: "The release version is invalid." });
@@ -342,7 +363,7 @@ async function prepareUpdateInstall(data, response) {
     await writeFile(updateJobSignalPath, `${Date.now()}\n`, "utf8");
   }
 
-  const runner = process.env.COPILOT_SESSION_HUB_UPDATE_RUNNER ||
+  const runner = environmentValue("CONTEXT_WORKSPACE_UPDATE_RUNNER", "COPILOT_SESSION_HUB_UPDATE_RUNNER") ||
     join(root, "scripts", "update-runner.mjs");
   launchUpdateRunner(runner);
   json(response, 202, { ok: true, job });
@@ -363,7 +384,7 @@ async function writeJsonAtomic(path, value) {
   await rename(temporaryPath, path);
 }
 
-function launchUpdateRunner(runner = process.env.COPILOT_SESSION_HUB_UPDATE_RUNNER ||
+function launchUpdateRunner(runner = environmentValue("CONTEXT_WORKSPACE_UPDATE_RUNNER", "COPILOT_SESSION_HUB_UPDATE_RUNNER") ||
   join(root, "scripts", "update-runner.mjs")) {
   const child = spawn(process.execPath, [runner, updateJobConfigPath], {
     cwd: root,
@@ -482,6 +503,9 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === "/api/board" && request.method === "GET") return getBoard(url, response);
     if (url.pathname === "/api/projects" && request.method === "GET") return getProjects(url, response);
     if (url.pathname === "/api/projects" && request.method === "POST") return createProject(await body(request), response);
+    if (url.pathname === "/api/shared-projects/import" && request.method === "POST") {
+      return importSharedProject(await body(request), response);
+    }
     if (url.pathname === "/api/project-suggestions" && request.method === "GET") return getProjectSuggestions(url, response);
     if (url.pathname === "/api/import-history" && request.method === "POST") {
       const result = importHistory();
@@ -508,7 +532,7 @@ const server = http.createServer(async (request, response) => {
       if (action === "folder" && request.method === "POST") return openFolder(id, response);
     }
 
-    const projectMatch = url.pathname.match(/^\/api\/projects\/([^/]+)(?:\/(sessions|tasks|work-items)(?:\/([^/]+))?)?$/);
+    const projectMatch = url.pathname.match(/^\/api\/projects\/([^/]+)(?:\/(sessions|tasks|work-items|share)(?:\/([^/]+))?)?$/);
     if (projectMatch) {
       const projectId = decodeURIComponent(projectMatch[1]);
       const action = projectMatch[2];
@@ -523,6 +547,10 @@ const server = http.createServer(async (request, response) => {
       if (action === "tasks" && request.method === "POST") return addProjectTask(projectId, await body(request), response);
       if (action === "work-items" && request.method === "POST") {
         return addProjectWorkItem(projectId, await body(request), response);
+      }
+      if (action === "share" && request.method === "GET") return exportSharedProject(projectId, response);
+      if (action === "share" && request.method === "PATCH") {
+        return updateProjectShare(projectId, await body(request), response);
       }
     }
 
@@ -545,7 +573,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`Smart Human-AI Manager: ${baseUrl}`);
+  console.log(`Context Workspace: ${baseUrl}`);
   resumePendingUpdate();
 });
 
@@ -687,6 +715,7 @@ function getBoard(url, response) {
     }
   }
   if (!projectRow) return json(response, 404, { error: "Project workspace not found" });
+  ensureProjectTicketIds(projectRow.id);
   const sessionRows = projectSessionRows(projectRow.id);
   const sessionIds = sessionRows.map((session) => session.id);
   const placeholders = sessionIds.map(() => "?").join(", ");
@@ -741,11 +770,13 @@ function getBoard(url, response) {
 
 function getProjects(url, response) {
   const filter = url.searchParams.get("filter") || "active";
-  if (!["active", "archived", "all"].includes(filter)) {
+  if (!["active", "shared", "archived", "all"].includes(filter)) {
     return json(response, 400, { error: "Invalid project filter" });
   }
   const statusWhere = filter === "archived"
     ? "p.status = 'archived'"
+    : filter === "shared"
+      ? "p.status <> 'archived' AND p.share_branch <> ''"
     : filter === "all"
       ? "1 = 1"
       : "p.status <> 'archived'";
@@ -771,6 +802,232 @@ function getProjects(url, response) {
   json(response, 200, rows);
 }
 
+function exportSharedProject(projectId, response) {
+  const project = db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId);
+  if (!project) return json(response, 404, { error: "Project not found" });
+  ensureProjectTicketIds(projectId);
+  const sessions = projectSessionRows(projectId);
+  const sessionIds = sessions.map((session) => session.id);
+  const placeholders = sessionIds.map(() => "?").join(", ");
+  const tickets = db.prepare(`
+    SELECT t.*
+    FROM tasks t
+    LEFT JOIN sessions s ON s.id = t.session_id
+    WHERE t.project_id = ?
+      ${sessionIds.length ? `OR (t.project_id = '' AND s.id IN (${placeholders}))` : ""}
+    ORDER BY t.position, t.id
+  `).all(projectId, ...sessionIds).map((task) => ({
+    ticketId: task.ticket_id,
+    title: cleanText(task.text, 500),
+    description: cleanText(task.description, 1000),
+    status: normalizeTaskStatus(task.status),
+    owner: cleanText(task.owner, 120),
+    updatedAt: task.updated_at || task.created_at
+  }));
+  json(response, 200, {
+    schemaVersion: 1,
+    revision: project.updated_at,
+    project: {
+      id: project.id,
+      title: cleanText(project.title, 120),
+      description: cleanText(project.description, 1000),
+      status: project.status === "complete" ? "complete" : "active",
+      ticketPrefix: project.ticket_prefix || deriveTicketPrefix(project.title)
+    },
+    tickets
+  });
+}
+
+function updateProjectShare(projectId, data, response) {
+  const project = db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId);
+  if (!project) return json(response, 404, { error: "Project not found" });
+  const remote = cleanText(data.remote, 80);
+  const branch = cleanText(data.branch, 240);
+  const path = cleanText(data.path, 500);
+  if (!remote || !/^[A-Za-z0-9._-]+$/.test(remote)) {
+    return json(response, 400, { error: "A valid Git remote name is required" });
+  }
+  if (
+    !branch || branch.startsWith("-") || branch.includes("..") || branch.includes("\\") ||
+    /[\s~^:?*\[]/.test(branch)
+  ) {
+    return json(response, 400, { error: "A valid Git branch name is required" });
+  }
+  if (!path || isAbsolute(path) || normalize(path).startsWith("..")) {
+    return json(response, 400, { error: "A repository-relative share path is required" });
+  }
+  const now = Date.now();
+  const pushedAt = Number(data.pushedAt) || project.share_pushed_at || null;
+  const pulledAt = Number(data.pulledAt) || project.share_pulled_at || null;
+  const revision = Math.max(Number(data.revision) || 0, Number(project.share_revision) || 0);
+  db.prepare(`
+    UPDATE projects SET
+      share_remote = ?, share_branch = ?, share_path = ?,
+      shared_at = COALESCE(shared_at, ?), share_pushed_at = ?, share_pulled_at = ?,
+      share_revision = ?
+    WHERE id = ?
+  `).run(remote, branch, path, now, pushedAt, pulledAt, revision, projectId);
+  broadcast("sessions-changed", { id: projectId, eventName: "project-sharing-updated" });
+  json(response, 200, projectRecord(db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId)));
+}
+
+function importSharedProject(data, response) {
+  const snapshot = data?.snapshot;
+  if (!snapshot || snapshot.schemaVersion !== 1 || !snapshot.project || !Array.isArray(snapshot.tickets)) {
+    return json(response, 400, { error: "Invalid shared project document" });
+  }
+  if (snapshot.tickets.length > 2000) {
+    return json(response, 400, { error: "Shared project contains too many tickets" });
+  }
+  const projectId = cleanText(snapshot.project.id, 100);
+  const title = cleanText(snapshot.project.title, 120);
+  if (!/^[A-Za-z0-9._-]+$/.test(projectId) || projectId.includes("..") || !title) {
+    return json(response, 400, { error: "Shared project ID and title are required" });
+  }
+  const remote = cleanText(data.remote || "origin", 80);
+  const branch = cleanText(data.branch || "context-workspace/shared-projects", 240);
+  const path = cleanText(data.path || `projects/${projectId}/project.json`, 500);
+  if (!/^[A-Za-z0-9._-]+$/.test(remote)) {
+    return json(response, 400, { error: "Invalid shared project remote" });
+  }
+  if (
+    !branch || branch.startsWith("-") || branch.includes("..") || branch.includes("\\") ||
+    /[\s~^:?*\[]/.test(branch)
+  ) {
+    return json(response, 400, { error: "Invalid shared project branch" });
+  }
+  if (!path || isAbsolute(path) || normalize(path).startsWith("..")) {
+    return json(response, 400, { error: "Invalid shared project path" });
+  }
+  const revision = Number(snapshot.revision) || 0;
+  const existing = db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId);
+  if (existing && revision && revision < Number(existing.share_revision || 0)) {
+    return json(response, 409, { error: "Shared project document is older than the local copy" });
+  }
+  if (existing && revision && revision === Number(existing.share_revision || 0)) {
+    const now = Date.now();
+    db.prepare(`
+      UPDATE projects SET
+        share_remote = ?, share_branch = ?, share_path = ?,
+        shared_at = COALESCE(shared_at, ?), share_pulled_at = ?
+      WHERE id = ?
+    `).run(remote, branch, path, now, now, projectId);
+    return json(response, 200, {
+      ok: true,
+      unchanged: true,
+      project: projectRecord(db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId))
+    });
+  }
+  const lastSyncAt = existing
+    ? Math.max(Number(existing.share_pushed_at) || 0, Number(existing.share_pulled_at) || 0)
+    : 0;
+  if (
+    existing && lastSyncAt && existing.updated_at > lastSyncAt &&
+    revision > Number(existing.share_revision || 0)
+  ) {
+    return json(response, 409, {
+      error: "Local project changes must be pushed or reconciled before pulling newer shared work",
+      code: "SHARED_PROJECT_LOCAL_CHANGES"
+    });
+  }
+  const now = Date.now();
+  const prefix = normalizeTicketPrefix(snapshot.project.ticketPrefix) || deriveTicketPrefix(title);
+  const description = cleanText(snapshot.project.description, 1000);
+  const status = snapshot.project.status === "complete" ? "complete" : "active";
+  const syntheticSessionId = `shared-project:${projectId}`;
+  db.exec("BEGIN");
+  try {
+    if (existing) {
+      db.prepare(`
+        UPDATE projects SET
+          title = ?, description = ?, status = ?, ticket_prefix = ?,
+          share_remote = ?, share_branch = ?, share_path = ?,
+          shared_at = COALESCE(shared_at, ?), share_pulled_at = ?, share_revision = ?,
+          updated_at = MAX(updated_at, ?)
+        WHERE id = ?
+      `).run(
+        title, description, status, prefix, remote, branch, path,
+        now, now, revision, revision || now, projectId
+      );
+    } else {
+      db.prepare(`
+        INSERT INTO projects(
+          id, title, description, status, ticket_prefix, repository, cwd,
+          created_at, updated_at, share_remote, share_branch, share_path,
+          shared_at, share_pulled_at, share_revision
+        ) VALUES (?, ?, ?, ?, ?, '', '', ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        projectId, title, description, status, prefix, now, revision || now,
+        remote, branch, path, now, now, revision
+      );
+    }
+    const synthetic = db.prepare("SELECT id FROM sessions WHERE id = ?").get(syntheticSessionId);
+    if (!synthetic) {
+      db.prepare(`
+        INSERT INTO sessions(
+          id, external_id, provider, title, summary, source, status,
+          started_at, updated_at, ended_at, needs_review, project_id
+        ) VALUES (?, ?, 'shared', ?, ?, 'shared-project', 'paused', ?, ?, ?, 0, ?)
+      `).run(
+        syntheticSessionId, syntheticSessionId, `Shared board · ${title}`,
+        "Imported shared project state.", now, now, now, projectId
+      );
+    }
+    const selectTask = db.prepare("SELECT * FROM tasks WHERE project_id = ? AND ticket_id = ? ORDER BY id LIMIT 1");
+    const insertTask = db.prepare(`
+      INSERT INTO tasks(
+        session_id, project_id, ticket_id, text, description, owner,
+        completed, position, created_at, updated_at, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const updateTaskStatement = db.prepare(`
+      UPDATE tasks SET text = ?, description = ?, owner = ?, completed = ?, position = ?, updated_at = ?, status = ?
+      WHERE id = ?
+    `);
+    const sharedTicketIds = [];
+    snapshot.tickets.forEach((ticket, position) => {
+      const ticketId = cleanText(ticket.ticketId, 40);
+      const ticketTitle = cleanText(ticket.title, 500);
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/.test(ticketId) || !ticketTitle) return;
+      sharedTicketIds.push(ticketId);
+      const ticketDescription = cleanText(ticket.description, 1000);
+      const owner = cleanText(ticket.owner, 120);
+      const ticketStatus = normalizeTaskStatus(ticket.status);
+      const updatedAt = Number(ticket.updatedAt) || revision || now;
+      const row = selectTask.get(projectId, ticketId);
+      if (row) {
+        updateTaskStatement.run(
+          ticketTitle, ticketDescription, owner, ticketStatus === "done" ? 1 : 0,
+          position, updatedAt, ticketStatus, row.id
+        );
+      } else {
+        insertTask.run(
+          syntheticSessionId, projectId, ticketId, ticketTitle, ticketDescription, owner,
+          ticketStatus === "done" ? 1 : 0, position, updatedAt, updatedAt, ticketStatus
+        );
+      }
+    });
+    if (sharedTicketIds.length) {
+      const placeholders = sharedTicketIds.map(() => "?").join(", ");
+      db.prepare(`
+        DELETE FROM tasks
+        WHERE project_id = ? AND ticket_id NOT IN (${placeholders})
+      `).run(projectId, ...sharedTicketIds);
+    } else {
+      db.prepare("DELETE FROM tasks WHERE project_id = ?").run(projectId);
+    }
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+  broadcast("sessions-changed", { id: projectId, eventName: "shared-project-imported" });
+  json(response, existing ? 200 : 201, {
+    ok: true,
+    project: projectRecord(db.prepare("SELECT * FROM projects WHERE id = ?").get(projectId))
+  });
+}
+
 function createProject(data, response) {
   const title = cleanText(data.title, 120);
   if (!title) return json(response, 400, { error: "Project title is required" });
@@ -787,6 +1044,7 @@ function createProject(data, response) {
     title,
     description: cleanText(data.description, 1000),
     status: "active",
+    ticket_prefix: deriveTicketPrefix(title),
     repository: session?.repository || "",
     cwd: session?.cwd || "",
     created_at: now,
@@ -795,9 +1053,12 @@ function createProject(data, response) {
   db.exec("BEGIN");
   try {
     db.prepare(`
-      INSERT INTO projects(id, title, description, status, repository, cwd, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(project.id, project.title, project.description, project.status, project.repository, project.cwd, now, now);
+      INSERT INTO projects(id, title, description, status, ticket_prefix, repository, cwd, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      project.id, project.title, project.description, project.status, project.ticket_prefix,
+      project.repository, project.cwd, now, now
+    );
     if (session) {
       const autoWrapMode = typeof data.autoWrap === "boolean" ? (data.autoWrap ? "on" : "off") : session.auto_wrap_mode;
       db.prepare("UPDATE sessions SET project_id = ?, auto_wrap_mode = ? WHERE id = ?").run(id, autoWrapMode, session.id);
@@ -825,6 +1086,12 @@ function updateProject(id, data, response) {
   if (data.description !== undefined) {
     updates.push("description = ?");
     values.push(cleanText(data.description, 1000));
+  }
+  if (data.ticketPrefix !== undefined) {
+    const prefix = normalizeTicketPrefix(data.ticketPrefix);
+    if (!prefix) return json(response, 400, { error: "Ticket prefix must contain 2 to 8 letters or numbers" });
+    updates.push("ticket_prefix = ?");
+    values.push(prefix);
   }
   if (data.status !== undefined) {
     const status = ["active", "complete", "archived"].includes(data.status) ? data.status : "";
@@ -889,10 +1156,9 @@ function linkProjectSession(projectId, data, response) {
     db.prepare(`
       UPDATE projects SET
         repository = CASE WHEN repository = '' THEN ? ELSE repository END,
-        cwd = CASE WHEN cwd = '' THEN ? ELSE cwd END,
-        updated_at = ?
+        cwd = CASE WHEN cwd = '' THEN ? ELSE cwd END
       WHERE id = ?
-    `).run(session.repository || "", session.cwd || "", now, projectId);
+    `).run(session.repository || "", session.cwd || "", projectId);
     db.exec("COMMIT");
   } catch (error) {
     db.exec("ROLLBACK");
@@ -906,7 +1172,6 @@ function unlinkProjectSession(projectId, sessionId, response) {
   const result = db.prepare("UPDATE sessions SET project_id = '', updated_at = ? WHERE id = ? AND project_id = ?")
     .run(Date.now(), sessionId, projectId);
   if (!result.changes) return json(response, 404, { error: "Session is not linked to this project" });
-  db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(Date.now(), projectId);
   broadcast("sessions-changed", { id: sessionId, eventName: "project-session-unlinked" });
   json(response, 200, { ok: true, projectId, sessionId });
 }
@@ -921,19 +1186,28 @@ function addProjectTask(projectId, data, response) {
   if (!session) return json(response, 409, { error: "Link a session to this project before adding tasks" });
   const text = cleanText(data.text, 500);
   if (!text) return json(response, 400, { error: "Task text is required" });
+  const description = cleanText(data.description, 1000);
+  const owner = cleanText(data.owner, 120);
   const status = normalizeTaskStatus(data.status);
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE project_id = ?")
     .get(projectId).position;
   const now = Date.now();
+  const ticketId = nextProjectTicketId(projectId);
   const result = db.prepare(`
-    INSERT INTO tasks(session_id, project_id, text, completed, position, created_at, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(session.id, projectId, text, status === "done" ? 1 : 0, position, now, status);
+    INSERT INTO tasks(
+      session_id, project_id, ticket_id, text, description, owner,
+      completed, position, created_at, updated_at, status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    session.id, projectId, ticketId, text, description, owner,
+    status === "done" ? 1 : 0, position, now, now, status
+  );
   db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, projectId);
   broadcast("sessions-changed", { id: session.id, eventName: "task-added" });
   json(response, 201, {
-    id: Number(result.lastInsertRowid), sessionId: session.id, projectId, text,
-    completed: status === "done", status, position
+    id: Number(result.lastInsertRowid), sessionId: session.id, projectId, ticketId, text,
+    description, owner, completed: status === "done", status, position, updatedAt: now
   });
 }
 
@@ -968,7 +1242,11 @@ function getProjectSuggestions(url, response) {
 }
 
 function projectSessionRows(projectId) {
-  return db.prepare("SELECT * FROM sessions WHERE project_id = ? AND archived = 0 ORDER BY updated_at DESC").all(projectId);
+  return db.prepare(`
+    SELECT * FROM sessions
+    WHERE project_id = ? AND archived = 0 AND source <> 'shared-project'
+    ORDER BY updated_at DESC
+  `).all(projectId);
 }
 
 function touchProjectForSession(sessionId, timestamp = Date.now()) {
@@ -1319,9 +1597,12 @@ function setLegacyProjectTracking(sessionId, enabled) {
     const now = Date.now();
     const projectId = randomUUID();
     db.prepare(`
-      INSERT INTO projects(id, title, description, status, repository, cwd, created_at, updated_at)
-      VALUES (?, ?, ?, 'active', ?, ?, ?, ?)
-    `).run(projectId, session.title, session.summary || "", session.repository || "", session.cwd || "", now, now);
+      INSERT INTO projects(id, title, description, status, ticket_prefix, repository, cwd, created_at, updated_at)
+      VALUES (?, ?, ?, 'active', ?, ?, ?, ?, ?)
+    `).run(
+      projectId, session.title, session.summary || "", deriveTicketPrefix(session.title),
+      session.repository || "", session.cwd || "", now, now
+    );
     db.prepare("UPDATE sessions SET project_id = ? WHERE id = ?").run(projectId, sessionId);
     return;
   }
@@ -1337,30 +1618,45 @@ function addTask(id, data, response) {
   const text = cleanText(data.text, 500);
   if (!text) return json(response, 400, { error: "Task text is required" });
   const status = normalizeTaskStatus(data.status);
+  const description = cleanText(data.description, 1000);
+  const owner = cleanText(data.owner, 120);
+  const session = db.prepare("SELECT project_id FROM sessions WHERE id = ?").get(id);
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE session_id = ?").get(id).position;
-  const result = db.prepare("INSERT INTO tasks(session_id, text, completed, position, created_at, status) VALUES (?, ?, ?, ?, ?, ?)")
-    .run(id, text, status === "done" ? 1 : 0, position, Date.now(), status);
+  const now = Date.now();
+  const ticketId = session?.project_id ? nextProjectTicketId(session.project_id) : "";
+  const result = db.prepare(`
+    INSERT INTO tasks(
+      session_id, ticket_id, text, description, owner, completed, position, created_at, updated_at, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, ticketId, text, description, owner, status === "done" ? 1 : 0, position, now, now, status);
   touchProjectForSession(id);
   broadcast("sessions-changed", { id, eventName: "task-added" });
-  json(response, 201, { id: Number(result.lastInsertRowid), sessionId: id, text, completed: status === "done", status, position });
+  json(response, 201, {
+    id: Number(result.lastInsertRowid), sessionId: id, ticketId, text, description, owner,
+    completed: status === "done", status, position, updatedAt: now
+  });
 }
 
 function updateTask(id, data, response) {
   const row = db.prepare("SELECT * FROM tasks WHERE id = ?").get(id);
   if (!row) return json(response, 404, { error: "Task not found" });
   const text = data.text === undefined ? row.text : cleanText(data.text, 500);
+  const description = data.description === undefined ? row.description : cleanText(data.description, 1000);
+  const owner = data.owner === undefined ? row.owner : cleanText(data.owner, 120);
   let status = data.status === undefined ? normalizeTaskStatus(row.status) : normalizeTaskStatus(data.status);
   if (data.completed !== undefined) status = data.completed ? "done" : (status === "done" ? "next" : status);
   const completed = status === "done" ? 1 : 0;
-  db.prepare("UPDATE tasks SET text = ?, completed = ?, status = ? WHERE id = ?").run(text, completed, status, id);
   const now = Date.now();
+  db.prepare(`
+    UPDATE tasks SET text = ?, description = ?, owner = ?, completed = ?, status = ?, updated_at = ? WHERE id = ?
+  `).run(text, description, owner, completed, status, now, id);
   if (row.project_id) db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, row.project_id);
   else {
     db.prepare("UPDATE sessions SET updated_at = ? WHERE id = ?").run(now, row.session_id);
     touchProjectForSession(row.session_id, now);
   }
   broadcast("sessions-changed", { id: row.session_id, eventName: "task-updated" });
-  json(response, 200, taskRecord({ ...row, text, completed, status }));
+  json(response, 200, taskRecord({ ...row, text, description, owner, completed, status, updated_at: now }));
 }
 
 function deleteTask(id, response) {
@@ -1527,7 +1823,7 @@ function copilotPluginConfigured(executable) {
       windowsHide: true,
       stdio: ["ignore", "pipe", "ignore"]
     });
-    return plugins.includes("sham@smart-ai-human-manager");
+    return plugins.includes("sham@context-workspace");
   } catch {
     return false;
   }
@@ -1559,15 +1855,32 @@ function openFolder(id, response) {
 }
 
 function defaultDataDir() {
-  if (process.env.LOCALAPPDATA) return join(process.env.LOCALAPPDATA, "CopilotSessionHub");
-  if (platform() === "darwin") {
-    const current = join(homedir(), "Library", "Application Support", "CopilotSessionHub");
-    const legacy = join(homedir(), ".copilot-session-hub");
-    return existsSync(join(legacy, "sessions.db")) && !existsSync(join(current, "sessions.db"))
-      ? legacy
-      : current;
+  if (process.env.LOCALAPPDATA) {
+    const current = join(process.env.LOCALAPPDATA, "ContextWorkspace");
+    const legacyCandidates = [
+      join(process.env.LOCALAPPDATA, "SmartHumanAIManager"),
+      join(process.env.LOCALAPPDATA, "CopilotSessionHub")
+    ];
+    if (existsSync(join(current, "sessions.db"))) return current;
+    return legacyCandidates.find((path) => existsSync(join(path, "sessions.db"))) || current;
   }
-  return join(homedir(), ".copilot-session-hub");
+  if (platform() === "darwin") {
+    const current = join(homedir(), "Library", "Application Support", "ContextWorkspace");
+    const legacyCandidates = [
+      join(homedir(), "Library", "Application Support", "SmartHumanAIManager"),
+      join(homedir(), "Library", "Application Support", "CopilotSessionHub"),
+      join(homedir(), ".copilot-session-hub")
+    ];
+    if (existsSync(join(current, "sessions.db"))) return current;
+    return legacyCandidates.find((path) => existsSync(join(path, "sessions.db"))) || current;
+  }
+  const current = join(homedir(), ".context-workspace");
+  const legacy = join(homedir(), ".copilot-session-hub");
+  return existsSync(join(current, "sessions.db")) || !existsSync(join(legacy, "sessions.db")) ? current : legacy;
+}
+
+function environmentValue(primary, legacy) {
+  return process.env[primary] ?? process.env[legacy];
 }
 
 function openEventStream(request, response) {
@@ -1604,7 +1917,8 @@ async function serveStatic(pathname, response) {
   };
   response.writeHead(200, {
     ...antiFramingHeaders,
-    "content-type": types[extname(filePath)] || "application/octet-stream"
+    "content-type": types[extname(filePath)] || "application/octet-stream",
+    "cache-control": "no-cache"
   });
   createReadStream(filePath).pipe(response);
 }
@@ -1691,6 +2005,17 @@ function projectRecord(row) {
     description: row.description || "",
     status: row.status,
     starred: Boolean(row.starred),
+    ticketPrefix: row.ticket_prefix || deriveTicketPrefix(row.title),
+    sharing: {
+      enabled: Boolean(row.share_branch),
+      remote: row.share_remote || "",
+      branch: row.share_branch || "",
+      path: row.share_path || "",
+      sharedAt: row.shared_at || null,
+      pushedAt: row.share_pushed_at || null,
+      pulledAt: row.share_pulled_at || null,
+      revision: Number(row.share_revision || 0)
+    },
     isProject: true,
     repository: row.repository || "",
     cwd: row.cwd || "",
@@ -1704,11 +2029,74 @@ function taskRecord(row) {
     id: row.id,
     sessionId: row.session_id,
     projectId: row.project_id || "",
+    ticketId: row.ticket_id || "",
     text: row.text,
+    description: row.description || "",
+    owner: row.owner || "",
     completed: Boolean(row.completed),
     status: normalizeTaskStatus(row.status || (row.completed ? "done" : "next")),
-    position: row.position
+    position: row.position,
+    updatedAt: row.updated_at || row.created_at
   };
+}
+
+function ensureProjectTicketIds(projectId) {
+  const project = db.prepare("SELECT id, title, ticket_prefix FROM projects WHERE id = ?").get(projectId);
+  if (!project) return;
+  const prefix = project.ticket_prefix || deriveTicketPrefix(project.title);
+  if (!project.ticket_prefix) db.prepare("UPDATE projects SET ticket_prefix = ? WHERE id = ?").run(prefix, projectId);
+  const rows = db.prepare(`
+    SELECT t.id, t.ticket_id
+    FROM tasks t
+    LEFT JOIN sessions s ON s.id = t.session_id
+    WHERE t.project_id = ? OR (t.project_id = '' AND s.project_id = ? AND s.archived = 0)
+    ORDER BY t.created_at, t.id
+  `).all(projectId, projectId);
+  let next = rows.reduce((maximum, row) => {
+    const match = String(row.ticket_id || "").match(new RegExp(`^${prefix}-(\\d+)$`));
+    return match ? Math.max(maximum, Number(match[1])) : maximum;
+  }, 0) + 1;
+  const update = db.prepare("UPDATE tasks SET ticket_id = ? WHERE id = ?");
+  db.exec("BEGIN");
+  try {
+    for (const row of rows) {
+      if (!row.ticket_id) update.run(`${prefix}-${next++}`, row.id);
+    }
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
+function nextProjectTicketId(projectId) {
+  ensureProjectTicketIds(projectId);
+  const project = db.prepare("SELECT title, ticket_prefix FROM projects WHERE id = ?").get(projectId);
+  const prefix = project?.ticket_prefix || deriveTicketPrefix(project?.title || "Task");
+  const rows = db.prepare(`
+    SELECT t.ticket_id
+    FROM tasks t
+    LEFT JOIN sessions s ON s.id = t.session_id
+    WHERE t.project_id = ? OR (t.project_id = '' AND s.project_id = ? AND s.archived = 0)
+  `).all(projectId, projectId);
+  const next = rows.reduce((maximum, row) => {
+    const match = String(row.ticket_id || "").match(new RegExp(`^${prefix}-(\\d+)$`));
+    return match ? Math.max(maximum, Number(match[1])) : maximum;
+  }, 0) + 1;
+  return `${prefix}-${next}`;
+}
+
+function normalizeTicketPrefix(value) {
+  const normalized = String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+  return normalized.length >= 2 ? normalized : "";
+}
+
+function deriveTicketPrefix(title) {
+  const words = String(title || "").toUpperCase().match(/[A-Z0-9]+/g) || [];
+  const initials = words.map((word) => word[0]).join("").slice(0, 5);
+  if (initials.length >= 2) return initials;
+  const compact = words.join("").slice(0, 4);
+  return compact.length >= 2 ? compact : "TASK";
 }
 
 function workItemRecord(row) {

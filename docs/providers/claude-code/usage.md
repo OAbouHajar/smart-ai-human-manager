@@ -1,6 +1,6 @@
 # Claude Code usage
 
-Start or resume Claude Code normally after restarting it. Smart Human-AI Manager tracks session start, completed turns, context compaction, and session end.
+Start or resume Claude Code normally after restarting it. Context Workspace tracks session start, completed turns, context compaction, and session end.
 
 ## Save continuity
 

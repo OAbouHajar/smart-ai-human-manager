@@ -1,18 +1,24 @@
 {
-  "name": "smart-ai-human-manager",
+  "name": "context-workspace",
   "owner": {
-    "name": "Smart Human-AI Manager"
+    "name": "Context Workspace"
   },
   "metadata": {
-    "description": "Official plugins for Smart Human-AI Manager",
-    "version": "0.7.0"
+    "description": "Official plugins for Context Workspace",
+    "version": "0.8.0"
   },
   "plugins": [
     {
-      "name": "sham",
-      "description": "Smart Human-AI Manager for session continuity and agile project delivery.",
-      "version": "0.7.0",
+      "name": "cw",
+      "description": "Context Workspace for session continuity and agile project delivery.",
+      "version": "0.8.0",
       "source": "."
+    },
+    {
+      "name": "sham",
+      "description": "Compatibility commands for existing SHAM users.",
+      "version": "0.8.0",
+      "source": "./compat/sham"
     }
   ]
 }

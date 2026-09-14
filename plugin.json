@@ -1,12 +1,12 @@
 {
-  "name": "sham",
-  "description": "Smart Human-AI Manager for session continuity and agile project delivery.",
-  "version": "0.7.0",
+  "name": "cw",
+  "description": "Context Workspace for session continuity and agile project delivery.",
+  "version": "0.8.0",
   "author": {
-    "name": "Smart Human-AI Manager"
+    "name": "Context Workspace"
   },
   "license": "MIT",
-  "keywords": ["sham", "human-ai", "agile", "sessions", "projects", "continuity", "dashboard"],
+  "keywords": ["context-workspace", "human-ai", "agile", "sessions", "projects", "continuity", "dashboard"],
   "commands": "commands/",
   "skills": "skills/",
   "hooks": "hooks.json"

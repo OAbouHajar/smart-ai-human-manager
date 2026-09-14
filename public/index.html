@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Human-AI Manager</title>
-  <link rel="icon" href="/logo-mark.png" type="image/png">
+  <title>Context Workspace</title>
+  <link rel="icon" href="/context-workspace-mark.svg" type="image/svg+xml">
   <script>
     (() => {
       const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
@@ -20,11 +20,11 @@
     <aside class="sidebar" aria-label="Project workspace">
       <header class="brand">
         <span class="brand-mark" aria-hidden="true">
-          <img src="/logo-mark.png" alt="">
+          <img src="/context-workspace-mark.svg" alt="">
         </span>
         <span>
-          <strong>Smart Human-AI Manager</strong>
-          <small>Session-powered projects</small>
+          <strong>Context Workspace</strong>
+          <small>Where AI sessions become shared work</small>
         </span>
         <button id="closeSidebar" class="icon-button sidebar-close" aria-label="Close session history">
           <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
@@ -42,6 +42,11 @@
         </button>
       </nav>
 
+      <nav id="projectFilters" class="project-filters" aria-label="Project visibility">
+        <button class="active" data-project-filter="active" aria-pressed="true">Active</button>
+        <button data-project-filter="shared" aria-pressed="false">Shared</button>
+      </nav>
+
       <nav id="statusFilters" class="filters" aria-label="Session status">
         <button class="filter active" data-filter="wrapped" aria-pressed="true"><span>Wrapped</span><b id="wrappedCount">0</b></button>
         <button class="filter" data-filter="active" aria-pressed="false"><span>Active</span><b id="activeCount">0</b></button>
@@ -52,6 +57,9 @@
       <div class="sidebar-heading">
         <span id="sidebarHeadingLabel">Recent work</span>
         <span class="sidebar-heading-actions">
+          <button id="projectSharedFilterButton" class="icon-button project-sidebar-action" title="Show shared projects" aria-label="Show shared projects" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M16 3a4 4 0 0 1 1 7.87v2.26A4 4 0 1 1 15 17v-1.13l-6-3v.26A4 4 0 1 1 7 9v-.13l6-3V5a4 4 0 0 1 3-2Zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5 9a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm11 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+          </button>
           <button id="projectArchiveFilterButton" class="icon-button project-sidebar-action" title="Show archived projects" aria-label="Show archived projects" aria-pressed="false">
             <svg viewBox="0 0 24 24"><path d="M4 3h16l2 4v3h-1v10H3V10H2V7l2-4Zm1.3 2-1 2h15.4l-1-2H5.3ZM5 10v8h14v-8H5Zm4 2h6v2H9v-2Z"/></svg>
           </button>
@@ -117,10 +125,10 @@
             <button data-action="archive">Archive session</button>
             <button data-action="auto-wrap">Enable auto-wrap</button>
           </div>
-          <aside id="infoPanel" class="info-panel hidden" aria-label="Smart Human-AI Manager information">
+          <aside id="infoPanel" class="info-panel hidden" aria-label="Context Workspace information">
             <header>
               <div>
-                <span class="section-label">Smart Human-AI Manager</span>
+                <span class="section-label">Context Workspace</span>
                 <strong id="infoVersion">Version —</strong>
               </div>
               <button id="closeInfo" class="icon-button" aria-label="Close information">
@@ -155,11 +163,11 @@
       <aside id="updateBanner" class="update-banner hidden" aria-live="polite">
         <span class="update-icon" aria-hidden="true">↑</span>
         <div>
-          <strong id="updateTitle">Smart Human-AI Manager update available</strong>
+          <strong id="updateTitle">Context Workspace update available</strong>
           <span id="updateDetail">A newer stable release is ready.</span>
         </div>
         <a id="updateReleaseLink" href="#" target="_blank" rel="noopener noreferrer">Release notes</a>
-        <button id="copyUpdateCommand" class="button quiet">Copy /sham:update</button>
+        <button id="copyUpdateCommand" class="button quiet">Copy /cw:update</button>
         <button id="dismissUpdate" class="icon-button" aria-label="Dismiss update notification">
           <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
         </button>
@@ -169,7 +177,7 @@
         <span class="update-icon" aria-hidden="true">✓</span>
         <div>
           <strong>Automatically preserve session continuity?</strong>
-          <span>SHAM can auto-wrap sessions you deliberately link to projects. Unassigned sessions remain manual.</span>
+          <span>Context Workspace can auto-wrap sessions you deliberately link to projects. Unassigned sessions remain manual.</span>
         </div>
         <button id="enableAutoWrap" class="button primary">Enable auto-wrap</button>
         <button id="declineAutoWrap" class="button quiet">Not now</button>
@@ -241,7 +249,7 @@
                 <svg viewBox="0 0 24 24"><path d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Z"/></svg>
               </button>
             </div>
-            <p id="nextAction">Run /sham:wrap to create a recommended next step.</p>
+            <p id="nextAction">Run /cw:wrap to create a recommended next step.</p>
             <button id="resumeMainButton" class="button primary">
               Resume this session
               <svg viewBox="0 0 24 24"><path d="m13 5 7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>
@@ -317,6 +325,7 @@
           <div>
             <div class="project-status-line">
               <span class="project-status"><i></i> <span id="projectStatusLabel">In progress</span></span>
+              <span id="projectShareStatus" class="project-share-status">Local only</span>
               <span id="projectUpdatedLabel">Project activity</span>
             </div>
             <h1 id="projectWorkspaceTitle">Projects</h1>
@@ -336,13 +345,14 @@
               <svg viewBox="0 0 24 24"><path d="M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
             </button>
             <div id="projectMoreMenu" class="menu project-action-menu hidden">
+              <button id="projectShareButton">Share project</button>
               <button id="projectArchiveButton">Archive project</button>
             </div>
           </div>
         </header>
         <div id="noProjects" class="no-projects hidden">
           <strong>No project exists yet</strong>
-          <span>Run /sham:project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
+          <span>Run /cw:project or create a goal-based project here. Sessions remain unassigned until you choose.</span>
         </div>
 
         <nav id="projectTabs" class="project-tabs" aria-label="Project views">
@@ -360,7 +370,7 @@
                 <div>
                   <span class="next-action-index">01</span>
                   <div>
-                    <h2 id="projectNextAction">Run /sham:wrap to establish the next project action.</h2>
+                    <h2 id="projectNextAction">Run /cw:wrap to establish the next project action.</h2>
                     <p id="projectNextContext">The latest wrapped session keeps this recommendation current.</p>
                   </div>
                   <button id="startProjectAction" class="button primary">Start work</button>
@@ -393,8 +403,8 @@
               <div id="projectNextTasks" class="project-next-tasks"></div>
 
               <aside class="wrap-project-note">
-                <code>/sham:wrap</code>
-                <div><strong>SHAM Wrap updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /sham:project or the dashboard.</span></div>
+                <code>/cw:wrap</code>
+                <div><strong>Context Workspace updates this project only when the session is linked.</strong><span>Unassigned sessions stay independent until you choose a project with /cw:project or the dashboard.</span></div>
               </aside>
             </div>
 
@@ -421,7 +431,7 @@
               <article class="project-latest-session">
                 <header><span>Latest session</span><em>Wrapped</em></header>
                 <h3 id="projectLatestSessionTitle">No wrapped session yet</h3>
-                <p id="projectLatestSessionSummary">Run /sham:wrap to connect session outcomes to this project.</p>
+                <p id="projectLatestSessionSummary">Run /cw:wrap to connect session outcomes to this project.</p>
                 <button id="openLatestProjectSession" class="project-text-action">Open session →</button>
               </article>
             </aside>
@@ -430,8 +440,8 @@
 
         <section id="projectBoardPanel" class="project-panel hidden">
           <div id="coachStrip" class="coach-strip hidden">
-            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /sham:plan to generate an ordered execution plan.</strong></div>
-            <code>/sham:plan</code>
+            <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /cw:plan to generate an ordered execution plan.</strong></div>
+            <code>/cw:plan</code>
           </div>
           <div id="boardSummary" class="board-summary" aria-label="Project progress">
             <span><b id="boardOpenCount">0</b> open</span>

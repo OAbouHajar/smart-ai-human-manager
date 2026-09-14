@@ -102,15 +102,16 @@ h3 { font-size: 1.25rem; }
 .window-bar span { width: 0.52rem; height: 0.52rem; background: #496270; border-radius: 50%; }
 .window-bar small { margin-left: auto; color: #78909d; font-size: 0.6rem; }
 .visual-window img, .screenshot-frame img { display: block; width: 100%; border-radius: 11px; }
-.metric-card {
-  position: absolute; min-width: 10.5rem; padding: 0.85rem 1rem;
-  background: rgba(10, 26, 37, 0.94); border: 1px solid #38586a; border-radius: 11px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.38); backdrop-filter: blur(10px);
+.context-note {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.85rem; align-items: center;
+  margin-top: 0.85rem; padding: 0.8rem 0.95rem; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px;
 }
-.metric-card span, .metric-card small { display: block; color: var(--muted); font-size: 0.62rem; }
-.metric-card strong { display: block; margin: 0.16rem 0; color: var(--teal); font-size: 1.35rem; }
-.metric-time { right: -1rem; bottom: -0.5rem; }
-.metric-progress { left: -1.2rem; top: 0; }
+.context-note span {
+  padding: 0.32rem 0.55rem; color: var(--teal); background: var(--teal-soft);
+  border-radius: 6px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase;
+}
+.context-note strong { color: var(--soft); font-size: 0.75rem; font-weight: 650; }
 
 .positioning { padding: 6.5rem 0; text-align: center; border-top: 1px solid var(--line-soft); }
 .positioning h2 { max-width: 900px; margin-inline: auto; }
@@ -168,28 +169,28 @@ h3 { font-size: 1.25rem; }
 .continuity h2 { margin: 0; font-size: clamp(2rem, 3.5vw, 3.2rem); }
 .continuity > p { margin: 0; color: var(--soft); }
 
-.sham { padding: 6.5rem 0; scroll-margin-top: 2rem; }
-.sham-groups {
+.commands { padding: 6.5rem 0; scroll-margin-top: 2rem; }
+.command-groups {
   display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.75fr); gap: 1rem;
   max-width: 980px; margin: 0 auto;
 }
-.sham-group {
+.command-group {
   padding: 1.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
 }
-.sham-group .section-label {
+.command-group .section-label {
   color: var(--teal); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
 }
-.sham-group h3 { margin: 0.35rem 0 1.2rem; }
-.sham-commands { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
-.sham-group .sham-commands { justify-content: flex-start; }
-.sham-commands code {
+.command-group h3 { margin: 0.35rem 0 1.2rem; }
+.command-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+.command-group .command-list { justify-content: flex-start; }
+.command-list code {
   padding: 0.7rem 1rem; color: var(--teal); background: rgba(102, 231, 199, 0.08);
   border: 1px solid rgba(102, 231, 199, 0.25); border-radius: 999px;
   font: 700 0.82rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-.sham-cycle { margin: 1.5rem auto 0; color: var(--soft); text-align: center; }
-.sham-cycle code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.sham-cycle a { color: var(--teal); font-weight: 750; }
+.command-note { margin: 1.5rem auto 0; color: var(--soft); text-align: center; }
+.command-note code { color: var(--teal); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.command-note a { color: var(--teal); font-weight: 750; }
 
 .install { padding: 6.5rem 0; scroll-margin-top: 2rem; }
 .prompt {
@@ -239,17 +240,17 @@ footer a:hover { color: var(--text); }
   .hero { padding-top: 4.5rem; }
   h1 { font-size: clamp(2.6rem, 11vw, 3.8rem); }
   .session-to-project { grid-template-columns: 1fr; }
-  .sham-groups { grid-template-columns: 1fr; }
+  .command-groups { grid-template-columns: 1fr; }
   .flow-arrow { transform: rotate(90deg); text-align: center; }
   .section-heading, .continuity { grid-template-columns: 1fr; display: grid; gap: 1.2rem; }
-  .metric-card { position: static; display: inline-block; margin-top: 0.7rem; margin-right: 0.5rem; }
+  .context-note { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 540px) {
   .site-header, main > section, footer { width: min(calc(100% - 1.5rem), var(--max)); }
   .workflow-grid, .insight-grid, .quick-value { grid-template-columns: 1fr; }
   .actions { display: grid; }
-  .positioning, .workflow, .workspace, .measure, .sham, .install { padding: 5.5rem 0; }
+  .positioning, .workflow, .workspace, .measure, .commands, .install { padding: 5.5rem 0; }
   .continuity { padding: 1.5rem; }
   .local-first { align-items: flex-start; padding: 1.4rem; }
   .local-first img { width: 3.4rem; height: 3.4rem; }

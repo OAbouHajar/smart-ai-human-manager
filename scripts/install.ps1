@@ -4,12 +4,30 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$InstallRoot = Join-Path $env:LOCALAPPDATA "Programs\SmartHumanAIManager"
-$LegacyInstallRoot = Join-Path $env:LOCALAPPDATA "Programs\CopilotSessionHub"
+$InstallRoot = Join-Path $env:LOCALAPPDATA "Programs\ContextWorkspace"
+$LegacyInstallRoots = @(
+    (Join-Path $env:LOCALAPPDATA "Programs\SmartHumanAIManager"),
+    (Join-Path $env:LOCALAPPDATA "Programs\CopilotSessionHub")
+)
+$DataRoot = Join-Path $env:LOCALAPPDATA "ContextWorkspace"
+$LegacyDataRoots = @(
+    (Join-Path $env:LOCALAPPDATA "CopilotSessionHub"),
+    (Join-Path $env:LOCALAPPDATA "SmartHumanAIManager")
+)
 $StartupFolder = [Environment]::GetFolderPath("Startup")
-$StartupScript = Join-Path $StartupFolder "Smart Human-AI Manager.cmd"
-$LegacyStartupScript = Join-Path $StartupFolder "Copilot Session Hub.cmd"
-$UpdateCheck = if ($env:COPILOT_SESSION_HUB_UPDATE_CHECK -eq "0") { "0" } else { "1" }
+$StartupScript = Join-Path $StartupFolder "Context Workspace.cmd"
+$LegacyStartupScripts = @(
+    (Join-Path $StartupFolder "Smart Human-AI Manager.cmd"),
+    (Join-Path $StartupFolder "Copilot Session Hub.cmd")
+)
+$UpdateCheckValue = if ($env:CONTEXT_WORKSPACE_UPDATE_CHECK) {
+    $env:CONTEXT_WORKSPACE_UPDATE_CHECK
+} elseif ($env:COPILOT_SESSION_HUB_UPDATE_CHECK) {
+    $env:COPILOT_SESSION_HUB_UPDATE_CHECK
+} else {
+    "1"
+}
+$UpdateCheck = if ($UpdateCheckValue -eq "0") { "0" } else { "1" }
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     throw "Node.js 22.13 or newer is required."
@@ -45,6 +63,14 @@ if (Get-NetTCPConnection -LocalPort 43120 -State Listen -ErrorAction SilentlyCon
 }
 
 New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
+if (-not (Test-Path (Join-Path $DataRoot "sessions.db"))) {
+    $LegacyDataRoot = $LegacyDataRoots | Where-Object { Test-Path (Join-Path $_ "sessions.db") } | Select-Object -First 1
+    if ($LegacyDataRoot) {
+        New-Item -ItemType Directory -Force -Path $DataRoot | Out-Null
+        Copy-Item -Path (Join-Path $LegacyDataRoot "*") -Destination $DataRoot -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Migrated legacy Context Workspace data from $LegacyDataRoot." -ForegroundColor Yellow
+    }
+}
 $ResolvedProjectRoot = [IO.Path]::GetFullPath($ProjectRoot).TrimEnd("\")
 $ResolvedInstallRoot = [IO.Path]::GetFullPath($InstallRoot).TrimEnd("\")
 if ($ResolvedProjectRoot -ne $ResolvedInstallRoot) {
@@ -55,7 +81,19 @@ if ($ResolvedProjectRoot -ne $ResolvedInstallRoot) {
 }
 
 $ServerPath = Join-Path $InstallRoot "server\server.mjs"
-$StartupContent = "@echo off`r`nset COPILOT_SESSION_HUB_UPDATE_CHECK=$UpdateCheck`r`nstart `"`" /min node `"$ServerPath`"`r`n"
+$CompatRoot = Join-Path $InstallRoot "compat\sham"
+$CompatCommands = Join-Path $CompatRoot "commands"
+$CompatScripts = Join-Path $CompatRoot "scripts"
+New-Item -ItemType Directory -Force -Path $CompatCommands | Out-Null
+New-Item -ItemType Directory -Force -Path $CompatScripts | Out-Null
+Copy-Item -Path (Join-Path $InstallRoot "commands\*") -Destination $CompatCommands -Force
+Copy-Item -LiteralPath (Join-Path $InstallRoot "scripts\project-share.mjs") -Destination $CompatScripts -Force
+Get-ChildItem -LiteralPath $CompatCommands -Filter "*.md" | ForEach-Object {
+    $Content = Get-Content $_.FullName -Raw
+    Set-Content -LiteralPath $_.FullName -Value ($Content.Replace("/cw:", "/sham:")) -Encoding UTF8
+}
+
+$StartupContent = "@echo off`r`nset CONTEXT_WORKSPACE_UPDATE_CHECK=$UpdateCheck`r`nset CONTEXT_WORKSPACE_DATA=$DataRoot`r`nstart `"`" /min node `"$ServerPath`"`r`n"
 Set-Content -LiteralPath $StartupScript -Value $StartupContent -Encoding ASCII
 
 & node (Join-Path $InstallRoot "scripts\provider-hooks.mjs") install $InstallRoot
@@ -64,6 +102,10 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    try {
+        copilot plugin uninstall cw 2>$null | Out-Null
+    } catch {
+    }
     try {
         copilot plugin uninstall sham 2>$null | Out-Null
     } catch {
@@ -81,6 +123,10 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
     } catch {
     }
     try {
+        copilot plugin marketplace remove context-workspace 2>$null | Out-Null
+    } catch {
+    }
+    try {
         copilot plugin marketplace remove ai-session-hub 2>$null | Out-Null
     } catch {
     }
@@ -95,12 +141,12 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
     }
     if (-not $MarketplaceReady) {
         Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
-        throw "Smart Human-AI Manager was updated, but its verified local Copilot plugin marketplace could not be registered. Exit active Copilot CLI sessions and rerun this installer."
+        throw "Context Workspace was updated, but its verified local Copilot plugin marketplace could not be registered. Exit active Copilot CLI sessions and rerun this installer."
     }
 
     $PluginInstalled = $false
     for ($Attempt = 0; $Attempt -lt 5; $Attempt++) {
-        $InstallOutput = copilot plugin install sham@smart-ai-human-manager 2>&1
+        $InstallOutput = copilot plugin install cw@context-workspace 2>&1
         if ($LASTEXITCODE -eq 0) {
             $PluginInstalled = $true
             break
@@ -111,7 +157,7 @@ if (Get-Command copilot -ErrorAction SilentlyContinue) {
         $InstallMessage = ($InstallOutput | Out-String).Trim()
         Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
         throw @"
-Smart Human-AI Manager application files were updated, but the Copilot plugin could not be refreshed.
+Context Workspace application files were updated, but the Copilot plugin could not be refreshed.
 This usually means an active Copilot session is using the plugin files.
 
 Exit all Copilot CLI sessions, then run:
@@ -122,6 +168,19 @@ $InstallMessage
 "@
     }
     $InstallOutput | Write-Host
+    $CompatInstalled = $false
+    for ($Attempt = 0; $Attempt -lt 5; $Attempt++) {
+        copilot plugin install sham@context-workspace 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $CompatInstalled = $true
+            break
+        }
+        Start-Sleep -Seconds 1
+    }
+    if (-not $CompatInstalled) {
+        Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
+        throw "Context Workspace was installed, but the legacy /sham command aliases could not be registered. Exit active Copilot CLI sessions and rerun this installer."
+    }
 }
 
 Start-Process -FilePath "node" -ArgumentList "`"$ServerPath`"" -WorkingDirectory $InstallRoot -WindowStyle Hidden
@@ -138,16 +197,23 @@ for ($Attempt = 0; $Attempt -lt 20; $Attempt++) {
     }
 }
 if (-not $Healthy) {
-    throw "SHAM did not become healthy on http://127.0.0.1:43120."
+    throw "Context Workspace did not become healthy on http://127.0.0.1:43120."
 }
 
-Remove-Item -LiteralPath $LegacyStartupScript -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $LegacyInstallRoot -Recurse -Force -ErrorAction SilentlyContinue
+foreach ($Path in $LegacyStartupScripts) {
+    Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+}
+foreach ($Path in $LegacyInstallRoots) {
+    if ([IO.Path]::GetFullPath($Path).TrimEnd("\") -ne [IO.Path]::GetFullPath($InstallRoot).TrimEnd("\")) {
+        Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
 
 if (-not $NoOpen) {
     Start-Process "http://127.0.0.1:43120"
 }
 
-Write-Host "Smart Human-AI Manager installed." -ForegroundColor Green
+Write-Host "Context Workspace installed." -ForegroundColor Green
 Write-Host "Dashboard: http://127.0.0.1:43120"
-Write-Host "Restart each supported AI CLI so the SHAM hooks are loaded."
+Write-Host "Data: $DataRoot"
+Write-Host "Restart each supported AI CLI so the Context Workspace hooks are loaded."

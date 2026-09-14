@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const dataDir = await mkdtemp(join(tmpdir(), "smart-ai-human-manager-"));
+const dataDir = await mkdtemp(join(tmpdir(), "context-workspace-"));
 const port = 43121;
 const baseUrl = `http://127.0.0.1:${port}`;
 const currentVersion = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")).version;
@@ -21,11 +21,11 @@ const server = spawn(process.execPath, ["server/server.mjs"], {
   cwd: fileURLToPath(new URL("..", import.meta.url)),
   env: {
     ...process.env,
-    COPILOT_SESSION_HUB_DATA: dataDir,
-    COPILOT_SESSION_HUB_PORT: String(port),
-    COPILOT_SESSION_HUB_IMPORT_HISTORY: "0",
-    COPILOT_SESSION_HUB_RELEASES_URL: releaseUrl,
-    COPILOT_SESSION_HUB_UPDATE_RUNNER: updateRunner
+    CONTEXT_WORKSPACE_DATA: dataDir,
+    CONTEXT_WORKSPACE_PORT: String(port),
+    CONTEXT_WORKSPACE_IMPORT_HISTORY: "0",
+    CONTEXT_WORKSPACE_RELEASES_URL: releaseUrl,
+    CONTEXT_WORKSPACE_UPDATE_RUNNER: updateRunner
   },
   stdio: "ignore",
   windowsHide: true
@@ -334,6 +334,192 @@ test("checkpoint task reconciliation preserves board identities and statuses", a
   session = await fetch(`${baseUrl}/api/sessions/${id}`).then((result) => result.json());
   assert.equal(session.tasks.find((task) => task.id === taskA.id).status, "backlog");
   assert.equal(session.tasks.find((task) => task.id === taskB.id).status, "blocked");
+});
+
+test("exports and imports sanitized shared project boards", async () => {
+  const sessionId = "shared-board-source";
+  await fetch(`${baseUrl}/api/hooks/sessionStart`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionId, timestamp: Date.now(), cwd: process.cwd(), source: "new" })
+  });
+  const project = await fetch(`${baseUrl}/api/projects`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      title: "Shared Delivery",
+      description: "Coordinate private AI sessions through shared work.",
+      sessionId,
+      autoWrap: false
+    })
+  }).then((response) => response.json());
+  const task = await fetch(`${baseUrl}/api/projects/${project.id}/tasks`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      text: "Build safe project export",
+      description: "Publish only approved Kanban fields.",
+      owner: "Osama",
+      status: "in_progress"
+    })
+  }).then((response) => response.json());
+
+  assert.equal(task.ticketId, "SD-1");
+  assert.equal(task.description, "Publish only approved Kanban fields.");
+  assert.equal(task.owner, "Osama");
+
+  const snapshot = await fetch(`${baseUrl}/api/projects/${project.id}/share`).then((response) => response.json());
+  assert.equal(snapshot.schemaVersion, 1);
+  assert.equal(snapshot.project.ticketPrefix, "SD");
+  assert.deepEqual(snapshot.tickets[0], {
+    ticketId: "SD-1",
+    title: "Build safe project export",
+    description: "Publish only approved Kanban fields.",
+    status: "in_progress",
+    owner: "Osama",
+    updatedAt: task.updatedAt
+  });
+  assert.equal("sessions" in snapshot, false);
+  assert.equal("repository" in snapshot.project, false);
+  assert.equal(JSON.stringify(snapshot).includes(process.cwd()), false);
+
+  let response = await fetch(`${baseUrl}/api/projects/${project.id}/share`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      remote: "origin",
+      branch: "context-workspace/shared-projects",
+      path: `projects/${project.id}/project.json`,
+      pushedAt: Date.now(),
+      revision: snapshot.revision
+    })
+  });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).sharing.enabled, true);
+  const sharedProjects = await fetch(`${baseUrl}/api/projects?filter=shared`).then((result) => result.json());
+  assert.equal(sharedProjects.some((item) => item.id === project.id), true);
+
+  await new Promise((resolve) => setTimeout(resolve, 2));
+  response = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ description: "A local change not pushed yet." })
+  });
+  assert.equal(response.status, 200);
+  response = await fetch(`${baseUrl}/api/shared-projects/import`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      snapshot: { ...snapshot, revision: snapshot.revision + 1 },
+      remote: "origin",
+      branch: "context-workspace/shared-projects",
+      path: `projects/${project.id}/project.json`
+    })
+  });
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).code, "SHARED_PROJECT_LOCAL_CHANGES");
+
+  const importedProjectId = "imported-project";
+  response = await fetch(`${baseUrl}/api/shared-projects/import`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      snapshot: {
+        ...snapshot,
+        revision: snapshot.revision + 1,
+        project: { ...snapshot.project, id: importedProjectId, title: "Imported Delivery" },
+        tickets: [{
+          ...snapshot.tickets[0],
+          ticketId: "ID-1",
+          owner: "Jack",
+          status: "next"
+        }]
+      },
+      remote: "origin",
+      branch: "context-workspace/shared-projects",
+      path: `projects/${importedProjectId}/project.json`
+    })
+  });
+  assert.equal(response.status, 201);
+  const imported = await response.json();
+  assert.equal(imported.project.sharing.enabled, true);
+  assert.equal(imported.project.sharing.pulledAt > 0, true);
+
+  const board = await fetch(`${baseUrl}/api/board?projectId=${importedProjectId}`).then((result) => result.json());
+  assert.equal(board.sessions.length, 0);
+  assert.equal(board.tasks.length, 1);
+  assert.equal(board.tasks[0].ticketId, "ID-1");
+  assert.equal(board.tasks[0].owner, "Jack");
+  assert.equal(board.tasks[0].description, "Publish only approved Kanban fields.");
+
+  const teammateSessionId = "teammate-import-session";
+  response = await fetch(`${baseUrl}/api/hooks/copilot/sessionStart`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      sessionId: teammateSessionId,
+      timestamp: Date.now(),
+      cwd: process.cwd(),
+      source: "new"
+    })
+  });
+  assert.equal(response.status, 200);
+  response = await fetch(`${baseUrl}/api/projects/${importedProjectId}/sessions`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      sessionId: teammateSessionId,
+      autoWrap: false,
+      requireUnassigned: true
+    })
+  });
+  assert.equal(response.status, 200);
+
+  response = await fetch(`${baseUrl}/api/shared-projects/import`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      snapshot: {
+        ...snapshot,
+        revision: snapshot.revision + 2,
+        project: { ...snapshot.project, id: importedProjectId, title: "Imported Delivery" },
+        tickets: [{
+          ...snapshot.tickets[0],
+          ticketId: "ID-1",
+          owner: "Jack",
+          status: "done",
+          updatedAt: snapshot.revision + 2
+        }]
+      },
+      remote: "origin",
+      branch: "context-workspace/shared-projects",
+      path: `projects/${importedProjectId}/project.json`
+    })
+  });
+  assert.equal(response.status, 200);
+  const refreshedBoard = await fetch(`${baseUrl}/api/board?projectId=${importedProjectId}`).then((result) => result.json());
+  assert.equal(refreshedBoard.tasks[0].status, "done");
+  assert.equal(refreshedBoard.sessions.some((session) => session.id === teammateSessionId), true);
+
+  response = await fetch(`${baseUrl}/api/shared-projects/import`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      snapshot: {
+        ...snapshot,
+        revision: snapshot.revision + 3,
+        project: { ...snapshot.project, id: importedProjectId, title: "Imported Delivery" },
+        tickets: []
+      },
+      remote: "origin",
+      branch: "context-workspace/shared-projects",
+      path: `projects/${importedProjectId}/project.json`
+    })
+  });
+  assert.equal(response.status, 200);
+  const boardAfterDeletion = await fetch(`${baseUrl}/api/board?projectId=${importedProjectId}`).then((result) => result.json());
+  assert.equal(boardAfterDeletion.tasks.length, 0);
+  assert.equal(boardAfterDeletion.sessions.some((session) => session.id === teammateSessionId), true);
 });
 
 test("tracks provider sessions with collision-safe IDs and resume commands", async () => {

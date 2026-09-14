@@ -49,7 +49,7 @@ export function createUpdateChecker({
         headers: {
           accept: "application/vnd.github+json",
           "x-github-api-version": "2022-11-28",
-          "user-agent": `smart-ai-human-manager/${currentVersion}`
+          "user-agent": `context-workspace/${currentVersion}`
         },
         signal: AbortSignal.timeout(timeoutMs)
       });
@@ -115,8 +115,11 @@ function versionParts(value) {
 function validReleasePage(value, version) {
   try {
     const url = new URL(value);
-    const expectedPath = `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`;
-    return url.protocol === "https:" && url.hostname === "github.com" && url.pathname === expectedPath
+    const expectedPaths = [
+      `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`,
+      `/OAbouHajar/context-workspace/releases/tag/v${version}`
+    ];
+    return url.protocol === "https:" && url.hostname === "github.com" && expectedPaths.includes(url.pathname)
       ? url.href
       : "";
   } catch {

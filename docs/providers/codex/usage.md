@@ -1,6 +1,6 @@
 # OpenAI Codex CLI usage
 
-Start or resume Codex normally after restarting it and trusting the Smart Human-AI Manager hooks.
+Start or resume Codex normally after restarting it and trusting the Context Workspace hooks.
 
 ## Save continuity
 

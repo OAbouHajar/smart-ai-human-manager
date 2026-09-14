@@ -26,67 +26,82 @@ let modalReturnFocus = null;
 
 const sessionHubCommands = [
   {
-    command: "/sham:wrap",
+    command: "/cw:wrap",
     title: "Wrap this session",
     description: "Update the project outcome, completed work, unfinished tasks, and recommended next action."
   },
   {
-    command: "/sham:handoff",
+    command: "/cw:handoff",
     title: "Wrap with a todo list",
     description: "Save the session plus an explicit list of what you want to do next time."
   },
   {
-    command: "/sham:reopen",
+    command: "/cw:reopen",
     title: "Remove from Wrapped",
     description: "Mark the session as needing wrap again without deleting its saved continuity data."
   },
   {
-    command: "/sham:update",
-    title: "Update Smart Human-AI Manager automatically",
+    command: "/cw:update",
+    title: "Update Context Workspace automatically",
     description: "Download and verify the latest stable release, then install it automatically after this AI CLI exits."
   },
   {
-    command: "/sham:project",
+    command: "/cw:project",
     title: "Manage this session's project",
     description: "Create, link, switch, inspect, unlink, or complete an explicit goal-based project."
   },
   {
-    command: "/sham:archive",
+    command: "/cw:project-share",
+    title: "Share this project's board",
+    description: "Publish the sanitized Kanban board to a dedicated Git branch without sharing AI conversations."
+  },
+  {
+    command: "/cw:project-push",
+    title: "Push shared project updates",
+    description: "Publish the latest local tickets, descriptions, owners, and statuses to the shared Git branch."
+  },
+  {
+    command: "/cw:project-pull",
+    title: "Pull shared project updates",
+    description: "Import a teammate's shared board and link this local AI session to the project."
+  },
+  {
+    command: "/cw:archive",
     title: "Archive or restore a project",
     description: "Remove a project from active views without deleting its sessions, tasks, evidence, or history."
   },
   {
-    command: "/sham:auto-wrap",
+    command: "/cw:auto-wrap",
     title: "Control auto-wrap for this session",
     description: "Use on, off, status, or default to manage automatic continuity checkpoints."
   },
   {
-    command: "/sham:refine",
+    command: "/cw:refine",
     title: "Refine the backlog",
     description: "Clarify, split, prioritize, and prepare upcoming project tasks with explicit acceptance outcomes."
   },
   {
-    command: "/sham:plan",
+    command: "/cw:plan",
     title: "Generate an execution plan",
     description: "Analyze unfinished chat work, order it, and populate the project board."
   },
   {
-    command: "/sham:work",
+    command: "/cw:work",
     title: "Execute the next task",
     description: "Choose the best actionable card, move it to In Progress, execute it, and update the board."
   },
   {
-    command: "/sham:sync",
+    command: "/cw:sync",
     title: "Synchronize board progress",
     description: "Move completed, blocked, and discovered work based on actual conversation evidence."
   },
   {
-    command: "/sham:review",
+    command: "/cw:review",
     title: "Review delivered outcomes",
     description: "Validate completed work against its intended result and actual implementation evidence."
   },
   {
-    command: "/sham:retro",
+    command: "/cw:retro",
     title: "Run a project retrospective",
     description: "Turn evidence from completed work, blockers, and rework into concrete improvements."
   },
@@ -258,7 +273,7 @@ function bindEvents() {
     else await refresh({ preserveSelection: false });
   }, 180));
   elements.refreshButton.addEventListener("click", () => refresh());
-  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/sham:update"));
+  elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/cw:update"));
   elements.dismissUpdate.addEventListener("click", dismissUpdate);
   elements.resumeMainButton.addEventListener("click", resumeSelected);
   elements.openCopilotButton.addEventListener("click", resumeSelected);
@@ -365,6 +380,12 @@ function bindEvents() {
   });
   elements.createProjectButton.addEventListener("click", () => openProjectDialog());
   elements.addProjectSessionButton.addEventListener("click", openProjectSessionDialog);
+  elements.projectSharedFilterButton.addEventListener("click", async () => {
+    state.projectFilter = state.projectFilter === "shared" ? "active" : "shared";
+    localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
+    state.selectedProjectId = "";
+    await refreshBoard();
+  });
   elements.projectArchiveFilterButton.addEventListener("click", async () => {
     state.projectFilter = state.projectFilter === "archived" ? "active" : "archived";
     localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
@@ -381,6 +402,11 @@ function bindEvents() {
     elements.projectMoreButton.setAttribute("aria-expanded", "false");
     await toggleProjectArchive();
   });
+  elements.projectShareButton.addEventListener("click", async () => {
+    elements.projectMoreMenu.classList.add("hidden");
+    elements.projectMoreButton.setAttribute("aria-expanded", "false");
+    await copyCommand(state.board?.project?.sharing?.enabled ? "/cw:project-push" : "/cw:project-share");
+  });
   elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
@@ -394,6 +420,14 @@ function bindEvents() {
   elements.cancelProjectSessionDialog.addEventListener("click", closeProjectSessionDialog);
   elements.projectSessionDialog.addEventListener("click", (event) => {
     if (event.target === elements.projectSessionDialog) closeProjectSessionDialog();
+  });
+  document.querySelectorAll("[data-project-filter]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      state.projectFilter = button.dataset.projectFilter;
+      localStorage.setItem("sessionHub.projectFilter", state.projectFilter);
+      state.selectedProjectId = "";
+      await refreshBoard();
+    });
   });
   elements.startProjectAction.addEventListener("click", openProjectNextSession);
   elements.openLatestProjectSession.addEventListener("click", openProjectLatestSession);
@@ -492,7 +526,7 @@ async function copyCommand(command) {
   try {
     await navigator.clipboard.writeText(command);
     closeCommandPalette();
-    toast(`${command} copied — paste it into Copilot CLI`);
+    toast(`${command} copied. Paste it into Copilot CLI`);
   } catch {
     toast(`Copy failed. Type ${command} in Copilot CLI.`, true);
   }
@@ -523,9 +557,9 @@ async function refreshUpdateStatus() {
     elements.copyUpdateCommand.classList.add("hidden");
     elements.dismissUpdate.classList.add("hidden");
     const messages = {
-      preparing: [`Preparing Smart Human-AI Manager ${job.toVersion}`, "Downloading and verifying the stable release."],
-      waiting_for_exit: [`Smart Human-AI Manager ${job.toVersion} is ready`, "Exit active AI CLI sessions. Installation will finish automatically."],
-      installing: [`Installing Smart Human-AI Manager ${job.toVersion}`, "The dashboard will restart automatically."]
+      preparing: [`Preparing Context Workspace ${job.toVersion}`, "Downloading and verifying the stable release."],
+      waiting_for_exit: [`Context Workspace ${job.toVersion} is ready`, "Exit active AI CLI sessions. Installation will finish automatically."],
+      installing: [`Installing Context Workspace ${job.toVersion}`, "The dashboard will restart automatically."]
     };
     [elements.updateTitle.textContent, elements.updateDetail.textContent] = messages[job.state];
     setTimeout(refreshUpdateStatus, 2000);
@@ -540,13 +574,13 @@ async function refreshUpdateStatus() {
     elements.copyUpdateCommand.classList.toggle("hidden", succeeded);
     elements.dismissUpdate.classList.remove("hidden");
     elements.updateTitle.textContent = succeeded
-      ? `Updated to Smart Human-AI Manager ${job.toVersion}`
-      : `Smart Human-AI Manager ${job.toVersion} could not be installed`;
+      ? `Updated to Context Workspace ${job.toVersion}`
+      : `Context Workspace ${job.toVersion} could not be installed`;
     elements.updateDetail.textContent = succeeded
       ? (job.state === "succeeded_with_warnings"
         ? job.warning || "The app updated, but one or more integrations need attention."
         : `Previous version: ${job.fromVersion}`)
-      : job.error || "Run /sham:update to try again.";
+      : job.error || "Run /cw:update to try again.";
     elements.updateReleaseLink.href = job.releaseUrl || "https://github.com/OAbouHajar/smart-ai-human-manager/releases";
     return;
   }
@@ -557,7 +591,7 @@ async function refreshUpdateStatus() {
   const visible = status.updateAvailable && dismissedVersion !== status.latestVersion;
   elements.updateBanner.classList.toggle("hidden", !visible);
   if (!visible) return;
-  elements.updateTitle.textContent = `Smart Human-AI Manager ${status.latestVersion} is available`;
+  elements.updateTitle.textContent = `Context Workspace ${status.latestVersion} is available`;
   elements.updateDetail.textContent = `Installed version: ${status.currentVersion}`;
   elements.updateReleaseLink.href = status.releaseUrl || "https://github.com/OAbouHajar/smart-ai-human-manager/releases";
 }
@@ -634,7 +668,7 @@ function renderDetail() {
   elements.emptyState.classList.add("hidden");
   elements.detailContent.classList.remove("hidden");
   elements.sessionTitle.textContent = session.title;
-  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /sham:wrap before leaving this session.";
+  elements.sessionSummary.textContent = session.summary || "No AI checkpoint yet. Use /cw:wrap before leaving this session.";
   elements.statusBadge.textContent = session.status;
   elements.statusBadge.className = `badge ${session.status}`;
   elements.providerBadge.textContent = session.providerName || "AI CLI";
@@ -649,7 +683,7 @@ function renderDetail() {
   elements.checkpointBadge.title = session.checkpointedAt
     ? `${session.checkpointSource === "automatic" ? "Automatic" : "Manual"} checkpoint ${relativeTime(session.checkpointedAt)}`
     : "";
-  elements.nextAction.textContent = session.nextAction || "Run /sham:wrap to create a recommended next step.";
+  elements.nextAction.textContent = session.nextAction || "Run /cw:wrap to create a recommended next step.";
   elements.lastAction.textContent = session.lastAction || "No checkpoint has been saved yet.";
   elements.repoChip.querySelector("span").textContent = basename(session.repository) || basename(session.cwd) || "Workspace";
   elements.repoChip.title = session.cwd || "No working directory";
@@ -845,7 +879,7 @@ function renderEmpty() {
     elements.emptyAction.dataset.action = "clear-search";
   } else if (state.filter === "wrapped") {
     elements.emptyTitle.textContent = "No wrapped sessions yet";
-    elements.emptyCopy.textContent = "Run /sham:wrap in a Copilot session to save its summary, stopping point, and next action.";
+    elements.emptyCopy.textContent = "Run /cw:wrap in a Copilot session to save its summary, stopping point, and next action.";
     elements.emptyAction.textContent = "Show active sessions";
     elements.emptyAction.dataset.action = "show-active";
   } else {
@@ -875,6 +909,7 @@ function applyView() {
   elements.sidebarHeadingLabel.textContent = boardActive ? "Projects" : "Project sessions";
   elements.searchInput.placeholder = boardActive ? "Search projects" : "Task, project, folder, or file";
   elements.statusFilters.classList.toggle("hidden", boardActive || searching);
+  elements.projectFilters.classList.toggle("hidden", !boardActive || searching);
   if (searching && !boardActive) elements.sidebarHeadingLabel.textContent = "Search results across all history";
   if (boardActive) {
     renderProjectList();
@@ -905,16 +940,27 @@ async function refreshBoard() {
   elements.projectWorkspaceTitle.textContent = hasProject ? "Loading project…" : "Your projects";
   elements.projectWorkspaceSummary.textContent = hasProject
     ? "Collecting the latest wrapped session state."
-    : "Create an explicit goal here or run /sham:project from an AI session.";
+    : "Create an explicit goal here or run /cw:project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectArchiveButton.disabled = !hasProject;
+  elements.projectShareButton.disabled = !hasProject;
+  const showingShared = state.projectFilter === "shared";
   const showingArchived = state.projectFilter === "archived";
+  elements.projectSharedFilterButton.classList.toggle("active", showingShared);
+  elements.projectSharedFilterButton.title = showingShared ? "Show active projects" : "Show shared projects";
+  elements.projectSharedFilterButton.setAttribute("aria-label", elements.projectSharedFilterButton.title);
+  elements.projectSharedFilterButton.setAttribute("aria-pressed", showingShared ? "true" : "false");
   elements.projectArchiveFilterButton.classList.toggle("active", showingArchived);
   elements.projectArchiveFilterButton.title = showingArchived ? "Show active projects" : "Show archived projects";
   elements.projectArchiveFilterButton.setAttribute("aria-label", elements.projectArchiveFilterButton.title);
   elements.projectArchiveFilterButton.setAttribute("aria-pressed", showingArchived ? "true" : "false");
   elements.projectMoreButton.disabled = !hasProject;
+  document.querySelectorAll("[data-project-filter]").forEach((button) => {
+    const active = button.dataset.projectFilter === (showingShared ? "shared" : "active");
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
   elements.projectWorkItems.replaceChildren();
   if (!hasProject) {
     state.board = null;
@@ -926,7 +972,7 @@ async function refreshBoard() {
   state.board = board;
   renderProjectWorkspace(board);
   elements.coachStrip.classList.remove("hidden");
-  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /sham:plan to generate an ordered execution plan.";
+  elements.coachNextAction.textContent = board.projectState?.nextAction || board.project.nextAction || "Run /cw:plan to generate an ordered execution plan.";
   elements.boardOpenCount.textContent = board.total - (board.counts.done || 0);
   elements.boardProgressCount.textContent = board.counts.in_progress || 0;
   elements.boardBlockedCount.textContent = board.counts.blocked || 0;
@@ -995,6 +1041,11 @@ function renderProjectWorkspace(board) {
       ? "Complete"
       : "In progress";
   if (project.status === "archived") elements.projectStatusLabel.textContent = "Archived";
+  elements.projectShareStatus.textContent = project.sharing?.enabled
+    ? `Shared · ${project.sharing.remote}/${project.sharing.branch}`
+    : "Local only";
+  elements.projectShareStatus.classList.toggle("shared", Boolean(project.sharing?.enabled));
+  elements.projectShareButton.textContent = project.sharing?.enabled ? "Sync shared project" : "Share project";
   elements.projectArchiveButton.textContent = project.status === "archived" ? "Restore project" : "Archive project";
   elements.addProjectSessionButton.disabled = project.status === "archived";
   elements.linkProjectWorkItemButton.disabled = project.status === "archived";
@@ -1003,10 +1054,10 @@ function renderProjectWorkspace(board) {
   });
   elements.openProjectButton.disabled = !sessions.length;
   elements.startProjectAction.disabled = !sessions.length;
-  elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action — this project is complete.";
+  elements.projectNextAction.textContent = projectState?.nextAction || nextTasks[0]?.text || "No pending action. This project is complete.";
   elements.projectNextContext.textContent = projectState
     ? `From ${projectState.title} · ${relativeTime(projectState.updatedAt)}`
-    : "Run /sham:wrap to establish the next project action.";
+    : "Run /cw:wrap to establish the next project action.";
   elements.projectLastCompleted.textContent = completed[0]?.text || projectState?.lastAction || "No completed work recorded yet.";
   elements.projectCurrentWork.textContent = inProgress?.text || nextTasks[0]?.text || "No task is in progress.";
   elements.projectBlockedWork.textContent = blocked?.text || projectState?.unresolved?.[0] || "No blockers recorded.";
@@ -1027,7 +1078,7 @@ function renderProjectWorkspace(board) {
     empty.append(
       element("span", "project-empty-icon", "✓"),
       element("strong", "", "No open next tasks"),
-      element("small", "", "Run /sham:wrap when new work is discovered.")
+      element("small", "", "Run /cw:wrap when new work is discovered.")
     );
     elements.projectNextTasks.append(empty);
   }
@@ -1043,7 +1094,7 @@ function renderProjectWorkspace(board) {
   elements.projectEffortSessions.textContent = sessions.length;
   elements.projectEffortFiles.textContent = fileCount;
   elements.projectLatestSessionTitle.textContent = latestSession?.title || "No wrapped session yet";
-  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /sham:wrap to connect session outcomes to this project.";
+  elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /cw:wrap to connect session outcomes to this project.";
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);
@@ -1174,7 +1225,11 @@ function renderProjectList() {
     const copy = element("span", "session-copy");
     copy.append(
       element("strong", "", projectName(project)),
-      element("span", "", `${project.sessionCount || 1} sessions · ${project.openTaskCount} open`)
+      element(
+        "span",
+        "",
+        `${project.sessionCount || 0} sessions · ${project.openTaskCount} open${project.sharing?.enabled ? " · Shared" : ""}`
+      )
     );
     const time = element("span", "session-time", relativeTime(project.updatedAt));
     button.append(copy, time);
@@ -1191,7 +1246,9 @@ function renderProjectList() {
   if (!projects.length && !state.unassignedCount) {
     const emptyText = state.projectFilter === "archived"
       ? "No archived projects."
-      : "No sessions are tracked as projects yet.";
+      : state.projectFilter === "shared"
+        ? "No shared projects yet. Open a project and choose Share project."
+        : "No sessions are tracked as projects yet.";
     elements.sessionList.append(element("p", "empty-copy", state.projects.length ? "No projects match your search." : emptyText));
   }
 }
@@ -1245,9 +1302,16 @@ function renderBoardCard(task) {
   });
   session.append(open);
 
-  const text = element("p", "card-text", task.text);
+  const heading = element("div", "card-heading");
+  if (task.ticketId) heading.append(element("span", "ticket-id", task.ticketId));
+  heading.append(element("p", "card-text", task.text));
+  const description = task.description ? element("p", "card-description", task.description) : null;
   const meta = element("div", "card-meta");
-  meta.append(element("span", "", basename(task.repository) || basename(task.cwd) || "Workspace"));
+  meta.append(element(
+    "span",
+    "",
+    task.owner || basename(task.repository) || basename(task.cwd) || "Unassigned"
+  ));
   const select = document.createElement("select");
   select.className = "card-status";
   select.disabled = archived;
@@ -1263,7 +1327,9 @@ function renderBoardCard(task) {
     await moveTask(task.id, select.value);
   });
   meta.append(select);
-  card.append(session, text, meta);
+  card.append(session, heading);
+  if (description) card.append(description);
+  card.append(meta);
   return card;
 }
 
@@ -1278,17 +1344,22 @@ function openBoardTaskForm(status, trigger) {
   document.querySelectorAll(".board-task-form").forEach((form) => form.remove());
   const form = element("form", "board-task-form");
   const input = document.createElement("input");
-  input.placeholder = `Add to ${boardStatusLabels[status]}`;
-  input.setAttribute("aria-label", `Task for ${boardStatusLabels[status]}`);
+  input.placeholder = `Short ticket title`;
+  input.setAttribute("aria-label", `Ticket title for ${boardStatusLabels[status]}`);
   input.maxLength = 500;
   input.required = true;
+  const description = document.createElement("textarea");
+  description.placeholder = "Short description";
+  description.setAttribute("aria-label", "Ticket description");
+  description.maxLength = 1000;
+  description.rows = 2;
   const actions = element("div", "board-task-actions");
   const cancel = element("button", "button secondary", "Cancel");
   cancel.type = "button";
   const submit = element("button", "button primary", "Add");
   submit.type = "submit";
   actions.append(cancel, submit);
-  form.append(input, actions);
+  form.append(input, description, actions);
   container.prepend(form);
   cancel.addEventListener("click", () => {
     form.remove();
@@ -1308,7 +1379,7 @@ function openBoardTaskForm(status, trigger) {
     submit.disabled = true;
     await api(`/api/projects/${encodeURIComponent(state.selectedProjectId)}/tasks`, {
       method: "POST",
-      body: { text, status }
+      body: { text, description: description.value.trim(), status }
     });
     await refreshBoard();
     toast(`Task added to ${boardStatusLabels[status]}`);

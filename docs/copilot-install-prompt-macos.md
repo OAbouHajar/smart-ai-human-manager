@@ -1,9 +1,9 @@
-# Install Smart Human-AI Manager with Copilot on macOS
+# Install Context Workspace with Copilot on macOS
 
 Copy the prompt below into GitHub Copilot CLI. Copilot will clone the repository, run the installer, verify the service, and report the dashboard URL.
 
 ```text
-Install Smart Human-AI Manager from https://github.com/OAbouHajar/smart-ai-human-manager on this Mac.
+Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this Mac.
 
 Do the setup end-to-end:
 1. Verify that macOS, git, Node.js 22.13 or newer, and at least one supported AI CLI (GitHub Copilot, Claude Code, Codex, or Gemini) are installed.

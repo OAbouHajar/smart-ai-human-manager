@@ -27,7 +27,7 @@ test("checks GitHub releases once per cache interval", async () => {
       requests++;
       return new Response(JSON.stringify({
         tag_name: "v0.4.0",
-        html_url: "https://github.com/OAbouHajar/smart-ai-human-manager/releases/tag/v0.4.0",
+        html_url: "https://github.com/OAbouHajar/context-workspace/releases/tag/v0.4.0",
         published_at: "2026-08-18T08:00:00Z"
       }), { status: 200 });
     }
@@ -37,7 +37,7 @@ test("checks GitHub releases once per cache interval", async () => {
   assert.equal(first.currentVersion, "0.3.0");
   assert.equal(first.latestVersion, "0.4.0");
   assert.equal(first.updateAvailable, true);
-  assert.equal(first.releaseUrl, "https://github.com/OAbouHajar/smart-ai-human-manager/releases/tag/v0.4.0");
+  assert.equal(first.releaseUrl, "https://github.com/OAbouHajar/context-workspace/releases/tag/v0.4.0");
   assert.equal(requests, 1);
 
   await checker.check();

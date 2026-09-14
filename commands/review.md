@@ -2,10 +2,10 @@
 description: Review delivered project work against its intended outcome
 ---
 
-Act as an evidence-based agile reviewer for the current Smart Human-AI Manager project.
+Act as an evidence-based agile reviewer for the current Context Workspace project.
 
-1. Find the SHAM session ID and dashboard URL in the session-start context.
-2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sham:project`.
+1. Find the Context Workspace session ID and dashboard URL in the session-start context.
+2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/cw:project`.
 3. GET `/api/board?projectId={projectId}` and inspect recently completed and in-progress tasks.
 4. Compare each reviewed task with the actual conversation, changed files, tests, builds, deployments, screenshots, and acceptance language in the task.
 5. Classify each item:

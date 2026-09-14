@@ -11,7 +11,7 @@ const eventName = providers.has(process.argv[2]) ? process.argv[3] : process.arg
 const input = await readStdin();
 const rawPayload = input ? JSON.parse(input) : {};
 const payload = normalizePayload(rawPayload);
-const url = process.env.COPILOT_SESSION_HUB_URL || "http://127.0.0.1:43120";
+const url = process.env.CONTEXT_WORKSPACE_URL || process.env.COPILOT_SESSION_HUB_URL || "http://127.0.0.1:43120";
 
 let response = await postEvent();
 if (!response && !updateIsInstalling()) {
@@ -29,23 +29,23 @@ if (!response) {
 if (eventName === "sessionStart") {
   const body = await response.json();
   const updateNotice = body.update?.updateAvailable
-    ? ` Smart Human-AI Manager ${body.update.latestVersion} is available (installed: ${body.update.currentVersion}). ` +
-      `Mention this once at a natural stopping point. Copilot users can run /sham:update. ` +
+    ? ` Context Workspace ${body.update.latestVersion} is available (installed: ${body.update.currentVersion}). ` +
+      `Mention this once at a natural stopping point. Copilot users can run /cw:update. ` +
       `For a natural-language update request, confirm with the user, then POST ${url}/api/update/install with ` +
       `{"sessionId":${JSON.stringify(body.sessionId)}} and poll ${url}/api/update/job until waiting_for_exit or failed. ` +
       `Never run or show a separate installer command.`
     : "";
   const updateResult = ["succeeded", "succeeded_with_warnings"].includes(body.updateJob?.state)
-    ? ` Smart Human-AI Manager updated successfully from ${body.updateJob.fromVersion} to ${body.updateJob.toVersion}. ` +
+    ? ` Context Workspace updated successfully from ${body.updateJob.fromVersion} to ${body.updateJob.toVersion}. ` +
       `${body.updateJob.state === "succeeded_with_warnings" ? `Some integrations need attention: ${body.updateJob.error} ` : ""}Tell the user once.`
     : body.updateJob?.state === "failed"
-      ? ` The scheduled Smart Human-AI Manager update failed: ${body.updateJob.error} Tell the user once and direct them to the dashboard.`
+      ? ` The scheduled Context Workspace update failed: ${body.updateJob.error} Tell the user once and direct them to the dashboard.`
       : "";
   const projectContext = body.project
     ? `This session belongs to the "${body.project.title}" project. Make the checkpoint describe how this session changed that project. `
-    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /sham:project to create or choose one. ";
+    : "This session is unassigned. Save its checkpoint independently and do not attach it to a project automatically. The user can run /cw:project to create or choose one. ";
   const context =
-    `Smart Human-AI Manager is tracking this ${providerName(provider)} session. Session ID: ${body.sessionId}. ` +
+    `Context Workspace is tracking this ${providerName(provider)} session. Session ID: ${body.sessionId}. ` +
     `Checkpoint endpoint: ${url}/api/sessions/${encodeURIComponent(body.sessionId)}/checkpoint. ` +
     `Dashboard: ${url}. When the user asks to wrap, checkpoint, pause, or hand off, save a structured checkpoint there. ` +
     projectContext +
@@ -100,16 +100,30 @@ async function queueEvent() {
 }
 
 function defaultDataDir() {
+  if (process.env.CONTEXT_WORKSPACE_DATA) return process.env.CONTEXT_WORKSPACE_DATA;
   if (process.env.COPILOT_SESSION_HUB_DATA) return process.env.COPILOT_SESSION_HUB_DATA;
-  if (process.env.LOCALAPPDATA) return join(process.env.LOCALAPPDATA, "CopilotSessionHub");
-  if (platform() === "darwin") {
-    const current = join(homedir(), "Library", "Application Support", "CopilotSessionHub");
-    const legacy = join(homedir(), ".copilot-session-hub");
-    return existsSync(join(legacy, "sessions.db")) && !existsSync(join(current, "sessions.db"))
-      ? legacy
-      : current;
+  if (process.env.LOCALAPPDATA) {
+    const current = join(process.env.LOCALAPPDATA, "ContextWorkspace");
+    const legacyCandidates = [
+      join(process.env.LOCALAPPDATA, "SmartHumanAIManager"),
+      join(process.env.LOCALAPPDATA, "CopilotSessionHub")
+    ];
+    if (existsSync(join(current, "sessions.db"))) return current;
+    return legacyCandidates.find((path) => existsSync(join(path, "sessions.db"))) || current;
   }
-  return join(homedir(), ".copilot-session-hub");
+  if (platform() === "darwin") {
+    const current = join(homedir(), "Library", "Application Support", "ContextWorkspace");
+    const legacyCandidates = [
+      join(homedir(), "Library", "Application Support", "SmartHumanAIManager"),
+      join(homedir(), "Library", "Application Support", "CopilotSessionHub"),
+      join(homedir(), ".copilot-session-hub")
+    ];
+    if (existsSync(join(current, "sessions.db"))) return current;
+    return legacyCandidates.find((path) => existsSync(join(path, "sessions.db"))) || current;
+  }
+  const current = join(homedir(), ".context-workspace");
+  const legacy = join(homedir(), ".copilot-session-hub");
+  return existsSync(join(current, "sessions.db")) || !existsSync(join(legacy, "sessions.db")) ? current : legacy;
 }
 
 async function readStdin() {

@@ -27,8 +27,8 @@ pwsh -File .\scripts\install.ps1
 The installer:
 
 1. Copies the application into the platform installation directory.
-2. Registers the installed, version-matched `smart-ai-human-manager` marketplace and installs or refreshes `sham@smart-ai-human-manager`.
-3. Starts Smart Human-AI Manager at `http://127.0.0.1:43120`.
+2. Registers the installed, version-matched `context-workspace` marketplace and installs or refreshes `sham@context-workspace`.
+3. Starts Context Workspace at `http://127.0.0.1:43120`.
 4. Preserves the existing SHAM database.
 
 Restart any Copilot CLI sessions that were open during installation. A new or restarted session loads the plugin hooks and slash commands.

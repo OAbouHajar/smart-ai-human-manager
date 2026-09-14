@@ -1,30 +1,30 @@
 <p align="center">
-  <img src="public/logo-mark.png" alt="" width="96">
+  <img src="public/context-workspace-mark.svg" alt="" width="96">
 </p>
 
-<h1 align="center">SHAM — Smart Human-AI Manager</h1>
+<h1 align="center">Context Workspace</h1>
 
-<p align="center"><strong>Local-first human-AI project management built from your coding sessions.</strong></p>
+<p align="center"><strong>Where AI sessions become shared work.</strong></p>
 
-Turn AI conversations into explicit projects with tasks, decisions, progress, effort, and a clear next action.
+Turn private AI coding sessions into shared project context with tasks, decisions, progress, evidence, and a clear next action.
 
 <p align="center">
   <a href="https://oabouhajar.github.io/smart-ai-human-manager/"><strong>Visit the website</strong></a>
   ·
-  <a href="#quick-start">Install Smart Human-AI Manager</a>
+  <a href="#quick-start">Install Context Workspace</a>
 </p>
 
 > Supports **GitHub Copilot CLI**, **Claude Code**, **OpenAI Codex CLI**, and **Google Gemini CLI**.
 >
 > Independent open source software; not an official GitHub, Microsoft, Anthropic, OpenAI, or Google product.
 
-![Smart Human-AI Manager Sessions view](screenshots/sessions-screenshot.png)
+![Context Workspace Sessions view](screenshots/sessions-screenshot.png)
 
 ## Start here
 
 | I want to… | Go to |
 |---|---|
-| Install Smart Human-AI Manager | [Quick start](#quick-start) |
+| Install Context Workspace | [Quick start](#quick-start) |
 | Set up a specific AI CLI | [Provider guides](docs/providers/README.md) |
 | Manage sessions as goal-based projects | [Project workspace](#project-workspace) |
 | Understand wrapping and resume | [Daily workflow](#daily-workflow) |
@@ -67,11 +67,11 @@ Copy this prompt into Copilot, Claude, Codex, or Gemini:
 <summary><strong>Show installation prompt</strong></summary>
 
 ```text
-Install Smart Human-AI Manager from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
+Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
 
 Detect the operating system first. On macOS, verify git, Node.js 22.13+, and at least one supported AI CLI, then run `./scripts/install.sh --no-open`. On Windows, also verify PowerShell 7 and run `pwsh -File .\scripts\install.ps1 -NoOpen`. Stop on unsupported systems.
 
-Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing SHAM data and unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.
+Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing Context Workspace and legacy SHAM data plus unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.
 ```
 
 Full prompts: [macOS](docs/copilot-install-prompt-macos.md) · [Windows](docs/copilot-install-prompt.md)
@@ -104,49 +104,62 @@ The installer detects available providers, preserves existing settings and sessi
 
 | Provider | Tracking | Resume | Wrap interaction | Guides |
 |---|---|---|---|---|
-| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/sham:wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
+| GitHub Copilot CLI | Yes | `copilot --resume=<id>` | `/cw:wrap` or natural language | [Setup](docs/providers/github-copilot/setup.md) · [Usage](docs/providers/github-copilot/usage.md) |
 | Claude Code | Yes | `claude --resume <id>` | “Wrap this session” | [Setup](docs/providers/claude-code/setup.md) · [Usage](docs/providers/claude-code/usage.md) |
 | OpenAI Codex CLI | Yes | `codex resume <id>` | “Wrap this session” | [Setup](docs/providers/codex/setup.md) · [Usage](docs/providers/codex/usage.md) |
 | Google Gemini CLI | Yes | `gemini --resume <id>` | “Wrap this session” | [Setup](docs/providers/gemini/setup.md) · [Usage](docs/providers/gemini/usage.md) |
 
-Smart Human-AI Manager uses documented lifecycle hooks rather than unstable provider transcript formats. Historical import is currently available only for supported Copilot CLI history.
+Context Workspace uses documented lifecycle hooks rather than unstable provider transcript formats. Historical import is currently available only for supported Copilot CLI history.
 
 ## Daily workflow
 
 1. Start or resume a supported AI CLI session.
-2. Run `/sham:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
-3. Work normally while Smart Human-AI Manager tracks lifecycle events.
-4. When linking a session to a project, choose whether that session should auto-wrap. Unassigned sessions stay manual unless you enable them individually. Use **wrap this session** or `/sham:wrap` whenever you want a richer, intentional handoff.
+2. Run `/cw:project` when the session belongs to a larger goal; create a project or explicitly link it to one.
+3. Work normally while Context Workspace tracks lifecycle events.
+4. When linking a session to a project, choose whether that session should auto-wrap. Unassigned sessions stay manual unless you enable them individually. Use **wrap this session** or `/cw:wrap` whenever you want a richer, intentional handoff.
 5. Review project progress, tasks, effort, blockers, and the recommended next action in the dashboard.
 6. Resume the right session when you are ready to continue.
 
-Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but Smart Human-AI Manager never merges sessions automatically.
+Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but Context Workspace never merges sessions automatically.
 
-Copilot includes **SHAM (Smart Human-AI Manager)** commands:
+### Share project work through Git
+
+Project sharing publishes the work, not the AI conversation. `/cw:project-share` writes a sanitized board snapshot to the dedicated `context-workspace/shared-projects` branch on the repository's configured Git remote. Teammates use `/cw:project-pull` to import that board into their local dashboard and connect a new local AI session to the same project.
+
+Shared snapshots contain project details plus ticket IDs, short descriptions, statuses, owners, and revisions. They exclude transcripts, prompts, raw responses, source code, local paths, and tool logs. The sharing branch is independent and must not be merged into the product's code branches.
+
+Pushes use normal non-force Git updates. Concurrent changes are rejected rather than overwritten; pull and reconcile the local board before publishing again.
+
+Copilot includes **Context Workspace** commands:
 
 | Command | Purpose |
 |---|---|
-| `/sham:wrap` | Save the session checkpoint and update its linked project |
-| `/sham:handoff` | Wrap with an explicit next-session todo list |
-| `/sham:reopen` | Return a wrapped session to active review |
-| `/sham:project` | Create, link, switch, inspect, unlink, or complete a project |
-| `/sham:archive` | Archive or restore a project without deleting its history |
-| `/sham:auto-wrap on\|off\|status\|default` | Control automatic wrapping for the current session |
-| `/sham:refine` | Clarify, split, and prioritize backlog work |
-| `/sham:plan` | Build an ordered plan from unfinished work |
-| `/sham:work` | Execute the best ready project task |
-| `/sham:sync` | Reconcile project state with actual evidence |
-| `/sham:review` | Validate delivered work against its intended outcome |
-| `/sham:retro` | Turn project experience into concrete improvements |
-| `/sham:update` | Download, verify, and install the latest stable release automatically |
+| `/cw:wrap` | Save the session checkpoint and update its linked project |
+| `/cw:handoff` | Wrap with an explicit next-session todo list |
+| `/cw:reopen` | Return a wrapped session to active review |
+| `/cw:project` | Create, link, switch, inspect, unlink, or complete a project |
+| `/cw:project-share` | Preview and publish a sanitized project board to a dedicated Git branch |
+| `/cw:project-push` | Push local shared-board updates without publishing conversations or code |
+| `/cw:project-pull` | Import a teammate's shared board and link the current local session |
+| `/cw:archive` | Archive or restore a project without deleting its history |
+| `/cw:auto-wrap on\|off\|status\|default` | Control automatic wrapping for the current session |
+| `/cw:refine` | Clarify, split, and prioritize backlog work |
+| `/cw:plan` | Build an ordered plan from unfinished work |
+| `/cw:work` | Execute the best ready project task |
+| `/cw:sync` | Reconcile project state with actual evidence |
+| `/cw:review` | Validate delivered work against its intended outcome |
+| `/cw:retro` | Turn project experience into concrete improvements |
+| `/cw:update` | Download, verify, and install the latest stable release automatically |
 
-**SHAM** means **Smart Human-AI Manager**. It combines session continuity with an AI-assisted agile cycle:
+Context Workspace combines session continuity with an AI-assisted agile cycle:
 
 ```text
 refine → plan → work → sync → review → retro
 ```
 
-The human owns goals, priorities, acceptance, and process decisions. SHAM prepares the evidence, keeps the board current, executes approved work, and proposes changes for confirmation.
+The human owns goals, priorities, acceptance, and process decisions. Context Workspace prepares the evidence, keeps the board current, executes approved work, and proposes changes for confirmation.
+
+Existing `/sham:*` commands remain available as compatibility aliases for `/cw:*` during the transition period.
 
 ## Project workspace
 
@@ -163,7 +176,7 @@ The project workspace combines:
 - Time, AI credits, effort, and completion insights.
 - Project-level Azure DevOps work-item links.
 
-![Smart Human-AI Manager Board view](screenshots/board-screenshot.png)
+![Context Workspace Board view](screenshots/board-screenshot.png)
 
 ## How it works
 
@@ -180,28 +193,28 @@ Local SQLite continuity store
 Searchable browser dashboard
 ```
 
-Hooks record lifecycle events and provide the assistant with the local checkpoint endpoint. Auto-wrap can be enabled for an individual session when you link it to a project or from its session menu. The global preference is only a default for deliberately linked project sessions; it never auto-wraps every unassigned session. When Copilot exposes a generated checkpoint, SHAM synchronizes its summary into the automatic wrap. Manual wraps remain authoritative. SHAM never creates or assigns projects automatically.
+Hooks record lifecycle events and provide the assistant with the local checkpoint endpoint. Auto-wrap can be enabled for an individual session when you link it to a project or from its session menu. The global preference is only a default for deliberately linked project sessions; it never auto-wraps every unassigned session. When Copilot exposes a generated checkpoint, Context Workspace synchronizes its summary into the automatic wrap. Manual wraps remain authoritative. Context Workspace never creates or assigns projects automatically.
 
 ## Data and privacy
 
 | Item | macOS | Windows |
 |---|---|---|
-| Session data | `~/Library/Application Support/CopilotSessionHub` | `%LOCALAPPDATA%\CopilotSessionHub` |
-| Application | `~/Library/Application Support/Smart Human-AI Manager/app` | `%LOCALAPPDATA%\Programs\SmartHumanAIManager` |
+| Session data | `~/Library/Application Support/ContextWorkspace` | `%LOCALAPPDATA%\ContextWorkspace` |
+| Application | `~/Library/Application Support/Context Workspace/app` | `%LOCALAPPDATA%\Programs\ContextWorkspace` |
 
 - The service binds only to `127.0.0.1`.
 - Session data remains local.
 - Reinstall, upgrade, and uninstall preserve the SQLite database.
-- Existing legacy macOS data in `~/.copilot-session-hub` remains supported.
+- Existing SHAM and Copilot Session Hub data directories remain supported and are never deleted automatically.
 - Request origin checks and anti-framing headers protect local actions.
 
 ## Maintenance
 
 ### Upgrade
 
-When a stable release is available, SHAM shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
+When a stable release is available, Context Workspace shows a dashboard banner and adds one short notice after a wrap. Update checks use the GitHub Releases API at most once every 24 hours and do not include session data.
 
-Copilot users can run `/sham:update` for a one-command upgrade. SHAM downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
+Copilot users can run `/cw:update` for a one-command upgrade. Context Workspace downloads and verifies the exact stable release in the background. Exit active AI CLI sessions when prompted; installation, dashboard restart, health verification, and cleanup then finish automatically. The next session reports whether the update succeeded.
 
 To check manually, or when upgrading an older installation that predates update notifications, pull the latest source and rerun the installer:
 
@@ -215,7 +228,7 @@ git pull
 pwsh -File .\scripts\install.ps1 -NoOpen
 ```
 
-Set `COPILOT_SESSION_HUB_UPDATE_CHECK=0` when running the installer to disable automatic release checks. The choice is preserved by the installed background service.
+Set `CONTEXT_WORKSPACE_UPDATE_CHECK=0` when running the installer to disable automatic release checks. `COPILOT_SESSION_HUB_UPDATE_CHECK` remains supported as a legacy fallback.
 
 ### Uninstall
 

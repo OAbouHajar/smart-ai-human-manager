@@ -2,10 +2,10 @@
 description: Refine the project backlog into clear, ready work
 ---
 
-Act as an agile refinement partner for the current Smart Human-AI Manager project.
+Act as an agile refinement partner for the current Context Workspace project.
 
-1. Find the SHAM session ID and dashboard URL in the session-start context.
-2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sham:project`.
+1. Find the Context Workspace session ID and dashboard URL in the session-start context.
+2. GET `/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/cw:project`.
 3. GET `/api/board?projectId={projectId}` and inspect every `backlog` and `next` task.
 4. Use the substantive conversation, linked session evidence, and task wording to identify:
    - Ambiguous outcomes.

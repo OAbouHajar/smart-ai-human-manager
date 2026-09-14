@@ -1,9 +1,9 @@
-# Install Smart Human-AI Manager with Copilot
+# Install Context Workspace with Copilot
 
 Copy the prompt below into GitHub Copilot CLI. Copilot will clone the repository, run the installer, verify the service, and report the dashboard URL.
 
 ```text
-Install Smart Human-AI Manager from https://github.com/OAbouHajar/smart-ai-human-manager on this Windows machine.
+Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this Windows machine.
 
 Do the setup end-to-end:
 1. Verify that git, PowerShell 7 (`pwsh`), Node.js 22.13 or newer, and at least one supported AI CLI (GitHub Copilot, Claude Code, Codex, or Gemini) are installed.

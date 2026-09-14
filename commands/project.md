@@ -1,12 +1,12 @@
 ---
-description: Create or manage the explicit Smart Human-AI Manager project for this session
+description: Create or manage the explicit Context Workspace project for this session
 ---
 
-Manage the current session's Smart Human-AI Manager project.
+Manage the current session's Context Workspace project.
 
 Projects are explicit goals or workstreams. A repository can contain many projects, and a session belongs to at most one project. Never infer or create a project from the repository or working directory alone.
 
-1. Find the SHAM session ID and dashboard URL in the session-start context.
+1. Find the Context Workspace session ID and dashboard URL in the session-start context.
 2. GET the current session from `/api/sessions/{sessionId}` and available projects from `/api/projects`.
 3. Determine the requested operation from the user's invocation. If it is not explicit, use `ask_user` to offer:
    - Create a new project and link this session.

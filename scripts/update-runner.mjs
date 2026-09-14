@@ -205,9 +205,13 @@ function runCapture(command, args, logPath) {
 function validReleaseUrl(value, version) {
   try {
     const url = new URL(value);
+    const trustedPaths = [
+      `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`,
+      `/OAbouHajar/context-workspace/releases/tag/v${version}`
+    ];
     return url.protocol === "https:" &&
       url.hostname === "github.com" &&
-      url.pathname === `/OAbouHajar/smart-ai-human-manager/releases/tag/v${version}`;
+      trustedPaths.includes(url.pathname);
   } catch {
     return false;
   }
@@ -216,7 +220,7 @@ function validReleaseUrl(value, version) {
 function userFacingError(error, phase) {
   const message = error instanceof Error ? error.message : "Unknown update error.";
   if (phase === "download") return "The release could not be downloaded or verified. Check that Git is installed and try again.";
-  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /sham:update again.";
+  if (phase === "install") return "The update could not be installed. Restart your AI CLIs and try /cw:update again.";
   return message.slice(0, 300);
 }
 

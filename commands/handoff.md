@@ -2,11 +2,11 @@
 description: Wrap the session and save an explicit todo list for the next session
 ---
 
-Wrap the current session into Smart Human-AI Manager and preserve the user's intended next-session todo list.
+Wrap the current session into Context Workspace and preserve the user's intended next-session todo list.
 
 1. Read the full substantive conversation, including completed work, failed checks, blockers, corrections, and promises.
 2. Determine the todo list:
-   - If the user included todos with the `/sham:handoff` invocation, use those todos.
+   - If the user included todos with the `/cw:handoff` invocation, use those todos.
    - Otherwise ask one focused question using the `ask_user` tool: `What should I save in the todo list for your next session?`
    - Preserve the user's intent, but rewrite each todo as one concise actionable item.
    - Maximum 10 todos.
@@ -24,7 +24,7 @@ Wrap the current session into Smart Human-AI Manager and preserve the user's int
 4. If the user explicitly says there is nothing left to do, set:
    - `nextAction` to `No pending action — this session is complete.`
    - `tasks` to an empty array.
-5. Find the SHAM checkpoint endpoint from the session-start context.
+5. Find the Context Workspace checkpoint endpoint from the session-start context.
 6. POST exactly this JSON shape using an available HTTP client (`Invoke-RestMethod` on Windows or `curl` on macOS):
 
 ```json
@@ -51,7 +51,7 @@ Use the session-start context to determine project membership. If linked, descri
 If the successful response has `update.updateAvailable` set to true, also show:
 
 ```text
-Smart Human-AI Manager <latestVersion> is available (installed: <currentVersion>). Run /sham:update to prepare it safely.
+Context Workspace <latestVersion> is available (installed: <currentVersion>). Run /cw:update to prepare it safely.
 ```
 
 After a successful save, show:

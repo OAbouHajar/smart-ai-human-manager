@@ -3,27 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Smart Human-AI Manager turns coding sessions into structured projects you can plan, track, and measure.">
+  <meta name="description" content="Context Workspace turns private AI coding sessions into shared project context, tasks, decisions, and clear next actions.">
   <meta name="theme-color" content="#07111d">
-  <title>Smart Human-AI Manager — Turn sessions into managed work</title>
-  <link rel="icon" href="assets/logo-mark.png" type="image/png">
+  <title>Context Workspace | Where AI sessions become shared work</title>
+  <link rel="icon" href="assets/context-workspace-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="Smart Human-AI Manager home">
-      <img src="assets/logo-mark.png" alt="">
+    <a class="brand" href="#" aria-label="Context Workspace home">
+      <img src="assets/context-workspace-mark.svg" alt="">
       <span>
-        <strong>Smart Human-AI Manager</strong>
-        <small>AI work management</small>
+        <strong>Context Workspace</strong>
+        <small>Shared project context</small>
       </span>
     </a>
     <nav aria-label="Primary navigation">
       <a href="#workflow">From chat to project</a>
       <a href="#workspace">Workspace</a>
-      <a href="#sham">SHAM commands</a>
+      <a href="#commands">Commands</a>
       <a href="#measure">Insights</a>
       <a class="github-link" href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>
       <a class="nav-cta" href="#install">Install</a>
@@ -33,21 +33,21 @@
   <main id="main">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">AI work management for your local machine</p>
-        <h1>Turn AI conversations into managed projects.</h1>
-        <p class="lead">SHAM captures the work inside your coding sessions and turns it into tasks, project boards, progress, and effort insights.</p>
-        <div class="quick-value" aria-label="What Smart Human-AI Manager does">
+        <p class="eyebrow">Local-first context for AI-assisted work</p>
+        <h1>Where AI sessions become shared work.</h1>
+        <p class="lead">Turn private coding conversations into project context your team can act on: tasks, decisions, progress, evidence, and a clear next step.</p>
+        <div class="quick-value" aria-label="What Context Workspace does">
           <div>
-            <strong>Capture</strong>
-            <span>Decisions and next actions</span>
+            <strong>Remember</strong>
+            <span>Decisions, files, and next actions</span>
           </div>
           <div>
-            <strong>Manage</strong>
-            <span>Tasks and project boards</span>
+            <strong>Coordinate</strong>
+            <span>Projects, tickets, and handoffs</span>
           </div>
           <div>
-            <strong>Measure</strong>
-            <span>Time, progress, and AI usage</span>
+            <strong>Share safely</strong>
+            <span>Work state, not conversations</span>
           </div>
         </div>
         <div class="actions">
@@ -70,17 +70,11 @@
             <span></span><span></span><span></span>
             <small>Project workspace</small>
           </div>
-          <img src="screenshots/sham-board.png" alt="Smart Human-AI Manager project board with work organized by status">
+          <img src="screenshots/sham-board.png" alt="Context Workspace project board with work organized by status">
         </div>
-        <div class="metric-card metric-time">
-          <span>Time across sessions</span>
-          <strong>12h 34m</strong>
-          <small>Effort visible</small>
-        </div>
-        <div class="metric-card metric-progress">
-          <span>Project progress</span>
-          <strong>68%</strong>
-          <small>17 of 25 tasks</small>
+        <div class="context-note">
+          <span>Shared workspace</span>
+          <strong>Project state travels through Git. AI conversations stay local.</strong>
         </div>
       </div>
     </section>
@@ -88,7 +82,7 @@
     <section id="workflow" class="positioning">
       <p class="eyebrow">From chat to project</p>
       <h2>Your AI chat is not the project.</h2>
-      <p class="section-lead">The chat creates work. SHAM makes that work visible and manageable.</p>
+      <p class="section-lead">The conversation creates momentum. Context Workspace preserves it as work your team can understand and continue.</p>
       <div class="session-to-project" aria-label="Session to project flow">
         <article>
           <span class="step-icon">01</span>
@@ -117,7 +111,7 @@
       <div class="workspace-copy">
         <p class="eyebrow">Know what happens next</p>
         <h2>One board.<br>Every next step.</h2>
-        <p>See what to do now, what is blocked, and what shipped—across every AI session.</p>
+        <p>See what to do now, what is blocked, and what shipped across every AI session.</p>
         <ul>
           <li>Prioritized tasks</li>
           <li>Project progress</li>
@@ -125,7 +119,7 @@
         </ul>
       </div>
       <div class="screenshot-frame">
-        <img src="screenshots/board-screenshot.png" alt="Smart Human-AI Manager Kanban board organizing session work into a managed project">
+        <img src="screenshots/board-screenshot.png" alt="Context Workspace Kanban board organizing session work into a managed project">
       </div>
     </section>
 
@@ -169,41 +163,41 @@
       <p>Your context, next action, and project state are ready when you return.</p>
     </section>
 
-    <section id="sham" class="sham">
+    <section id="commands" class="commands">
       <div class="section-heading centered">
         <div>
-          <p class="eyebrow">Smart Human-AI Manager</p>
-          <h2>Meet SHAM.</h2>
+          <p class="eyebrow">Context Workspace</p>
+          <h2>Work from the CLI.</h2>
         </div>
         <p>An AI-assisted agile partner that prepares the evidence and work while you own priorities, acceptance, and decisions.</p>
       </div>
-      <div class="sham-groups">
-        <article class="sham-group">
+      <div class="command-groups">
+        <article class="command-group">
           <span class="section-label">Project management</span>
           <h3>Plan and deliver the work</h3>
-          <div class="sham-commands" aria-label="SHAM project management commands">
-            <code>/sham:project</code>
-            <code>/sham:archive</code>
-            <code>/sham:auto-wrap</code>
-            <code>/sham:refine</code>
-            <code>/sham:plan</code>
-            <code>/sham:work</code>
-            <code>/sham:sync</code>
-            <code>/sham:review</code>
-            <code>/sham:retro</code>
+          <div class="command-list" aria-label="Context Workspace project management commands">
+            <code>/cw:project</code>
+            <code>/cw:archive</code>
+            <code>/cw:auto-wrap</code>
+            <code>/cw:refine</code>
+            <code>/cw:plan</code>
+            <code>/cw:work</code>
+            <code>/cw:sync</code>
+            <code>/cw:review</code>
+            <code>/cw:retro</code>
           </div>
         </article>
-        <article class="sham-group">
+        <article class="command-group">
           <span class="section-label">Session continuity</span>
           <h3>Stop and resume with context</h3>
-          <div class="sham-commands" aria-label="SHAM session continuity commands">
-            <code>/sham:wrap</code>
-            <code>/sham:handoff</code>
-            <code>/sham:reopen</code>
+          <div class="command-list" aria-label="Context Workspace session continuity commands">
+            <code>/cw:wrap</code>
+            <code>/cw:handoff</code>
+            <code>/cw:reopen</code>
           </div>
         </article>
       </div>
-      <p class="sham-cycle">Open source on <a href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>. Inspect the code, report issues, or contribute improvements.</p>
+      <p class="command-note">Existing `/sham:*` commands remain available during the compatibility period. Open source on <a href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>.</p>
     </section>
 
     <section id="install" class="install">
@@ -221,16 +215,16 @@
             <span class="copy-label">Copy prompt</span>
           </button>
         </div>
-        <pre><code id="installPrompt">Install Smart Human-AI Manager from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
+        <pre><code id="installPrompt">Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
 
 Detect the operating system first. On macOS, verify git, Node.js 22.13+, and at least one supported AI CLI, then run `./scripts/install.sh --no-open`. On Windows, also verify PowerShell 7 and run `pwsh -File .\scripts\install.ps1 -NoOpen`. Stop on unsupported systems.
 
-Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing Smart Human-AI Manager data and unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.</code></pre>
+Clone the latest main branch into a temporary directory, read the README and matching installer, preserve existing Context Workspace data and unrelated AI CLI settings, and configure every detected provider. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart or trust action. Proceed autonomously and only ask before administrator-required or destructive actions.</code></pre>
       </div>
     </section>
 
     <section class="local-first">
-      <img src="assets/logo-mark.png" alt="">
+      <img src="assets/context-workspace-mark.svg" alt="">
       <div>
         <p class="eyebrow">Local-first</p>
         <h2>Your work stays yours.</h2>
@@ -241,8 +235,8 @@ Clone the latest main branch into a temporary directory, read the README and mat
 
   <footer>
     <div>
-      <strong>Smart Human-AI Manager</strong>
-      <span>Turn AI sessions into managed work.</span>
+      <strong>Context Workspace</strong>
+      <span>Where AI sessions become shared work.</span>
     </div>
     <nav aria-label="Footer">
       <a href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>

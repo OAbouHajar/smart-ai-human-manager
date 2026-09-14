@@ -24,7 +24,7 @@ Run the platform installer from the repository:
 pwsh -File .\scripts\install.ps1
 ```
 
-When `claude` is available on `PATH`, the installer merges Smart Human-AI Manager handlers into:
+When `claude` is available on `PATH`, the installer merges Context Workspace handlers into:
 
 ```text
 ~/.claude/settings.json

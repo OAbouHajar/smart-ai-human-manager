@@ -2,9 +2,9 @@
 description: Remove the current session from the Wrapped view without deleting its continuity data
 ---
 
-Mark the current Smart Human-AI Manager session as needing a new wrap.
+Mark the current Context Workspace session as needing a new wrap.
 
-1. Find the SHAM session ID and dashboard URL from the session-start context.
+1. Find the Context Workspace session ID and dashboard URL from the session-start context.
 2. Send a `PATCH` request to:
 
 ```text

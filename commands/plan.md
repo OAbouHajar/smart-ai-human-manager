@@ -4,7 +4,7 @@ description: Build an ordered execution plan from unfinished work in the current
 
 Act as a practical delivery coach for the current Copilot session.
 
-1. Find the SHAM session ID and base URL, then GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/sham:project`; never infer a project from the repository.
+1. Find the Context Workspace session ID and base URL, then GET `{baseUrl}/api/sessions/{sessionId}`. If `projectId` is empty, stop and tell the user to run `/cw:project`; never infer a project from the repository.
 2. Read the full substantive conversation, tool results, tests, corrections, and any todo state.
 3. Identify only work that is genuinely unfinished:
    - Explicit user requests not yet completed.
@@ -23,7 +23,7 @@ Act as a practical delivery coach for the current Copilot session.
    - Maximum 10 items.
 6. Set `nextAction` to the first task in that ordered plan.
 7. If nothing remains, set `nextAction` to `No pending action — this session is complete.` and use an empty `tasks` array.
-8. Find the SHAM checkpoint endpoint from session-start context and POST:
+8. Find the Context Workspace checkpoint endpoint from session-start context and POST:
 
 ```json
 {

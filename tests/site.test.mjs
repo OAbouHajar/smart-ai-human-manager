@@ -12,9 +12,9 @@ test("landing page presents the project and AI-first installation path", async (
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8")
   ]);
 
-  assert.match(html, /AI work management for your local machine/);
-  assert.match(html, /Turn AI conversations into managed projects/);
-  assert.match(html, /tasks, project boards, progress, and effort insights/);
+  assert.match(html, /Local-first context for AI-assisted work/);
+  assert.match(html, /Where AI sessions become shared work/);
+  assert.match(html, /tasks, decisions, progress, evidence/);
   assert.match(html, /Your AI chat is not the project/);
   assert.match(html, /One board/);
   assert.match(html, /See what the result really took/);
@@ -28,11 +28,29 @@ test("landing page presents the project and AI-first installation path", async (
   assert.match(html, /OpenAI Codex/);
   assert.match(html, /Google Gemini/);
   assert.match(html, /screenshots\/board-screenshot\.png/);
+  assert.match(html, /assets\/context-workspace-mark\.svg/);
+  assert.match(html, /Existing `\/sham:\*` commands remain available/);
   assert.match(script, /copyHeroPrompt/);
   assert.match(script, /copyPrompt/);
   assert.match(script, /navigator\.clipboard\.writeText/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
   assert.match(workflow, /questions-screenshot\.png/);
   assert.match(workflow, /board-screenshot\.png/);
+  assert.match(workflow, /context-workspace-mark\.svg/);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/);
+});
+
+test("dashboard exposes shared project and ticket UI", async () => {
+  const [html, script] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../public/app.js", import.meta.url), "utf8")
+  ]);
+
+  assert.match(html, /id="projectShareStatus"/);
+  assert.match(script, /\/cw:project-share/);
+  assert.match(script, /\/cw:project-push/);
+  assert.match(script, /\/cw:project-pull/);
+  assert.match(script, /task\.ticketId/);
+  assert.match(script, /task\.description/);
+  assert.match(script, /project\.sharing/);
 });

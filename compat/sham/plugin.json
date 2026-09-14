@@ -1,0 +1,11 @@
+{
+  "name": "sham",
+  "description": "Backward-compatible SHAM commands for Context Workspace.",
+  "version": "0.8.0",
+  "author": {
+    "name": "Context Workspace"
+  },
+  "license": "MIT",
+  "keywords": ["sham", "compatibility", "context-workspace"],
+  "commands": "commands/"
+}
