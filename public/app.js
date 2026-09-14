@@ -1,8 +1,8 @@
 const fullBoardProjectId = new URLSearchParams(window.location.search).get("board") || "";
 const storedProjectTab = localStorage.getItem("sessionHub.projectTab");
-const storedSidebarWidth = Number(localStorage.getItem("sessionHub.sidebarWidth"));
+const storedSidebarWidth = Number(localStorage.getItem("sessionHub.sidebarWidth.v2"));
 if (Number.isFinite(storedSidebarWidth)) {
-  document.documentElement.style.setProperty("--sidebar-width", `${Math.min(420, Math.max(240, storedSidebarWidth))}px`);
+  document.documentElement.style.setProperty("--sidebar-width", `${Math.min(480, Math.max(280, storedSidebarWidth))}px`);
 }
 const state = {
   sessions: [],
@@ -465,33 +465,34 @@ function bindEvents() {
         await refresh();
       }
 
-      function startSidebarResize(event) {
-        if (window.matchMedia("(max-width: 900px)").matches) return;
-        event.preventDefault();
-        const handle = elements.sidebarResizeHandle;
-        handle.setPointerCapture(event.pointerId);
-        document.body.classList.add("resizing-sidebar");
-
-        const resize = (moveEvent) => {
-          const width = Math.min(420, Math.max(240, moveEvent.clientX));
-          document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
-        };
-        const finish = () => {
-          handle.removeEventListener("pointermove", resize);
-          handle.removeEventListener("pointerup", finish);
-          handle.removeEventListener("pointercancel", finish);
-          document.body.classList.remove("resizing-sidebar");
-          const width = Math.round(document.querySelector(".sidebar").getBoundingClientRect().width);
-          localStorage.setItem("sessionHub.sidebarWidth", String(width));
-        };
-
-        handle.addEventListener("pointermove", resize);
-        handle.addEventListener("pointerup", finish);
-        handle.addEventListener("pointercancel", finish);
-      }
     });
   });
   bindBoardDropzones();
+}
+
+function startSidebarResize(event) {
+  if (window.matchMedia("(max-width: 900px)").matches) return;
+  event.preventDefault();
+  const handle = elements.sidebarResizeHandle;
+  handle.setPointerCapture(event.pointerId);
+  document.body.classList.add("resizing-sidebar");
+
+  const resize = (moveEvent) => {
+    const width = Math.min(480, Math.max(280, moveEvent.clientX));
+    document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+  };
+  const finish = () => {
+    handle.removeEventListener("pointermove", resize);
+    handle.removeEventListener("pointerup", finish);
+    handle.removeEventListener("pointercancel", finish);
+    document.body.classList.remove("resizing-sidebar");
+    const width = Math.round(document.querySelector(".sidebar").getBoundingClientRect().width);
+    localStorage.setItem("sessionHub.sidebarWidth.v2", String(width));
+  };
+
+  handle.addEventListener("pointermove", resize);
+  handle.addEventListener("pointerup", finish);
+  handle.addEventListener("pointercancel", finish);
 }
 
 function openCommandPalette() {
@@ -663,9 +664,11 @@ function renderSessionList() {
       ? `Matched ${session.searchMatch.type}: ${session.searchMatch.text}`
       : session.summary || session.lastAction || session.nextAction || "No checkpoint summary yet";
     const preview = element("span", `session-preview${visibleMatch ? " matched" : ""}`, previewText);
-    copy.append(title, context, preview);
     const time = element("span", "session-time", relativeTime(session.updatedAt));
-    button.append(copy, time);
+    const meta = element("span", "session-meta-row");
+    meta.append(context, time);
+    copy.append(title, meta, preview);
+    button.append(copy);
     button.addEventListener("click", async () => {
       await selectSession(session.id);
       closeSidebar();
@@ -1287,17 +1290,16 @@ function renderProjectList() {
       button.className = `session-item${project.id === state.selectedProjectId ? " selected" : ""}`;
       button.dataset.id = project.id;
       const copy = element("span", "session-copy");
-      copy.append(
-        element("strong", "", projectName(project)),
-        element(
-          "span",
-          "",
-          `${project.sharing?.enabled ? "Shared context" : "Private context"} · ${project.sessionCount || 0} ${project.sessionCount === 1 ? "session" : "sessions"} · ${project.openTaskCount} open`
-        )
-      );
-      copy.lastChild.className = project.sharing?.enabled ? "shared-context" : "private-context";
       const time = element("span", "session-time", relativeTime(project.updatedAt));
-      button.append(copy, time);
+      const context = element(
+        "span",
+        project.sharing?.enabled ? "shared-context" : "private-context",
+        `${project.sharing?.enabled ? "Shared context" : "Private context"} · ${project.sessionCount || 0} ${project.sessionCount === 1 ? "session" : "sessions"} · ${project.openTaskCount} open`
+      );
+      const meta = element("span", "session-meta-row");
+      meta.append(context, time);
+      copy.append(element("strong", "", projectName(project)), meta);
+      button.append(copy);
       button.addEventListener("click", async () => {
         state.selectedProjectId = project.id;
         localStorage.setItem("sessionHub.projectId", project.id);

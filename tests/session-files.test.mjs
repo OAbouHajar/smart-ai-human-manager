@@ -905,8 +905,9 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="projectShareButton"/);
   assert.match(html, /id="projectFilters"/);
   assert.match(html, /id="sidebarResizeHandle"/);
-  assert.match(app, /sessionHub\.sidebarWidth/);
+  assert.match(app, /sessionHub\.sidebarWidth\.v2/);
   assert.match(app, /function startSidebarResize/);
+  assert.match(app, /Math\.min\(480, Math\.max\(280/);
   assert.match(styles, /--sidebar-width/);
   assert.match(styles, /\.sidebar-resize-handle/);
   assert.match(html, /data-project-filter="shared"/);

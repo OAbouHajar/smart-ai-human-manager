@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  --sidebar-width: 19rem;
+  --sidebar-width: 20rem;
   --cp-bg: oklch(0.972 0.004 265);
   --cp-bg-elevated: oklch(0.985 0.003 265);
   --cp-surface: oklch(0.995 0.002 265);
@@ -237,7 +237,7 @@ kbd {
 }
 .session-entry { position: relative; }
 .session-item {
-  width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.8rem;
+  width: 100%; display: block;
   padding: 0.8rem 0.75rem; margin-bottom: 0.3rem; color: var(--cp-text); background: transparent;
   border: 1px solid transparent; border-radius: var(--radius-md); cursor: pointer; text-align: left;
 }
@@ -268,12 +268,20 @@ kbd {
   -webkit-box-orient: vertical; -webkit-line-clamp: 2;
 }
 .session-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-meta-row {
+  display: flex !important; align-items: center; justify-content: space-between; gap: 0.65rem;
+  min-width: 0; margin-top: 0.08rem;
+}
+.session-meta-row > span:first-child { min-width: 0; }
 .session-context-line { color: var(--cp-text-muted); font-size: 0.65rem; }
 .session-preview { color: var(--cp-text-soft); font-size: 0.68rem; line-height: 1.45; }
 .session-preview.matched { color: var(--cp-accent); }
 .shared-context { color: var(--cp-link) !important; }
 .private-context { color: var(--cp-warning) !important; }
-.session-time { padding-top: 0.15rem; color: var(--cp-text-muted); font-size: 0.61rem; white-space: nowrap; }
+.session-time {
+  flex: 0 0 auto; padding: 0; color: var(--cp-text-muted); font-size: 0.56rem;
+  font-weight: 500; white-space: nowrap;
+}
 .project-inbox-destination {
   width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.65rem; align-items: center;
   margin-top: 0.65rem; padding: 0.65rem; color: var(--cp-text); background: var(--cp-surface-soft);
@@ -291,12 +299,13 @@ kbd {
   padding-top: var(--space-md); border-top: 1px solid var(--cp-border);
 }
 .sidebar-resize-handle {
-  position: absolute; top: 0; right: -0.3rem; bottom: 0; z-index: 3; width: 0.6rem;
+  position: absolute; top: 0; right: -0.45rem; bottom: 0; z-index: 30; width: 0.9rem;
   padding: 0; background: transparent; border: 0; cursor: col-resize; touch-action: none;
 }
 .sidebar-resize-handle::after {
-  position: absolute; top: 0; right: 0.25rem; bottom: 0; width: 1px;
-  background: transparent; content: ""; transition: background 140ms ease;
+  position: absolute; top: 0; right: 0.4rem; bottom: 0; width: 2px;
+  background: color-mix(in oklch, var(--cp-border-strong) 38%, transparent); content: "";
+  transition: background 140ms ease;
 }
 .sidebar-resize-handle:hover::after,
 .sidebar-resize-handle:focus-visible::after,
