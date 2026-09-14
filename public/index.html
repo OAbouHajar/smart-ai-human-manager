@@ -372,6 +372,48 @@
             <span id="projectPrivacyLabel" class="project-privacy-label">Private context</span>
           </aside>
 
+          <section id="projectBoardPanel" class="project-board-section">
+            <div id="coachStrip" class="coach-strip hidden">
+              <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /cw:plan to generate an ordered execution plan.</strong></div>
+              <code>/cw:plan</code>
+            </div>
+            <div class="project-board-heading">
+              <div><span class="section-label">Project board</span><h2>All work in one place</h2></div>
+              <div id="boardSummary" class="board-summary" aria-label="Project progress">
+                <span><b id="boardOpenCount">0</b> open</span>
+                <span><b id="boardProgressCount">0</b> active</span>
+                <span><b id="boardBlockedCount">0</b> blocked</span>
+                <span><b id="boardDoneCount">0</b> done</span>
+                <span class="board-total"><b id="projectBoardTabCount">0</b> total</span>
+              </div>
+            </div>
+            <p id="projectBoardBoundary" class="project-board-boundary">This board is private until you explicitly share the project.</p>
+            <div class="kanban-scroll">
+              <div id="kanbanBoard" class="kanban-board">
+                <section class="kanban-column" data-status="backlog">
+                  <header><span>Backlog</span><div><b data-count="backlog">0</b><button class="column-add-task" data-add-board-task="backlog" aria-label="Add task to Backlog">+</button></div></header>
+                  <div class="kanban-cards" data-dropzone="backlog"></div>
+                </section>
+                <section class="kanban-column" data-status="next">
+                  <header><span>Next</span><div><b data-count="next">0</b><button class="column-add-task" data-add-board-task="next" aria-label="Add task to Next">+</button></div></header>
+                  <div class="kanban-cards" data-dropzone="next"></div>
+                </section>
+                <section class="kanban-column" data-status="in_progress">
+                  <header><span>In progress</span><div><b data-count="in_progress">0</b><button class="column-add-task" data-add-board-task="in_progress" aria-label="Add task to In progress">+</button></div></header>
+                  <div class="kanban-cards" data-dropzone="in_progress"></div>
+                </section>
+                <section class="kanban-column" data-status="blocked">
+                  <header><span>Blocked</span><div><b data-count="blocked">0</b><button class="column-add-task" data-add-board-task="blocked" aria-label="Add task to Blocked">+</button></div></header>
+                  <div class="kanban-cards" data-dropzone="blocked"></div>
+                </section>
+                <section class="kanban-column" data-status="done">
+                  <header><span>Done</span><div><b data-count="done">0</b><button class="column-add-task" data-add-board-task="done" aria-label="Add task to Done">+</button></div></header>
+                  <div class="kanban-cards" data-dropzone="done"></div>
+                </section>
+              </div>
+            </div>
+          </section>
+
           <div class="project-overview-grid">
             <div class="project-primary-column">
               <article class="project-next-action">
@@ -446,45 +488,6 @@
             </aside>
           </div>
 
-          <section id="projectBoardPanel" class="project-board-section">
-            <div id="coachStrip" class="coach-strip hidden">
-              <div><span class="section-label">Recommended next action</span><strong id="coachNextAction">Run /cw:plan to generate an ordered execution plan.</strong></div>
-              <code>/cw:plan</code>
-            </div>
-            <div class="project-board-heading">
-              <div><span class="section-label">Project board</span><h2>All work in one place</h2></div>
-              <div id="boardSummary" class="board-summary" aria-label="Project progress">
-                <span><b id="boardOpenCount">0</b> open</span>
-                <span><b id="boardProgressCount">0</b> active</span>
-                <span><b id="boardBlockedCount">0</b> blocked</span>
-                <span><b id="boardDoneCount">0</b> done</span>
-                <span class="board-total"><b id="projectBoardTabCount">0</b> total</span>
-              </div>
-            </div>
-            <p id="projectBoardBoundary" class="project-board-boundary">This board is private until you explicitly share the project.</p>
-            <div id="kanbanBoard" class="kanban-board">
-              <section class="kanban-column" data-status="backlog">
-                <header><span>Backlog</span><div><b data-count="backlog">0</b><button class="column-add-task" data-add-board-task="backlog" aria-label="Add task to Backlog">+</button></div></header>
-                <div class="kanban-cards" data-dropzone="backlog"></div>
-              </section>
-              <section class="kanban-column" data-status="next">
-                <header><span>Next</span><div><b data-count="next">0</b><button class="column-add-task" data-add-board-task="next" aria-label="Add task to Next">+</button></div></header>
-                <div class="kanban-cards" data-dropzone="next"></div>
-              </section>
-              <section class="kanban-column" data-status="in_progress">
-                <header><span>In progress</span><div><b data-count="in_progress">0</b><button class="column-add-task" data-add-board-task="in_progress" aria-label="Add task to In progress">+</button></div></header>
-                <div class="kanban-cards" data-dropzone="in_progress"></div>
-              </section>
-              <section class="kanban-column" data-status="blocked">
-                <header><span>Blocked</span><div><b data-count="blocked">0</b><button class="column-add-task" data-add-board-task="blocked" aria-label="Add task to Blocked">+</button></div></header>
-                <div class="kanban-cards" data-dropzone="blocked"></div>
-              </section>
-              <section class="kanban-column" data-status="done">
-                <header><span>Done</span><div><b data-count="done">0</b><button class="column-add-task" data-add-board-task="done" aria-label="Add task to Done">+</button></div></header>
-                <div class="kanban-cards" data-dropzone="done"></div>
-              </section>
-            </div>
-          </section>
         </section>
 
         <section id="projectSessionsPanel" class="project-panel hidden">

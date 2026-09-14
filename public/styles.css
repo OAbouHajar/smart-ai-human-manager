@@ -65,7 +65,7 @@ body {
   background: var(--cp-bg);
   color: var(--cp-text);
   font-family: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 400;
   letter-spacing: 0.003em;
   -webkit-font-smoothing: antialiased;
@@ -149,8 +149,8 @@ h1, h2, p { margin-top: 0; }
 }
 .brand-mark img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .brand strong, .brand small { display: block; }
-.brand strong { font-size: 0.94rem; letter-spacing: -0.015em; }
-.brand small { max-width: 15rem; margin-top: 0.12rem; color: var(--cp-text-muted); font-size: 0.7rem; line-height: 1.35; }
+.brand strong { font-size: 0.88rem; letter-spacing: -0.015em; }
+.brand small { max-width: 15rem; margin-top: 0.12rem; color: var(--cp-text-muted); font-size: 0.65rem; line-height: 1.35; }
 
 .view-switch {
   display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem;
@@ -607,10 +607,10 @@ button.context-link { cursor: pointer; }
   border-radius: 999px; font-weight: 700;
 }
 .project-status i { width: 0.35rem; height: 0.35rem; background: currentColor; border-radius: 50%; }
-.project-workspace-header h1 { margin: 0.55rem 0 0; font-size: 2.65rem; line-height: 1.08; letter-spacing: -0.045em; }
+.project-workspace-header h1 { margin: 0.55rem 0 0; font-size: 2.25rem; line-height: 1.08; letter-spacing: -0.04em; }
 .project-workspace-header p {
   max-width: 68ch; margin: 0.65rem 0 0.9rem;
-  color: var(--cp-text-soft); font-size: 1.02rem; line-height: 1.6;
+  color: var(--cp-text-soft); font-size: 0.92rem; line-height: 1.55;
 }
 .project-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
 .project-workspace-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.74rem; }
@@ -686,7 +686,7 @@ button.context-link { cursor: pointer; }
   border: 1px solid currentColor; border-radius: 999px; font-size: 0.68rem; font-weight: 750; white-space: nowrap;
 }
 .project-privacy-notice.shared .project-privacy-label { color: var(--cp-link); }
-.project-overview-grid { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.5rem; }
+.project-overview-grid { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.5rem; margin-top: 2.5rem; }
 .project-primary-column, .project-insight-column { min-width: 0; display: grid; gap: 1.25rem; align-content: start; }
 .project-next-action, .project-state-grid article, .project-next-tasks, .project-progress-card,
 .project-effort-card, .project-latest-session, .project-session-list, .project-insight {
@@ -716,7 +716,7 @@ button.context-link { cursor: pointer; }
 }
 .project-next-action h2 {
   margin: 0; overflow-wrap: anywhere;
-  font-size: 1.2rem; line-height: 1.4; letter-spacing: -0.02em;
+  font-size: 1.05rem; line-height: 1.42; letter-spacing: -0.02em;
 }
 .project-next-action p { margin: 0.45rem 0 0; color: var(--cp-text-muted); font-size: 0.78rem; }
 .project-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; padding: 0.4rem 0.2rem 0; }
@@ -743,7 +743,7 @@ button.context-link { cursor: pointer; }
 .project-state-grid small { color: var(--cp-text-muted); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; }
 .project-state-grid strong {
   display: block; margin-top: 0.4rem; overflow-wrap: anywhere;
-  font-size: 0.84rem; line-height: 1.5;
+  font-size: 0.78rem; line-height: 1.45;
 }
 .project-next-tasks { overflow: hidden; }
 .project-next-task {
@@ -754,7 +754,7 @@ button.context-link { cursor: pointer; }
 .project-next-task:last-child { border-bottom: 0; }
 .project-next-task:hover { background: var(--cp-surface-soft); }
 .project-next-task strong {
-  overflow-wrap: anywhere; font-size: 0.84rem; line-height: 1.5;
+  overflow-wrap: anywhere; font-size: 0.78rem; line-height: 1.45;
 }
 .project-next-task small { color: var(--cp-text-muted); font-size: 0.7rem; }
 .project-empty-tasks {
@@ -809,7 +809,7 @@ button.context-link { cursor: pointer; }
   font-size: 0.76rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
 }
 .project-latest-session > button { margin-left: 1.1rem; }
-.project-board-section { margin-top: 2.75rem; scroll-margin-top: 5.25rem; }
+.project-board-section { margin-top: 1.5rem; scroll-margin-top: 5.25rem; }
 .project-board-heading {
   display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem;
   margin-bottom: 0.35rem; padding: 0 0.2rem;
@@ -850,12 +850,22 @@ button.context-link { cursor: pointer; }
 .no-projects strong { margin-bottom: 0.4rem; color: var(--cp-text); }
 .board-summary { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.8rem; padding: 0; color: var(--cp-text-muted); font-size: 0.72rem; }
 .board-summary b { color: var(--cp-text); }
-.kanban-board {
-  min-width: 0; display: grid; grid-template-columns: repeat(5, minmax(13.5rem, 1fr));
-  gap: 0.8rem; overflow-x: auto; align-items: start; padding-bottom: 0.5rem;
+.kanban-scroll {
+  max-height: 31rem; overflow: auto; padding: 0.8rem;
+  background: var(--cp-bg-elevated); border: 1px solid var(--cp-border); border-radius: var(--radius-lg);
+  scrollbar-gutter: stable;
 }
-.kanban-column { min-width: 0; min-height: 26rem; padding: 0.8rem; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: var(--radius-lg); }
-.kanban-column > header { display: flex; align-items: center; justify-content: space-between; min-height: 2.35rem; padding: 0 0.3rem 0.7rem; font-size: 0.78rem; font-weight: 750; }
+.kanban-board {
+  min-width: 72rem; display: grid; grid-template-columns: repeat(5, minmax(13.5rem, 1fr));
+  gap: 0.8rem; align-items: start;
+}
+.kanban-column { min-width: 0; min-height: 22rem; padding: 0.8rem; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: var(--radius-lg); }
+.kanban-column > header {
+  position: sticky; top: -0.8rem; z-index: 2; display: flex; align-items: center; justify-content: space-between;
+  min-height: 2.6rem; margin: -0.8rem -0.8rem 0; padding: 0.8rem 1.05rem 0.65rem;
+  background: var(--cp-surface-soft); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  font-size: 0.78rem; font-weight: 750;
+}
 .kanban-column > header > div { display: flex; align-items: center; gap: 0.25rem; }
 .kanban-column header b { min-width: 1.4rem; color: var(--cp-text-muted); text-align: center; }
 .column-add-task {
@@ -863,7 +873,7 @@ button.context-link { cursor: pointer; }
   border: 1px solid transparent; border-radius: var(--radius-sm); font-size: 1.1rem; line-height: 1; cursor: pointer;
 }
 .column-add-task:hover, .column-add-task:focus-visible { color: var(--cp-text); background: var(--cp-surface); border-color: var(--cp-border); }
-.kanban-cards { min-width: 0; min-height: 21.5rem; display: grid; align-content: start; gap: 0.6rem; }
+.kanban-cards { min-width: 0; min-height: 17.5rem; display: grid; align-content: start; gap: 0.6rem; }
 .kanban-cards.drag-over { background: var(--cp-accent-soft); outline: 2px dashed var(--cp-accent); outline-offset: -3px; }
 .board-task-form { display: grid; gap: 0.5rem; padding: 0.65rem; background: var(--cp-surface); border: 1px solid var(--cp-accent); border-radius: var(--radius-sm); }
 .board-task-form input {
@@ -886,7 +896,7 @@ button.context-link { cursor: pointer; }
 .card-session span { min-width: 0; overflow-wrap: anywhere; }
 .card-session button { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; padding: 0; color: var(--cp-text-muted); background: transparent; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
 .card-session svg { width: 0.85rem; }
-.card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.82rem; line-height: 1.5; }
+.card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; line-height: 1.48; }
 .card-meta { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
 .card-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-status { flex: 0 0 auto; min-width: 0; max-width: 6.5rem; padding: 0.2rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.35rem; font-size: 0.65rem; }
