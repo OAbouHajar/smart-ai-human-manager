@@ -1,5 +1,9 @@
 const fullBoardProjectId = new URLSearchParams(window.location.search).get("board") || "";
 const storedProjectTab = localStorage.getItem("sessionHub.projectTab");
+const storedSidebarWidth = Number(localStorage.getItem("sessionHub.sidebarWidth"));
+if (Number.isFinite(storedSidebarWidth)) {
+  document.documentElement.style.setProperty("--sidebar-width", `${Math.min(420, Math.max(240, storedSidebarWidth))}px`);
+}
 const state = {
   sessions: [],
   selectedId: localStorage.getItem("sessionHub.selectedId"),
@@ -358,6 +362,7 @@ function bindEvents() {
   elements.mobileMenu.addEventListener("click", openSidebar);
   elements.closeSidebar.addEventListener("click", closeSidebar);
   elements.sidebarBackdrop.addEventListener("click", closeSidebar);
+  elements.sidebarResizeHandle.addEventListener("pointerdown", startSidebarResize);
   elements.themeButton.addEventListener("click", toggleTheme);
   elements.infoButton.addEventListener("click", toggleInfoPanel);
   elements.closeInfo.addEventListener("click", closeInfoPanel);
@@ -458,6 +463,31 @@ function bindEvents() {
         state.query = "";
         elements.searchInput.value = "";
         await refresh();
+      }
+
+      function startSidebarResize(event) {
+        if (window.matchMedia("(max-width: 900px)").matches) return;
+        event.preventDefault();
+        const handle = elements.sidebarResizeHandle;
+        handle.setPointerCapture(event.pointerId);
+        document.body.classList.add("resizing-sidebar");
+
+        const resize = (moveEvent) => {
+          const width = Math.min(420, Math.max(240, moveEvent.clientX));
+          document.documentElement.style.setProperty("--sidebar-width", `${width}px`);
+        };
+        const finish = () => {
+          handle.removeEventListener("pointermove", resize);
+          handle.removeEventListener("pointerup", finish);
+          handle.removeEventListener("pointercancel", finish);
+          document.body.classList.remove("resizing-sidebar");
+          const width = Math.round(document.querySelector(".sidebar").getBoundingClientRect().width);
+          localStorage.setItem("sessionHub.sidebarWidth", String(width));
+        };
+
+        handle.addEventListener("pointermove", resize);
+        handle.addEventListener("pointerup", finish);
+        handle.addEventListener("pointercancel", finish);
       }
     });
   });
