@@ -1,3 +1,4 @@
+const fullBoardProjectId = new URLSearchParams(window.location.search).get("board") || "";
 const storedProjectTab = localStorage.getItem("sessionHub.projectTab");
 const state = {
   sessions: [],
@@ -6,11 +7,12 @@ const state = {
   filter: "wrapped",
   query: "",
   editField: null,
-  view: localStorage.getItem("sessionHub.projectFirstView") || "board",
+  view: fullBoardProjectId ? "board" : (localStorage.getItem("sessionHub.projectFirstView") || "board"),
   projectTab: ["sessions", "insights"].includes(storedProjectTab) ? storedProjectTab : "overview",
   projectFilter: localStorage.getItem("sessionHub.projectFilter") || "active",
   projects: [],
-  selectedProjectId: localStorage.getItem("sessionHub.projectId"),
+  selectedProjectId: fullBoardProjectId || localStorage.getItem("sessionHub.projectId"),
+  fullBoard: Boolean(fullBoardProjectId),
   board: null,
   projectDialogSessionId: "",
   projectSessionDialogProjectId: "",
@@ -432,6 +434,8 @@ function bindEvents() {
   });
   elements.startProjectAction.addEventListener("click", openProjectNextSession);
   elements.openLatestProjectSession.addEventListener("click", openProjectLatestSession);
+  elements.openFullBoardButton.addEventListener("click", openFullBoard);
+  elements.closeFullBoardButton.addEventListener("click", closeFullBoard);
   document.querySelectorAll("[data-project-tab]").forEach((button) => {
     button.addEventListener("click", () => setProjectTab(button.dataset.projectTab));
   });
@@ -894,6 +898,7 @@ function renderEmpty() {
 function applyView() {
   const boardActive = state.view === "board";
   const searching = Boolean(state.query.trim());
+  document.body.classList.toggle("board-focus-mode", state.fullBoard);
   document.querySelectorAll("[data-view]").forEach((button) => {
     const active = button.dataset.view === state.view;
     button.classList.toggle("active", active);
@@ -926,7 +931,7 @@ function applyView() {
 }
 
 async function refreshBoard() {
-  const apiFilter = state.projectFilter === "private" ? "active" : state.projectFilter;
+  const apiFilter = state.fullBoard ? "all" : state.projectFilter === "private" ? "active" : state.projectFilter;
   state.projects = await api(`/api/projects?filter=${encodeURIComponent(apiFilter)}`);
   const visibleProjects = state.projects.filter(projectMatchesVisibility);
   const preferred = visibleProjects.some((project) => project.id === state.selectedProjectId)
@@ -945,6 +950,7 @@ async function refreshBoard() {
     ? "Collecting the latest wrapped session state."
     : "Create an explicit goal here or run /cw:project from an AI session.";
   elements.openProjectButton.disabled = !hasProject;
+  elements.openFullBoardButton.disabled = !hasProject;
   elements.linkProjectWorkItemButton.disabled = !hasProject;
   elements.projectArchiveButton.disabled = !hasProject;
   elements.projectShareButton.disabled = !hasProject;
@@ -1060,6 +1066,9 @@ function renderProjectWorkspace(board) {
     ? "This board synchronizes with teammates. Session conversations and local file contents stay private."
     : "This board is private until you explicitly share the project.";
   elements.projectShareButton.textContent = project.sharing?.enabled ? "Sync shared project" : "Share project";
+  elements.projectBoardTitle.textContent = state.fullBoard ? `${projectName(project)} board` : "All work in one place";
+  elements.openFullBoardButton.classList.toggle("hidden", state.fullBoard);
+  elements.closeFullBoardButton.classList.toggle("hidden", !state.fullBoard);
   elements.projectArchiveButton.textContent = project.status === "archived" ? "Restore project" : "Archive project";
   elements.addProjectSessionButton.disabled = project.status === "archived";
   elements.linkProjectWorkItemButton.disabled = project.status === "archived";
@@ -1283,6 +1292,7 @@ function renderProjectList() {
 }
 
 function projectMatchesVisibility(project) {
+  if (state.fullBoard) return project.id === fullBoardProjectId;
   if (state.projectFilter === "shared") return Boolean(project.sharing?.enabled);
   if (state.projectFilter === "private") return !project.sharing?.enabled;
   return true;
@@ -1291,6 +1301,19 @@ function projectMatchesVisibility(project) {
 function showProjectBoard() {
   setProjectTab("overview");
   requestAnimationFrame(() => elements.projectBoardPanel.scrollIntoView({ behavior: "smooth", block: "start" }));
+}
+
+function openFullBoard() {
+  const projectId = state.board?.project?.id || state.selectedProjectId;
+  if (!projectId) return;
+  window.open(`${window.location.origin}/?board=${encodeURIComponent(projectId)}`, "_blank", "noopener");
+}
+
+function closeFullBoard() {
+  window.close();
+  window.setTimeout(() => {
+    if (!window.closed) window.location.assign(window.location.origin);
+  }, 100);
 }
 
 async function openUnassignedSessions() {

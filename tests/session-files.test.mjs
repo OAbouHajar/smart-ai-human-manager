@@ -886,6 +886,10 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Shared projects synchronize this board|This board is private until you explicitly share the project/);
   assert.doesNotMatch(html, /data-project-tab="board"/);
   assert.match(html, /id="projectBoardPanel" class="project-board-section"/);
+  assert.match(html, /id="openFullBoardButton"/);
+  assert.match(html, /id="closeFullBoardButton"/);
+  assert.match(app, /window\.open\(`\$\{window\.location\.origin\}\/\?board=/);
+  assert.match(styles, /\.board-focus-mode \.kanban-scroll/);
   assert.match(html, /Context Workspace updates this project only when the session is linked/);
   assert.match(html, /Unassigned sessions/);
   assert.match(html, /id="projectDialog"/);

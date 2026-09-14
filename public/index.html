@@ -378,13 +378,17 @@
               <code>/cw:plan</code>
             </div>
             <div class="project-board-heading">
-              <div><span class="section-label">Project board</span><h2>All work in one place</h2></div>
-              <div id="boardSummary" class="board-summary" aria-label="Project progress">
-                <span><b id="boardOpenCount">0</b> open</span>
-                <span><b id="boardProgressCount">0</b> active</span>
-                <span><b id="boardBlockedCount">0</b> blocked</span>
-                <span><b id="boardDoneCount">0</b> done</span>
-                <span class="board-total"><b id="projectBoardTabCount">0</b> total</span>
+              <div><span class="section-label">Project board</span><h2 id="projectBoardTitle">All work in one place</h2></div>
+              <div class="project-board-actions">
+                <div id="boardSummary" class="board-summary" aria-label="Project progress">
+                  <span><b id="boardOpenCount">0</b> open</span>
+                  <span><b id="boardProgressCount">0</b> active</span>
+                  <span><b id="boardBlockedCount">0</b> blocked</span>
+                  <span><b id="boardDoneCount">0</b> done</span>
+                  <span class="board-total"><b id="projectBoardTabCount">0</b> total</span>
+                </div>
+                <button id="openFullBoardButton" class="button secondary">Open full board ↗</button>
+                <button id="closeFullBoardButton" class="button secondary hidden">Back to workspace</button>
               </div>
             </div>
             <p id="projectBoardBoundary" class="project-board-boundary">This board is private until you explicitly share the project.</p>

@@ -815,6 +815,8 @@ button.context-link { cursor: pointer; }
   margin-bottom: 0.35rem; padding: 0 0.2rem;
 }
 .project-board-heading h2 { margin: 0.25rem 0 0; font-size: 1.35rem; letter-spacing: -0.025em; }
+.project-board-actions { display: flex; align-items: center; justify-content: flex-end; gap: 1rem; }
+.project-board-actions .button { min-height: 2.2rem; padding-inline: 0.75rem; font-size: 0.72rem; white-space: nowrap; }
 .project-board-boundary { margin: 0 0 1rem; color: var(--cp-text-muted); font-size: 0.74rem; }
 .project-session-list { overflow: hidden; }
 .project-session-row {
@@ -902,6 +904,25 @@ button.context-link { cursor: pointer; }
 .card-status { flex: 0 0 auto; min-width: 0; max-width: 6.5rem; padding: 0.2rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.35rem; font-size: 0.65rem; }
 .board-empty { padding: 1rem 0.4rem; color: var(--cp-text-muted); font-size: 0.7rem; text-align: center; }
 .sidebar.board-mode .filters { display: none; }
+
+.board-focus-mode .app-shell { display: block; }
+.board-focus-mode .sidebar,
+.board-focus-mode .topbar,
+.board-focus-mode .project-workspace-header,
+.board-focus-mode .project-tabs,
+.board-focus-mode .project-privacy-notice,
+.board-focus-mode .project-overview-grid,
+.board-focus-mode #updateBanner,
+.board-focus-mode #autoWrapPrompt { display: none !important; }
+.board-focus-mode .main { padding: 0; }
+.board-focus-mode .board-view { max-width: none; padding: 1.25rem; }
+.board-focus-mode .project-board-section { margin: 0; }
+.board-focus-mode .project-board-heading { margin-bottom: 0.65rem; }
+.board-focus-mode .project-board-heading h2 { font-size: 1.55rem; }
+.board-focus-mode .kanban-scroll { max-height: calc(100vh - 7.75rem); }
+.board-focus-mode .kanban-board { min-width: 76rem; min-height: calc(100vh - 10rem); }
+.board-focus-mode .kanban-column { min-height: calc(100vh - 10rem); }
+.board-focus-mode .kanban-cards { min-height: calc(100vh - 13.5rem); }
 
 .work-item-list { display: grid; gap: 0.45rem; }
 .work-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; padding: 0.65rem; background: var(--cp-surface-soft); border-radius: var(--radius-sm); }
@@ -1001,6 +1022,7 @@ button.context-link { cursor: pointer; }
   .project-privacy-notice { grid-template-columns: 1fr; }
   .project-privacy-label { grid-column: 1; }
   .project-board-heading { align-items: flex-start; flex-direction: column; }
+  .project-board-actions { width: 100%; align-items: flex-start; flex-direction: column; }
   .board-summary { justify-content: flex-start; }
   .project-next-action > div { grid-template-columns: auto minmax(0, 1fr); }
   .project-next-action > div .button { grid-column: 1 / -1; }
