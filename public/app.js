@@ -1469,7 +1469,7 @@ function openTicketDialog(task) {
   modalReturnFocus = document.activeElement;
   state.selectedTicket = task;
   elements.ticketDialogId.textContent = task.ticketId || "Project ticket";
-  elements.ticketDialogTitle.textContent = task.text;
+  elements.ticketDialogTitle.textContent = "Edit ticket";
   elements.ticketTitleInput.value = task.text || "";
   elements.ticketDescriptionInput.value = task.description || "";
   elements.ticketOwnerInput.value = task.owner || "";

@@ -865,32 +865,42 @@ button.context-link { cursor: pointer; }
 .project-session-dialog > label:not(.project-auto-wrap-choice) { display: block; margin-bottom: 0.35rem; color: var(--cp-text-muted); font-size: 0.7rem; font-weight: 700; }
 .project-session-dialog select { width: 100%; min-height: 2.5rem; padding: 0 0.65rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: var(--radius-sm); }
 .project-session-dialog .project-auto-wrap-choice { margin-top: 0.85rem; }
-.ticket-dialog { width: min(46rem, 100%); }
-.ticket-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 10rem 12rem; gap: 0.9rem; margin-top: 1.1rem; }
+.ticket-dialog { width: min(50rem, 100%); padding: 1.6rem; }
+.ticket-dialog .dialog-title-row { align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--cp-border); }
+.ticket-dialog .dialog-title-row h2 { margin-top: 0.3rem; font-size: 1.25rem; }
+.ticket-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-top: 1.2rem; }
 .ticket-field { display: grid; gap: 0.35rem; }
-.ticket-field > span { color: var(--cp-text-muted); font-size: 0.68rem; font-weight: 700; }
+.ticket-field > span { color: var(--cp-text-soft); font-size: 0.7rem; font-weight: 700; }
 .ticket-field input, .ticket-field select, .ticket-field textarea {
   width: 100%; min-width: 0; padding: 0.65rem 0.75rem; color: var(--cp-text);
   background: var(--cp-surface-soft); border: 1px solid var(--cp-border);
   border-radius: var(--radius-md); outline: 0;
 }
 .ticket-field input, .ticket-field select { min-height: 2.5rem; }
+.ticket-title-field input { min-height: 2.85rem; font-size: 0.95rem; font-weight: 650; }
 .ticket-field textarea { line-height: 1.5; resize: vertical; }
 .ticket-field input:focus, .ticket-field select:focus, .ticket-field textarea:focus {
   border-color: var(--cp-accent); box-shadow: 0 0 0 3px var(--cp-accent-soft);
 }
-.ticket-title-field { grid-column: 1; }
+.ticket-title-field { grid-column: 1 / -1; }
 .ticket-description-field { grid-column: 1 / -1; }
+.ticket-context-section { margin-top: 1.25rem; }
+.ticket-context-heading {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  margin-bottom: 0.55rem; padding: 0 0.1rem;
+}
+.ticket-context-heading span { color: var(--cp-text-soft); font-size: 0.72rem; font-weight: 750; }
+.ticket-context-heading small { color: var(--cp-text-muted); font-size: 0.64rem; }
 .ticket-context {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0;
   margin: 1rem 0 0; border: 1px solid var(--cp-border); border-radius: var(--radius-md);
 }
-.ticket-context div { min-width: 0; padding: 0.8rem 0.9rem; border-right: 1px solid var(--cp-border); border-bottom: 1px solid var(--cp-border); }
+.ticket-context div { min-width: 0; padding: 0.9rem 1rem; border-right: 1px solid var(--cp-border); border-bottom: 1px solid var(--cp-border); }
 .ticket-context div:nth-child(even) { border-right: 0; }
 .ticket-context div:nth-last-child(-n + 2) { border-bottom: 0; }
 .ticket-context dt { color: var(--cp-text-muted); font-size: 0.65rem; }
-.ticket-context dd { margin: 0.25rem 0 0; overflow-wrap: anywhere; font-size: 0.76rem; font-weight: 650; }
-.ticket-dialog-actions { align-items: center; }
+.ticket-context dd { margin: 0.3rem 0 0; overflow-wrap: anywhere; font-size: 0.76rem; font-weight: 650; line-height: 1.4; }
+.ticket-dialog-actions { align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--cp-border); }
 .ticket-dialog-spacer { flex: 1; }
 .project-insights-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
 .project-insight { min-width: 0; padding: 1.2rem; }
@@ -1104,6 +1114,7 @@ button.context-link { cursor: pointer; }
   .command-item > span { grid-column: 1 / -1; }
   .ticket-form-grid, .ticket-context { grid-template-columns: 1fr; }
   .ticket-title-field, .ticket-description-field { grid-column: 1; }
+  .ticket-context-heading { align-items: flex-start; flex-direction: column; gap: 0.2rem; }
   .ticket-context div { border-right: 0; border-bottom: 1px solid var(--cp-border); }
   .ticket-context div:last-child { border-bottom: 0; }
   .ticket-dialog-actions { align-items: stretch; flex-direction: column; }
