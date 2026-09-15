@@ -1065,6 +1065,7 @@ function renderProjectWorkspace(board) {
   const latestSession = projectState;
   const duration = sessions.reduce((total, session) => total + sessionDurationMs(session), 0);
   const credits = sessions.reduce((total, session) => total + Number(session.metrics?.aiCredits || 0), 0);
+  const tokens = sessions.reduce((total, session) => total + Number(session.metrics?.totalTokens || 0), 0);
   const fileCount = sessions.reduce((total, session) => total + Number(session.fileCount || 0), 0);
 
   elements.projectWorkspaceTitle.textContent = projectName(project);
@@ -1146,15 +1147,15 @@ function renderProjectWorkspace(board) {
   elements.projectProgressBar.style.width = `${progress}%`;
   elements.projectProgressLegend.textContent = `${board.counts.done || 0} done · ${board.total - (board.counts.done || 0)} open`;
   elements.projectEffortTime.textContent = duration ? formatMilliseconds(duration) : "—";
+  elements.projectEffortTokens.textContent = tokens ? formatNumber(tokens) : "—";
   elements.projectEffortCredits.textContent = credits ? formatCredits(credits) : "—";
   elements.projectEffortSessions.textContent = sessions.length;
-  elements.projectEffortFiles.textContent = fileCount;
   elements.projectLatestSessionTitle.textContent = latestSession?.title || "No wrapped session yet";
   elements.projectLatestSessionSummary.textContent = latestSession?.summary || "Run /cw:wrap to connect session outcomes to this project.";
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);
-  renderProjectInsights({ sessions, duration, credits, files: fileCount, board, progress });
+  renderProjectInsights({ sessions, duration, credits, tokens, files: fileCount, board, progress });
 }
 
 function renderProjectSessions(sessions) {
@@ -1185,12 +1186,12 @@ function renderProjectSessions(sessions) {
   }
 }
 
-function renderProjectInsights({ sessions, duration, credits, files, board, progress }) {
+function renderProjectInsights({ sessions, duration, credits, tokens, files, board, progress }) {
   elements.projectInsightsGrid.replaceChildren();
   const metrics = [
     ["Total effort", duration ? formatMilliseconds(duration) : "—", `Across ${sessions.length} sessions`],
     ["Completion", `${progress}%`, `${board.counts.done || 0} of ${board.total} tasks`],
-    ["Average session", duration && sessions.length ? formatMilliseconds(duration / sessions.length) : "—", "Focused project time"],
+    ["AI tokens", tokens ? formatNumber(tokens) : "—", "Cumulative model input and output"],
     ["AI credits", credits ? formatCredits(credits) : "—", `${files} files recorded`]
   ];
   metrics.forEach(([label, value, detail]) => {

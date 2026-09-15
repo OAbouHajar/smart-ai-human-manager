@@ -163,6 +163,9 @@ test("tracks, checkpoints, and updates a Copilot session", async () => {
   await writeFile(metricsPath, `${JSON.stringify({
     type: "session.usage_checkpoint",
     data: { totalNanoAiu: 18_943_000_000_000 }
+  })}\n${JSON.stringify({
+    type: "model.model_call_success",
+    data: { responseUsage: { prompt_tokens: 1200, completion_tokens: 300, total_tokens: 1500 } }
   })}\n`, "utf8");
   response = await fetch(`${baseUrl}/api/hooks/agentStop`, {
     method: "POST",
@@ -193,6 +196,9 @@ test("tracks, checkpoints, and updates a Copilot session", async () => {
   assert.equal(session.tasks.length, 2);
   assert.equal(session.needsReview, false);
   assert.equal(session.metrics.aiCredits, 18_943);
+  assert.equal(session.metrics.inputTokens, 1200);
+  assert.equal(session.metrics.outputTokens, 300);
+  assert.equal(session.metrics.totalTokens, 1500);
   assert.equal(session.fileHistoryStatus, "current");
   assert.equal(session.files[0].displayPath, "server/server.mjs");
 
@@ -379,7 +385,11 @@ test("exports and imports sanitized shared project boards", async () => {
     owner: "Osama",
     updatedAt: task.updatedAt
   });
+  assert.equal(snapshot.context.summary, "");
+  assert.match(snapshot.context.starterPrompt, /Continue the Context Workspace project "Shared Delivery"/);
+  assert.match(snapshot.context.starterPrompt, /Build safe project export/);
   assert.equal("sessions" in snapshot, false);
+  assert.equal(JSON.stringify(snapshot).includes("prompt"), false);
   assert.equal("repository" in snapshot.project, false);
   assert.equal(JSON.stringify(snapshot).includes(process.cwd()), false);
 
@@ -433,7 +443,14 @@ test("exports and imports sanitized shared project boards", async () => {
           ticketId: "ID-1",
           owner: "Jack",
           status: "next"
-        }]
+        }],
+        context: {
+          summary: "A sanitized project handoff.",
+          completedWork: "Safe export implemented.",
+          nextAction: "Validate teammate import.",
+          blockers: ["Waiting for review."],
+          starterPrompt: "Continue the imported project using its shared board."
+        }
       },
       remote: "origin",
       branch: "context-workspace/shared-projects",
@@ -451,6 +468,9 @@ test("exports and imports sanitized shared project boards", async () => {
   assert.equal(board.tasks[0].ticketId, "ID-1");
   assert.equal(board.tasks[0].owner, "Jack");
   assert.equal(board.tasks[0].description, "Publish only approved Kanban fields.");
+  assert.equal(board.projectState.summary, "A sanitized project handoff.");
+  assert.equal(board.projectState.nextAction, "Validate teammate import.");
+  assert.equal(board.projectState.initialQuestion, "Continue the imported project using its shared board.");
 
   const teammateSessionId = "teammate-import-session";
   response = await fetch(`${baseUrl}/api/hooks/copilot/sessionStart`, {

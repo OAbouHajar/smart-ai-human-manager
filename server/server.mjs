@@ -120,6 +120,9 @@ ensureColumn("sessions", "is_project", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("sessions", "project_id", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "ai_credits", "REAL");
 ensureColumn("sessions", "current_tokens", "INTEGER");
+ensureColumn("sessions", "input_tokens", "INTEGER");
+ensureColumn("sessions", "output_tokens", "INTEGER");
+ensureColumn("sessions", "total_tokens", "INTEGER");
 ensureColumn("sessions", "context_limit", "INTEGER");
 ensureColumn("sessions", "model", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("sessions", "context_tier", "TEXT NOT NULL DEFAULT ''");
@@ -756,7 +759,14 @@ function getBoard(url, response) {
       ${sessionIds.length ? `OR (project_id = '' AND session_id IN (${placeholders}))` : ""}
     ORDER BY created_at, id
   `).all(projectRow.id, ...sessionIds).map(workItemRecord);
-  const projectStateRow = sessionRows.find((session) => session.summary || session.last_action || session.next_action) || null;
+  const projectStateRow = sessionRows.find((session) => session.summary || session.last_action || session.next_action) ||
+    db.prepare(`
+      SELECT * FROM sessions
+      WHERE project_id = ? AND source = 'shared-project'
+        AND (summary <> '' OR last_action <> '' OR next_action <> '')
+      ORDER BY updated_at DESC LIMIT 1
+    `).get(projectRow.id) ||
+    null;
   json(response, 200, {
     tasks,
     counts,
@@ -824,6 +834,20 @@ function exportSharedProject(projectId, response) {
     owner: cleanText(task.owner, 120),
     updatedAt: task.updated_at || task.created_at
   }));
+  const latest = sessions[0];
+  const context = latest ? {
+    summary: cleanText(latest.summary, 1500),
+    completedWork: cleanText(latest.last_action, 1000),
+    nextAction: cleanText(latest.next_action, 1000),
+    blockers: cleanArray(parseArray(latest.unresolved), 10, 300),
+    starterPrompt: buildSharedStarterPrompt(project, latest, tickets)
+  } : {
+    summary: "",
+    completedWork: "",
+    nextAction: "",
+    blockers: [],
+    starterPrompt: buildSharedStarterPrompt(project, null, tickets)
+  };
   json(response, 200, {
     schemaVersion: 1,
     revision: project.updated_at,
@@ -834,8 +858,21 @@ function exportSharedProject(projectId, response) {
       status: project.status === "complete" ? "complete" : "active",
       ticketPrefix: project.ticket_prefix || deriveTicketPrefix(project.title)
     },
-    tickets
+    tickets,
+    context
   });
+}
+
+function buildSharedStarterPrompt(project, latest, tickets) {
+  const nextTicket = tickets.find((ticket) => ["in_progress", "next"].includes(ticket.status));
+  const nextAction = cleanText(latest?.next_action, 600) || nextTicket?.title || "";
+  const summary = cleanText(latest?.summary, 600) || cleanText(project.description, 600);
+  return cleanText([
+    `Continue the Context Workspace project "${project.title}".`,
+    summary ? `Current context: ${summary}` : "",
+    nextAction ? `Recommended next action: ${nextAction}` : "",
+    "Use the local repository as the source of truth and validate the completed outcome."
+  ].filter(Boolean).join("\n\n"), 1800);
 }
 
 function updateProjectShare(projectId, data, response) {
@@ -934,6 +971,13 @@ function importSharedProject(data, response) {
   const prefix = normalizeTicketPrefix(snapshot.project.ticketPrefix) || deriveTicketPrefix(title);
   const description = cleanText(snapshot.project.description, 1000);
   const status = snapshot.project.status === "complete" ? "complete" : "active";
+  const sharedContext = snapshot.context && typeof snapshot.context === "object" ? {
+    summary: cleanText(snapshot.context.summary, 1500),
+    completedWork: cleanText(snapshot.context.completedWork, 1000),
+    nextAction: cleanText(snapshot.context.nextAction, 1000),
+    blockers: cleanArray(snapshot.context.blockers, 10, 300),
+    starterPrompt: cleanText(snapshot.context.starterPrompt, 1800)
+  } : null;
   const syntheticSessionId = `shared-project:${projectId}`;
   db.exec("BEGIN");
   try {
@@ -971,6 +1015,20 @@ function importSharedProject(data, response) {
       `).run(
         syntheticSessionId, syntheticSessionId, `Shared board · ${title}`,
         "Imported shared project state.", now, now, now, projectId
+      );
+    }
+    if (sharedContext) {
+      db.prepare(`
+        UPDATE sessions SET summary = ?, last_action = ?, next_action = ?, unresolved = ?, initial_question = ?, updated_at = ?
+        WHERE id = ?
+      `).run(
+        sharedContext.summary,
+        sharedContext.completedWork,
+        sharedContext.nextAction,
+        JSON.stringify(sharedContext.blockers),
+        sharedContext.starterPrompt,
+        revision || now,
+        syntheticSessionId
       );
     }
     const selectTask = db.prepare("SELECT * FROM tasks WHERE project_id = ? AND ticket_id = ? ORDER BY id LIMIT 1");
@@ -1347,6 +1405,9 @@ function checkpoint(id, data, response) {
     : {
         aiCredits: existing.ai_credits,
         currentTokens: existing.current_tokens,
+        inputTokens: existing.input_tokens,
+        outputTokens: existing.output_tokens,
+        totalTokens: existing.total_tokens,
         contextLimit: existing.context_limit,
         model: existing.model,
         contextTier: existing.context_tier,
@@ -1357,12 +1418,14 @@ function checkpoint(id, data, response) {
     db.prepare(`
       UPDATE sessions SET title = ?, summary = ?, last_action = ?, next_action = ?,
         unresolved = ?, decisions = ?, needs_review = 0, updated_at = ?,
-        ai_credits = ?, current_tokens = ?, context_limit = ?, model = ?, context_tier = ?, metrics_at = ?,
+        ai_credits = ?, current_tokens = ?, input_tokens = ?, output_tokens = ?, total_tokens = ?,
+        context_limit = ?, model = ?, context_tier = ?, metrics_at = ?,
         checkpoint_source = 'manual', checkpoint_trigger = 'manual', checkpointed_at = ?
       WHERE id = ?
     `).run(
       title, summary, lastAction, nextAction, JSON.stringify(unresolved), JSON.stringify(decisions), now,
-      metrics.aiCredits, metrics.currentTokens, metrics.contextLimit, metrics.model, metrics.contextTier, metrics.capturedAt, now,
+      metrics.aiCredits, metrics.currentTokens, metrics.inputTokens, metrics.outputTokens, metrics.totalTokens,
+      metrics.contextLimit, metrics.model, metrics.contextTier, metrics.capturedAt, now,
       id
     );
     if (tasks) {
@@ -1992,6 +2055,9 @@ function sessionRecord(row) {
     metrics: {
       aiCredits: row.ai_credits,
       currentTokens: row.current_tokens,
+      inputTokens: row.input_tokens,
+      outputTokens: row.output_tokens,
+      totalTokens: row.total_tokens,
       contextLimit: row.context_limit,
       model: row.model || "",
       contextTier: row.context_tier || "",
@@ -2635,6 +2701,9 @@ function readSessionMetrics(sessionId, transcriptPath) {
   const empty = {
     aiCredits: null,
     currentTokens: null,
+    inputTokens: null,
+    outputTokens: null,
+    totalTokens: null,
     contextLimit: null,
     model: "",
     contextTier: "",
@@ -2644,6 +2713,10 @@ function readSessionMetrics(sessionId, transcriptPath) {
   try {
     let totalNanoAiu = null;
     let currentTokens = null;
+    let inputTokens = 0;
+    let outputTokens = 0;
+    let totalTokens = 0;
+    let hasTokenUsage = false;
     let contextLimit = null;
     let model = "";
     let contextTier = "";
@@ -2657,6 +2730,20 @@ function readSessionMetrics(sessionId, transcriptPath) {
       }
       if (event.type === "session.usage_checkpoint" && Number.isFinite(event.data?.totalNanoAiu)) {
         totalNanoAiu = event.data.totalNanoAiu;
+      }
+      if (event.type === "model.model_call_success" && event.data?.responseUsage) {
+        const usage = event.data.responseUsage;
+        const promptTokens = Number(usage.prompt_tokens);
+        const completionTokens = Number(usage.completion_tokens);
+        const callTotal = Number(usage.total_tokens);
+        if (Number.isFinite(promptTokens) || Number.isFinite(completionTokens) || Number.isFinite(callTotal)) {
+          if (Number.isFinite(promptTokens)) inputTokens += promptTokens;
+          if (Number.isFinite(completionTokens)) outputTokens += completionTokens;
+          totalTokens += Number.isFinite(callTotal)
+            ? callTotal
+            : (Number.isFinite(promptTokens) ? promptTokens : 0) + (Number.isFinite(completionTokens) ? completionTokens : 0);
+          hasTokenUsage = true;
+        }
       }
       if (event.type === "session.shutdown") {
         if (Number.isFinite(event.data?.totalNanoAiu)) totalNanoAiu = event.data.totalNanoAiu;
@@ -2677,6 +2764,9 @@ function readSessionMetrics(sessionId, transcriptPath) {
     return {
       aiCredits: totalNanoAiu === null ? null : totalNanoAiu / 1_000_000_000,
       currentTokens,
+      inputTokens: hasTokenUsage ? inputTokens : null,
+      outputTokens: hasTokenUsage ? outputTokens : null,
+      totalTokens: hasTokenUsage ? totalTokens : null,
       contextLimit,
       model,
       contextTier,
