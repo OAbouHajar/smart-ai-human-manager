@@ -597,6 +597,50 @@
     </form>
   </div>
 
+  <div id="ticketDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="ticketDialogTitle">
+    <form id="ticketForm" class="dialog ticket-dialog">
+      <div class="dialog-title-row">
+        <div>
+          <span id="ticketDialogId" class="section-label">Project ticket</span>
+          <h2 id="ticketDialogTitle">Ticket details</h2>
+        </div>
+        <button type="button" id="closeTicketDialog" class="icon-button" aria-label="Close ticket details">
+          <svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="ticket-form-grid">
+        <label class="ticket-field ticket-title-field">
+          <span>Title</span>
+          <input id="ticketTitleInput" maxlength="500" required>
+        </label>
+        <label class="ticket-field">
+          <span>Status</span>
+          <select id="ticketStatusInput"></select>
+        </label>
+        <label class="ticket-field">
+          <span>Owner</span>
+          <input id="ticketOwnerInput" maxlength="120" placeholder="Unassigned">
+        </label>
+        <label class="ticket-field ticket-description-field">
+          <span>Description</span>
+          <textarea id="ticketDescriptionInput" rows="6" maxlength="1000" placeholder="Add the details, outcome, or acceptance notes for this ticket."></textarea>
+        </label>
+      </div>
+      <dl class="ticket-context">
+        <div><dt>Source session</dt><dd id="ticketSessionValue">—</dd></div>
+        <div><dt>Workspace</dt><dd id="ticketWorkspaceValue">—</dd></div>
+        <div><dt>Branch</dt><dd id="ticketBranchValue">—</dd></div>
+        <div><dt>Last updated</dt><dd id="ticketUpdatedValue">—</dd></div>
+      </dl>
+      <div class="dialog-actions ticket-dialog-actions">
+        <button type="button" id="openTicketSessionButton" class="button secondary">Open source session</button>
+        <span class="ticket-dialog-spacer"></span>
+        <button type="button" id="cancelTicketDialog" class="button quiet">Cancel</button>
+        <button class="button primary">Save ticket</button>
+      </div>
+    </form>
+  </div>
+
   <div id="commandPalette" class="dialog-backdrop hidden">
     <div class="command-palette" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
       <label class="command-search" for="commandSearch">

@@ -22,6 +22,7 @@ const state = {
   projectSessionDialogProjectId: "",
   projectSessionDialogRequest: 0,
   workItemTarget: "session",
+  selectedTicket: null,
   unassignedCount: 0,
   commandIndex: 0,
   update: null,
@@ -337,6 +338,7 @@ function bindEvents() {
       closeWorkItemDialog();
       closeProjectDialog();
       closeProjectSessionDialog();
+      closeTicketDialog();
       closeCommandPalette();
       closeInfoPanel();
       closeSidebar();
@@ -428,6 +430,13 @@ function bindEvents() {
   elements.cancelProjectSessionDialog.addEventListener("click", closeProjectSessionDialog);
   elements.projectSessionDialog.addEventListener("click", (event) => {
     if (event.target === elements.projectSessionDialog) closeProjectSessionDialog();
+  });
+  elements.ticketForm.addEventListener("submit", saveTicket);
+  elements.closeTicketDialog.addEventListener("click", closeTicketDialog);
+  elements.cancelTicketDialog.addEventListener("click", closeTicketDialog);
+  elements.openTicketSessionButton.addEventListener("click", openTicketSession);
+  elements.ticketDialog.addEventListener("click", (event) => {
+    if (event.target === elements.ticketDialog) closeTicketDialog();
   });
   document.querySelectorAll("[data-project-filter]").forEach((button) => {
     button.addEventListener("click", async () => {
@@ -1376,13 +1385,30 @@ function renderBoardCard(task) {
   const archived = state.board?.project?.status === "archived";
   const card = element("article", `kanban-card${task.status === "done" ? " done-card" : ""}`);
   card.draggable = !archived;
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-label", `Open ${task.ticketId || "ticket"}: ${task.text}`);
   card.dataset.taskId = task.id;
+  let dragged = false;
   card.addEventListener("dragstart", (event) => {
+    dragged = true;
     event.dataTransfer.setData("text/plain", String(task.id));
     event.dataTransfer.effectAllowed = "move";
     card.classList.add("dragging");
   });
-  card.addEventListener("dragend", () => card.classList.remove("dragging"));
+  card.addEventListener("dragend", () => {
+    card.classList.remove("dragging");
+    setTimeout(() => { dragged = false; }, 0);
+  });
+  card.addEventListener("click", (event) => {
+    if (!dragged && !event.target.closest("button, select")) openTicketDialog(task);
+  });
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openTicketDialog(task);
+    }
+  });
 
   const session = element("div", "card-session");
   session.append(element("span", "", task.sessionTitle));
@@ -1427,6 +1453,70 @@ function renderBoardCard(task) {
   if (description) card.append(description);
   card.append(meta);
   return card;
+}
+
+function openTicketDialog(task) {
+  modalReturnFocus = document.activeElement;
+  state.selectedTicket = task;
+  elements.ticketDialogId.textContent = task.ticketId || "Project ticket";
+  elements.ticketDialogTitle.textContent = task.text;
+  elements.ticketTitleInput.value = task.text || "";
+  elements.ticketDescriptionInput.value = task.description || "";
+  elements.ticketOwnerInput.value = task.owner || "";
+  elements.ticketStatusInput.replaceChildren();
+  Object.entries(boardStatusLabels).forEach(([value, label]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    option.selected = task.status === value;
+    elements.ticketStatusInput.append(option);
+  });
+  elements.ticketSessionValue.textContent = task.sessionTitle || "No linked session";
+  elements.ticketWorkspaceValue.textContent = basename(task.repository) || basename(task.cwd) || "Local workspace";
+  elements.ticketBranchValue.textContent = task.branch || "No branch";
+  elements.ticketUpdatedValue.textContent = task.updatedAt ? `${relativeTime(task.updatedAt)} · ${new Date(task.updatedAt).toLocaleString()}` : "Unknown";
+  elements.openTicketSessionButton.disabled = !task.sessionId || task.sessionId.startsWith("shared-project:");
+  const archived = state.board?.project?.status === "archived";
+  for (const field of [elements.ticketTitleInput, elements.ticketDescriptionInput, elements.ticketOwnerInput, elements.ticketStatusInput]) {
+    field.disabled = archived;
+  }
+  elements.ticketForm.querySelector('button[type="submit"]').disabled = archived;
+  elements.ticketDialog.classList.remove("hidden");
+  elements.ticketTitleInput.focus();
+}
+
+function closeTicketDialog() {
+  const wasOpen = !elements.ticketDialog.classList.contains("hidden");
+  elements.ticketDialog.classList.add("hidden");
+  state.selectedTicket = null;
+  if (wasOpen) modalReturnFocus?.focus();
+}
+
+async function saveTicket(event) {
+  event.preventDefault();
+  if (!state.selectedTicket) return;
+  await api(`/api/tasks/${state.selectedTicket.id}`, {
+    method: "PATCH",
+    body: {
+      text: elements.ticketTitleInput.value,
+      description: elements.ticketDescriptionInput.value,
+      owner: elements.ticketOwnerInput.value,
+      status: elements.ticketStatusInput.value
+    }
+  });
+  closeTicketDialog();
+  await refreshBoard();
+  toast("Ticket updated");
+}
+
+async function openTicketSession() {
+  const sessionId = state.selectedTicket?.sessionId;
+  if (!sessionId || sessionId.startsWith("shared-project:")) return;
+  closeTicketDialog();
+  state.view = "sessions";
+  localStorage.setItem("sessionHub.projectFirstView", "sessions");
+  await selectSession(sessionId);
+  applyView();
 }
 
 function openBoardTaskForm(status, trigger) {
