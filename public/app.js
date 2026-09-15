@@ -334,6 +334,7 @@ function bindEvents() {
       }
     }
     if (event.key === "Escape") {
+      const dialogWasOpen = isDialogOpen();
       closeDialog();
       closeWorkItemDialog();
       closeProjectDialog();
@@ -342,6 +343,10 @@ function bindEvents() {
       closeCommandPalette();
       closeInfoPanel();
       closeSidebar();
+      if (state.fullBoard && !dialogWasOpen) {
+        event.preventDefault();
+        closeFullBoard();
+      }
     }
   });
   document.querySelectorAll("[data-edit]").forEach((button) => {
@@ -1352,9 +1357,13 @@ function openFullBoard() {
 }
 
 function closeFullBoard() {
+  const projectId = state.board?.project?.id || state.selectedProjectId;
   window.close();
   window.setTimeout(() => {
-    if (!window.closed) window.location.assign(window.location.origin);
+    if (!window.closed) {
+      if (projectId) localStorage.setItem("sessionHub.projectId", projectId);
+      window.location.assign(window.location.origin);
+    }
   }, 100);
 }
 
@@ -1385,30 +1394,13 @@ function renderBoardCard(task) {
   const archived = state.board?.project?.status === "archived";
   const card = element("article", `kanban-card${task.status === "done" ? " done-card" : ""}`);
   card.draggable = !archived;
-  card.tabIndex = 0;
-  card.setAttribute("role", "button");
-  card.setAttribute("aria-label", `Open ${task.ticketId || "ticket"}: ${task.text}`);
   card.dataset.taskId = task.id;
-  let dragged = false;
   card.addEventListener("dragstart", (event) => {
-    dragged = true;
     event.dataTransfer.setData("text/plain", String(task.id));
     event.dataTransfer.effectAllowed = "move";
     card.classList.add("dragging");
   });
-  card.addEventListener("dragend", () => {
-    card.classList.remove("dragging");
-    setTimeout(() => { dragged = false; }, 0);
-  });
-  card.addEventListener("click", (event) => {
-    if (!dragged && !event.target.closest("button, select")) openTicketDialog(task);
-  });
-  card.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openTicketDialog(task);
-    }
-  });
+  card.addEventListener("dragend", () => card.classList.remove("dragging"));
 
   const session = element("div", "card-session");
   session.append(element("span", "", task.sessionTitle));
@@ -1428,6 +1420,18 @@ function renderBoardCard(task) {
   if (task.ticketId) heading.append(element("span", "ticket-id", task.ticketId));
   heading.append(element("p", "card-text", task.text));
   const description = task.description ? element("p", "card-description", task.description) : null;
+  const details = element("button", "ticket-card-details");
+  details.type = "button";
+  details.draggable = false;
+  details.setAttribute("aria-label", `Open ${task.ticketId || "ticket"} details`);
+  details.append(heading);
+  if (description) details.append(description);
+  details.addEventListener("pointerdown", (event) => event.stopPropagation());
+  details.addEventListener("dragstart", (event) => event.preventDefault());
+  details.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openTicketDialog(task);
+  });
   const meta = element("div", "card-meta");
   meta.append(element(
     "span",
@@ -1449,9 +1453,15 @@ function renderBoardCard(task) {
     await moveTask(task.id, select.value);
   });
   meta.append(select);
-  card.append(session, heading);
-  if (description) card.append(description);
-  card.append(meta);
+  const detailsLabel = element("button", "ticket-details-link", "Details");
+  detailsLabel.type = "button";
+  detailsLabel.addEventListener("pointerdown", (event) => event.stopPropagation());
+  detailsLabel.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openTicketDialog(task);
+  });
+  meta.append(detailsLabel);
+  card.append(session, details, meta);
   return card;
 }
 

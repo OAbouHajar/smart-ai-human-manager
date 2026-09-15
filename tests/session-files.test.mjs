@@ -891,7 +891,10 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="ticketDescriptionInput"/);
   assert.match(app, /function openTicketDialog/);
   assert.match(app, /function saveTicket/);
+  assert.match(app, /ticket-card-details/);
+  assert.match(app, /state\.fullBoard && !dialogWasOpen/);
   assert.match(styles, /\.ticket-dialog/);
+  assert.match(styles, /\.ticket-card-details/);
   assert.match(html, /id="closeFullBoardButton"/);
   assert.match(app, /window\.open\(`\$\{window\.location\.origin\}\/\?board=/);
   assert.match(styles, /\.board-focus-mode \.kanban-scroll/);

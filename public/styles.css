@@ -32,7 +32,7 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
 }
-.kanban-card:hover, .kanban-card:focus-visible {
+.kanban-card:hover, .kanban-card:focus-within {
   border-color: color-mix(in oklch, var(--cp-accent) 45%, var(--cp-border));
   box-shadow: 0 8px 22px oklch(0.1 0.01 255 / 0.14);
 }
@@ -951,9 +951,19 @@ button.context-link { cursor: pointer; }
 .card-session span { min-width: 0; overflow-wrap: anywhere; }
 .card-session button { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; padding: 0; color: var(--cp-text-muted); background: transparent; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
 .card-session svg { width: 0.85rem; }
+.ticket-card-details {
+  width: 100%; display: block; padding: 0; color: inherit; background: transparent;
+  border: 0; cursor: pointer; text-align: left;
+}
+.ticket-card-details:hover .card-text, .ticket-card-details:focus-visible .card-text { color: var(--cp-accent); }
 .card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; line-height: 1.48; }
-.card-meta { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
+.card-meta { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
 .card-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticket-details-link {
+  padding: 0; color: var(--cp-link); background: transparent; border: 0;
+  cursor: pointer; font-size: 0.64rem; font-weight: 700;
+}
+.ticket-details-link:hover { text-decoration: underline; }
 .card-status { flex: 0 0 auto; min-width: 0; max-width: 6.5rem; padding: 0.2rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.35rem; font-size: 0.65rem; }
 .board-empty { padding: 1rem 0.4rem; color: var(--cp-text-muted); font-size: 0.7rem; text-align: center; }
 .sidebar.board-mode .filters { display: none; }
@@ -971,6 +981,7 @@ button.context-link { cursor: pointer; }
 .board-focus-mode .board-view { max-width: none; padding: 1.25rem; }
 .board-focus-mode .project-board-section { margin: 0; }
 .board-focus-mode .project-board-heading { margin-bottom: 0.65rem; }
+.board-focus-mode #closeFullBoardButton { display: inline-flex !important; }
 .board-focus-mode .project-board-heading h2 { font-size: 1.55rem; }
 .board-focus-mode .kanban-scroll { max-height: calc(100vh - 7.75rem); }
 .board-focus-mode .kanban-board { min-width: 76rem; min-height: calc(100vh - 10rem); }
