@@ -654,6 +654,13 @@ button.context-link { cursor: pointer; }
 .project-meta-chip.folder {
   color: var(--tag-folder); background: color-mix(in oklch, var(--tag-folder) 10%, transparent);
 }
+.project-meta-chip.project-id {
+  color: var(--cp-link); background: color-mix(in oklch, var(--cp-link) 10%, transparent);
+  cursor: pointer; font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.project-meta-chip.project-id:hover {
+  background: color-mix(in oklch, var(--cp-link) 17%, transparent);
+}
 .project-meta-link {
   min-height: 1.85rem; display: inline-flex; align-items: center; gap: 0.32rem; padding: 0.25rem 0.65rem;
   color: var(--tag-ado); background: color-mix(in oklch, var(--tag-ado) 10%, transparent);

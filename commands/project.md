@@ -8,7 +8,11 @@ Projects are explicit goals or workstreams. A repository can contain many projec
 
 1. Find the Context Workspace session ID and dashboard URL in the session-start context.
 2. GET the current session from `/api/sessions/{sessionId}` and available projects from `/api/projects`.
-3. Determine the requested operation from the user's invocation. If it is not explicit, use `ask_user` to offer:
+3. Determine the requested operation from the user's invocation.
+   - When the invocation is `/cw:project <project-id>` and `<project-id>` exactly matches an available project UUID, link or move the current session to that project immediately with `autoWrap: false`. The exact ID is explicit project selection; do not ask the user to choose the project again.
+   - When the invocation includes both an exact project ID and an explicit request to enable auto-wrap, link with `autoWrap: true`.
+   - If an ID is provided but does not exactly match an available project, stop and report that the project was not found.
+   - Otherwise, if the requested operation is not explicit, use `ask_user` to offer:
    - Create a new project and link this session.
    - Link or move this session to an existing project.
    - Show the current project.
@@ -16,7 +20,7 @@ Projects are explicit goals or workstreams. A repository can contain many projec
    - Mark the current project complete.
 4. Perform exactly one confirmed operation:
    - **Create:** Ask for a concise goal-based title, optional one-sentence description, and whether auto-wrap should be enabled for this session. POST `/api/projects` with `{ "title", "description", "sessionId", "autoWrap": true|false }`.
-   - **Link or switch:** Prefer projects returned by `/api/project-suggestions?sessionId={sessionId}` with `suggested: true`, but show that they are suggestions only. Ask the user to choose and whether auto-wrap should be enabled for this session, then POST `/api/projects/{projectId}/sessions` with `{ "sessionId", "autoWrap": true|false }`.
+   - **Link or switch:** Prefer projects returned by `/api/project-suggestions?sessionId={sessionId}` with `suggested: true`, but show that they are suggestions only. Ask the user to choose and whether auto-wrap should be enabled for this session, then POST `/api/projects/{projectId}/sessions` with `{ "sessionId", "autoWrap": true|false }`. Skip this selection prompt only for an exact project ID supplied in the invocation.
    - **Show:** Report the linked project's title, description, status, dashboard URL, and current recommended next action from `/api/board?projectId={projectId}`. If unassigned, say so clearly.
    - **Unlink:** Confirm the choice, then DELETE `/api/projects/{projectId}/sessions/{sessionId}`.
    - **Complete:** Confirm the choice, then PATCH `/api/projects/{projectId}` with `{ "status": "complete" }`.

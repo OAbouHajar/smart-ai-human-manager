@@ -122,6 +122,14 @@ Context Workspace uses documented lifecycle hooks rather than unstable provider 
 
 Sessions remain **Unassigned** until you choose a project. Repository and folder matches may be suggested, but Context Workspace never merges sessions automatically.
 
+Every project has a stable UUID shown in the project header. Click it to copy the ID, then link a new session directly with:
+
+```text
+/cw:project <project-id>
+```
+
+Direct ID linking keeps auto-wrap off unless you explicitly request it.
+
 ### Share project work through Git
 
 Project sharing publishes the work, not the AI conversation. `/cw:project-share` writes a sanitized board snapshot to the dedicated `context-workspace/shared-projects` branch on the repository's configured Git remote. Teammates use `/cw:project-pull` to import that board into their local dashboard and connect a new local AI session to the same project.

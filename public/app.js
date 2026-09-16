@@ -1086,6 +1086,7 @@ function renderProjectWorkspace(board) {
   elements.projectWorkspaceSummary.textContent = project.summary || "Add a clear success outcome for this project.";
   elements.projectUpdatedLabel.textContent = `Updated ${relativeTime(projectState?.updatedAt || project.updatedAt)}`;
   elements.projectWorkspaceMeta.replaceChildren(
+    projectIdChip(project.id),
     projectMetaChip("sessions", `${sessions.length} ${sessions.length === 1 ? "session" : "sessions"}`),
     projectMetaChip("branch", projectState?.branch || "No branch"),
     projectMetaChip("folder", basename(project.repository) || basename(project.cwd) || "Local workspace")
@@ -1997,6 +1998,24 @@ function projectMetaChip(kind, text) {
   const chip = element("span", `project-meta-chip ${kind}`);
   chip.innerHTML = icons[kind];
   chip.append(document.createTextNode(text));
+  return chip;
+}
+
+function projectIdChip(projectId) {
+  const chip = element("button", "project-meta-chip project-id");
+  chip.type = "button";
+  chip.title = `Copy project ID: ${projectId}`;
+  chip.setAttribute("aria-label", `Copy project ID ${projectId}`);
+  chip.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 7V3h13v13h-4v5H3V7h5Zm2 0h7v7h2V5h-9v2Zm5 2H5v10h10V9Z"/></svg>';
+  chip.append(document.createTextNode(`ID ${projectId.slice(0, 8)}`));
+  chip.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(projectId);
+      toast("Project ID copied");
+    } catch {
+      toast(`Copy failed. Project ID: ${projectId}`, true);
+    }
+  });
   return chip;
 }
 

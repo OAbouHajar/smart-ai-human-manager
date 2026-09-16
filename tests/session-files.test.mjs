@@ -927,6 +927,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(styles, /\.sidebar-resize-handle/);
   assert.match(html, /data-project-filter="shared"/);
   assert.match(app, /createStarButton\(project\.starred, "project"/);
+  assert.match(app, /function projectIdChip/);
+  assert.match(app, /Project ID copied/);
   assert.match(app, /createStarButton\(session\.pinned, "session"/);
   assert.match(app, /^function createStarButton\(/m);
   assert.match(styles, /\.session-entry:hover \.session-star/);
@@ -1008,6 +1010,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(project, /Never infer or create a project from the repository/);
   assert.match(project, /api\/project-suggestions/);
   assert.match(shamCommands[commandNames.indexOf("auto-wrap")], /explicit argument[\s\S]*not `on`, `off`, `status`, or `default`/);
+  assert.match(project, /\/cw:project <project-id>/);
+  assert.match(project, /exactly matches an available project UUID/);
   assert.match(reopen, /"needsReview": true/);
   assert.match(reopen, /Do not clear or replace/);
   assert.match(update, /\/api\/update\/install/);
