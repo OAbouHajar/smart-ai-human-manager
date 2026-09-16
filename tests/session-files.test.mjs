@@ -909,6 +909,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(styles, /\.insight-donut/);
   assert.match(styles, /\.horizontal-bar-track/);
   assert.match(styles, /\.token-split/);
+  assert.match(styles, /\.insight-visual h3[\s\S]*font-size: 1\.02rem/);
   assert.match(app, /ticket-card-details/);
   assert.match(app, /state\.fullBoard && !dialogWasOpen/);
   assert.match(styles, /\.ticket-dialog/);
