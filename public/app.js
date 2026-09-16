@@ -1081,6 +1081,8 @@ function renderProjectWorkspace(board) {
   const duration = sessions.reduce((total, session) => total + sessionDurationMs(session), 0);
   const credits = sessions.reduce((total, session) => total + Number(session.metrics?.aiCredits || 0), 0);
   const tokens = sessions.reduce((total, session) => total + Number(session.metrics?.totalTokens || 0), 0);
+  const inputTokens = sessions.reduce((total, session) => total + Number(session.metrics?.inputTokens || 0), 0);
+  const outputTokens = sessions.reduce((total, session) => total + Number(session.metrics?.outputTokens || 0), 0);
   const fileCount = sessions.reduce((total, session) => total + Number(session.fileCount || 0), 0);
 
   elements.projectWorkspaceTitle.textContent = projectName(project);
@@ -1167,7 +1169,7 @@ function renderProjectWorkspace(board) {
   elements.projectBoardTabCount.textContent = board.total;
   elements.projectSessionTabCount.textContent = sessions.length;
   renderProjectSessions(sessions);
-  renderProjectInsights({ sessions, duration, credits, tokens, files: fileCount, board, progress });
+  renderProjectInsights({ sessions, duration, credits, tokens, inputTokens, outputTokens, files: fileCount, board, progress });
 }
 
 function renderProjectSessions(sessions) {
@@ -1198,43 +1200,159 @@ function renderProjectSessions(sessions) {
   }
 }
 
-function renderProjectInsights({ sessions, duration, credits, tokens, files, board, progress }) {
+function renderProjectInsights({ sessions, duration, credits, tokens, inputTokens, outputTokens, files, board, progress }) {
   elements.projectInsightsGrid.replaceChildren();
   const questions = sessions.reduce((total, session) => total + (Array.isArray(session.questions) ? session.questions.length : 0), 0);
   const decisions = sessions.reduce((total, session) => total + (Array.isArray(session.decisions) ? session.decisions.length : 0), 0);
   const unresolved = sessions.reduce((total, session) => total + (Array.isArray(session.unresolved) ? session.unresolved.length : 0), 0);
   const wrapped = sessions.filter((session) => !session.needsReview && session.checkpointSource).length;
-  const contributors = uniqueValues(board.tasks.flatMap((task) => [task.owner, task.completedBy]));
-  const agents = uniqueValues([
-    ...sessions.map((session) => session.providerName),
-    ...board.tasks.flatMap((task) => [task.agent, task.completedWith])
-  ]);
   const models = uniqueValues(sessions.map((session) => session.metrics?.model));
-  const openTasks = board.total - (board.counts.done || 0);
-  const wrapCoverage = sessions.length ? Math.round(wrapped / sessions.length * 100) : 0;
-  const metrics = [
-    ["Completion", `${progress}%`, `${board.counts.done || 0} done · ${openTasks} open`, "delivery"],
-    ["Focused time", duration ? formatMilliseconds(duration) : "—", `Across ${sessions.length} sessions`, "delivery"],
-    ["Questions & actions", formatNumber(questions), "Recorded across linked sessions", "continuity"],
-    ["Decisions", formatNumber(decisions), "Explicit decisions preserved", "continuity"],
-    ["Blockers", formatNumber(board.counts.blocked || 0), `${unresolved} unresolved notes`, "delivery"],
-    ["Wrap coverage", `${wrapCoverage}%`, `${wrapped} of ${sessions.length} sessions wrapped`, "continuity"],
-    ["Files involved", formatNumber(files), "File evidence across sessions", "continuity"],
-    ["Contributors", formatNumber(contributors.length), contributors.length ? contributors.join(" · ") : "No human owner recorded", "collaboration"],
-    ["AI agents", formatNumber(agents.length), agents.length ? agents.join(" · ") : "No agent recorded", "collaboration"],
-    ["AI tokens", tokens ? formatNumber(tokens) : "—", "Cumulative input and output", "ai"],
-    ["Tokens / session", tokens && sessions.length ? formatNumber(Math.round(tokens / sessions.length)) : "—", "Average model usage", "ai"],
-    ["AI credits", credits ? formatCredits(credits) : "—", models.length ? `Models: ${models.join(" · ")}` : "No model data recorded", "ai"]
+  const humanCounts = frequencyMap(board.tasks.map((task) => task.completedBy || task.owner).filter(Boolean));
+  const agentCounts = frequencyMap([
+    ...board.tasks.map((task) => task.completedWith || task.agent).filter(Boolean),
+    ...sessions.map((session) => session.providerName).filter(Boolean)
+  ]);
+
+  const delivery = insightPanel("Delivery flow", `${progress}% complete`, "delivery-chart");
+  const statuses = [
+    ["Done", board.counts.done || 0, "var(--cp-success)"],
+    ["In progress", board.counts.in_progress || 0, "var(--cp-link)"],
+    ["Next", board.counts.next || 0, "var(--cp-accent)"],
+    ["Blocked", board.counts.blocked || 0, "var(--cp-warning)"],
+    ["Backlog", board.counts.backlog || 0, "var(--cp-border-strong)"]
   ];
-  metrics.forEach(([label, value, detail, category]) => {
-    const card = element("article", `project-insight ${category}`);
-    card.append(element("span", "", label), element("strong", "", value), element("small", "", detail));
-    elements.projectInsightsGrid.append(card);
+  const donut = element("div", "insight-donut");
+  donut.style.background = donutGradient(statuses, board.total);
+  const donutCenter = element("div", "insight-donut-center");
+  donutCenter.append(element("strong", "", `${progress}%`), element("span", "", `${board.counts.done || 0} of ${board.total}`));
+  donut.append(donutCenter);
+  const legend = element("div", "insight-legend");
+  statuses.forEach(([label, count, color]) => {
+    const row = element("div", "insight-legend-row");
+    const marker = element("i");
+    marker.style.background = color;
+    row.append(marker, element("span", "", label), element("b", "", String(count)));
+    legend.append(row);
   });
+  const deliveryBody = element("div", "delivery-chart-body");
+  deliveryBody.append(donut, legend);
+  delivery.append(deliveryBody);
+
+  const effort = insightPanel("Session effort", duration ? formatMilliseconds(duration) : "No duration recorded", "effort-chart");
+  const effortRows = sessions.map((session) => ({
+    label: session.title,
+    detail: session.providerName || "AI session",
+    value: sessionDurationMs(session),
+    display: formatDuration(session.startedAt, session.endedAt || session.updatedAt)
+  }));
+  effort.append(horizontalBarChart(effortRows, "No linked sessions"));
+
+  const context = insightPanel("Context captured", `${questions + decisions + unresolved} recorded signals`, "context-chart");
+  context.append(horizontalBarChart([
+    { label: "Questions & actions", value: questions, display: formatNumber(questions) },
+    { label: "Decisions", value: decisions, display: formatNumber(decisions) },
+    { label: "Unresolved notes", value: unresolved, display: formatNumber(unresolved) },
+    { label: "Files involved", value: files, display: formatNumber(files) }
+  ], "No context captured"));
+
+  const ai = insightPanel("AI usage", tokens ? `${formatNumber(tokens)} tokens` : "No token data", "ai-chart");
+  const tokenTotal = inputTokens + outputTokens || tokens;
+  const tokenBar = element("div", "token-split");
+  if (tokenTotal) {
+    const input = element("i", "token-input");
+    const output = element("i", "token-output");
+    input.style.width = `${inputTokens ? inputTokens / tokenTotal * 100 : 100}%`;
+    output.style.width = `${outputTokens ? outputTokens / tokenTotal * 100 : 0}%`;
+    tokenBar.append(input, output);
+  }
+  const tokenLegend = element("div", "token-legend");
+  tokenLegend.append(
+    insightStat("Input", inputTokens ? formatNumber(inputTokens) : "—"),
+    insightStat("Output", outputTokens ? formatNumber(outputTokens) : "—"),
+    insightStat("Credits", credits ? formatCredits(credits) : "—"),
+    insightStat("Models", models.length ? models.join(", ") : "—")
+  );
+  ai.append(tokenBar, tokenLegend);
+
+  const collaboration = insightPanel("Human and agent contribution", `${humanCounts.length} people · ${agentCounts.length} agents`, "collaboration-chart");
+  const collaborationBody = element("div", "collaboration-columns");
+  collaborationBody.append(
+    contributionChart("People", humanCounts, "No human owner recorded"),
+    contributionChart("AI agents", agentCounts, "No agent recorded")
+  );
+  collaboration.append(collaborationBody);
+
+  const continuity = insightPanel("Session continuity", `${wrapped} of ${sessions.length} sessions wrapped`, "continuity-chart");
+  const coverage = sessions.length ? Math.round(wrapped / sessions.length * 100) : 0;
+  const coverageTrack = element("div", "coverage-track");
+  const coverageFill = element("i");
+  coverageFill.style.width = `${coverage}%`;
+  coverageTrack.append(coverageFill);
+  continuity.append(
+    coverageTrack,
+    element("p", "coverage-copy", `${coverage}% wrap coverage · ${files} files · ${tokens && sessions.length ? formatNumber(Math.round(tokens / sessions.length)) : "—"} tokens per session`)
+  );
+
+  elements.projectInsightsGrid.append(delivery, effort, context, ai, collaboration, continuity);
 }
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function insightPanel(title, summary, className) {
+  const panel = element("section", `insight-visual ${className}`);
+  const header = element("header");
+  header.append(element("h3", "", title), element("span", "", summary));
+  panel.append(header);
+  return panel;
+}
+
+function donutGradient(items, total) {
+  if (!total) return "conic-gradient(var(--cp-surface-soft) 0 100%)";
+  let cursor = 0;
+  const segments = items.filter(([, count]) => count).map(([, count, color]) => {
+    const start = cursor;
+    cursor += count / total * 100;
+    return `${color} ${start}% ${cursor}%`;
+  });
+  return `conic-gradient(${segments.join(", ")})`;
+}
+
+function horizontalBarChart(rows, emptyText) {
+  const chart = element("div", "horizontal-bars");
+  const max = Math.max(0, ...rows.map((row) => Number(row.value) || 0));
+  rows.slice(0, 8).forEach((row) => {
+    const item = element("div", "horizontal-bar-row");
+    const label = element("div", "horizontal-bar-label");
+    label.append(element("strong", "", row.label), row.detail ? element("small", "", row.detail) : document.createTextNode(""));
+    const track = element("div", "horizontal-bar-track");
+    const fill = element("i");
+    fill.style.width = `${max && row.value ? Math.max(3, row.value / max * 100) : 0}%`;
+    track.append(fill);
+    item.append(label, track, element("b", "", row.display ?? formatNumber(row.value)));
+    chart.append(item);
+  });
+  if (!rows.length) chart.append(element("p", "insight-empty", emptyText));
+  return chart;
+}
+
+function insightStat(label, value) {
+  const stat = element("div", "token-stat");
+  stat.append(element("span", "", label), element("strong", "", value));
+  return stat;
+}
+
+function frequencyMap(values) {
+  const counts = new Map();
+  values.forEach((value) => counts.set(value, (counts.get(value) || 0) + 1));
+  return [...counts.entries()].map(([label, value]) => ({ label, value, display: String(value) }));
+}
+
+function contributionChart(title, rows, emptyText) {
+  const group = element("div", "contribution-group");
+  group.append(element("h4", "", title), horizontalBarChart(rows, emptyText));
+  return group;
 }
 
 async function openProjectNextSession() {
