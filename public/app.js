@@ -1433,11 +1433,12 @@ function renderBoardCard(task) {
     openTicketDialog(task);
   });
   const meta = element("div", "card-meta");
-  meta.append(element(
-    "span",
-    "",
-    task.owner || basename(task.repository) || basename(task.cwd) || "Unassigned"
-  ));
+  const attribution = element("span", "card-attribution");
+  attribution.append(
+    element("strong", "", task.completedBy || task.owner || "Unassigned"),
+    element("small", "", task.completedWith || task.agent || "No agent")
+  );
+  meta.append(attribution);
   const select = document.createElement("select");
   select.className = "card-status";
   select.disabled = archived;
@@ -1473,6 +1474,7 @@ function openTicketDialog(task) {
   elements.ticketTitleInput.value = task.text || "";
   elements.ticketDescriptionInput.value = task.description || "";
   elements.ticketOwnerInput.value = task.owner || "";
+  elements.ticketAgentInput.value = task.agent || "";
   elements.ticketStatusInput.replaceChildren();
   Object.entries(boardStatusLabels).forEach(([value, label]) => {
     const option = document.createElement("option");
@@ -1485,9 +1487,14 @@ function openTicketDialog(task) {
   elements.ticketWorkspaceValue.textContent = basename(task.repository) || basename(task.cwd) || "Local workspace";
   elements.ticketBranchValue.textContent = task.branch || "No branch";
   elements.ticketUpdatedValue.textContent = task.updatedAt ? `${relativeTime(task.updatedAt)} · ${new Date(task.updatedAt).toLocaleString()}` : "Unknown";
+  elements.ticketCompletedByValue.textContent = task.completedBy || "Not completed";
+  elements.ticketCompletedWithValue.textContent = task.completedWith || (task.status === "done" ? task.agent || "Unknown agent" : "—");
   elements.openTicketSessionButton.disabled = !task.sessionId || task.sessionId.startsWith("shared-project:");
   const archived = state.board?.project?.status === "archived";
-  for (const field of [elements.ticketTitleInput, elements.ticketDescriptionInput, elements.ticketOwnerInput, elements.ticketStatusInput]) {
+  for (const field of [
+    elements.ticketTitleInput, elements.ticketDescriptionInput, elements.ticketOwnerInput,
+    elements.ticketAgentInput, elements.ticketStatusInput
+  ]) {
     field.disabled = archived;
   }
   elements.ticketForm.querySelector('button[type="submit"]').disabled = archived;
@@ -1511,6 +1518,7 @@ async function saveTicket(event) {
       text: elements.ticketTitleInput.value,
       description: elements.ticketDescriptionInput.value,
       owner: elements.ticketOwnerInput.value,
+      agent: elements.ticketAgentInput.value,
       status: elements.ticketStatusInput.value
     }
   });

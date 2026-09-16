@@ -13,10 +13,10 @@ Act as the delivery coach and executor for the current tracked project.
    - Do not select `blocked`, `backlog`, or `done` unless the user explicitly directs it.
 5. If no actionable task exists, report that and stop.
 6. Explain briefly why this task is next.
-7. PATCH it to `in_progress` if needed.
+7. PATCH it to `in_progress` if needed, including `{ "actorSessionId": "<currentSessionId>" }` so the ticket records the correct teammate and AI provider.
 8. Execute the task completely using the current repository and conversation context.
 9. Validate the exact requested outcome.
-10. PATCH the task to:
+10. PATCH the task with `{ "actorSessionId": "<currentSessionId>" }` to:
    - `done` after successful validation.
    - `blocked` when a concrete unresolved blocker prevents completion.
    - keep `in_progress` only when work genuinely remains.

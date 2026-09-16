@@ -868,7 +868,7 @@ button.context-link { cursor: pointer; }
 .ticket-dialog { width: min(50rem, 100%); padding: 1.6rem; }
 .ticket-dialog .dialog-title-row { align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--cp-border); }
 .ticket-dialog .dialog-title-row h2 { margin-top: 0.3rem; font-size: 1.25rem; }
-.ticket-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-top: 1.2rem; }
+.ticket-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
 .ticket-field { display: grid; gap: 0.35rem; }
 .ticket-field > span { color: var(--cp-text-soft); font-size: 0.7rem; font-weight: 700; }
 .ticket-field input, .ticket-field select, .ticket-field textarea {
@@ -969,6 +969,12 @@ button.context-link { cursor: pointer; }
 .card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; line-height: 1.48; }
 .card-meta { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
 .card-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-attribution { display: grid; gap: 0.08rem; }
+.card-attribution strong, .card-attribution small {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.card-attribution strong { color: var(--cp-text-soft); font-size: 0.65rem; }
+.card-attribution small { color: var(--cp-text-muted); font-size: 0.58rem; }
 .ticket-details-link {
   padding: 0; color: var(--cp-link); background: transparent; border: 0;
   cursor: pointer; font-size: 0.64rem; font-weight: 700;

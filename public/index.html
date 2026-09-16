@@ -618,8 +618,12 @@
           <select id="ticketStatusInput"></select>
         </label>
         <label class="ticket-field">
-          <span>Owner</span>
+          <span>Human owner</span>
           <input id="ticketOwnerInput" maxlength="120" placeholder="Unassigned">
+        </label>
+        <label class="ticket-field">
+          <span>AI agent</span>
+          <input id="ticketAgentInput" maxlength="120" placeholder="GitHub Copilot CLI">
         </label>
         <label class="ticket-field ticket-description-field">
           <span>Description</span>
@@ -636,6 +640,8 @@
           <div><dt>Workspace</dt><dd id="ticketWorkspaceValue">—</dd></div>
           <div><dt>Branch</dt><dd id="ticketBranchValue">—</dd></div>
           <div><dt>Last updated</dt><dd id="ticketUpdatedValue">—</dd></div>
+          <div><dt>Completed by</dt><dd id="ticketCompletedByValue">Not completed</dd></div>
+          <div><dt>Completed with</dt><dd id="ticketCompletedWithValue">—</dd></div>
         </dl>
       </section>
       <div class="dialog-actions ticket-dialog-actions">

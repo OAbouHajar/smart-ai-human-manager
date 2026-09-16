@@ -6,7 +6,7 @@ Publish the current Context Workspace project's board for teammates without shar
 
 1. Extract the Context Workspace session ID and base dashboard URL from session-start context.
 2. GET `{baseUrl}/api/sessions/{sessionId}`. If the session is not linked to a project, stop and tell the user to run `/cw:project`.
-3. GET `{baseUrl}/api/projects/{projectId}/share` and show a concise preview containing the project title and the ticket IDs, titles, descriptions, statuses, and owners that will be published.
+3. GET `{baseUrl}/api/projects/{projectId}/share` and show a concise preview containing the project title and the ticket IDs, titles, descriptions, statuses, human owners, AI agents, and completion attribution that will be published.
 4. Use `ask_user` to confirm the first publication. Explain that it pushes only this previewed state to `context-workspace/shared-projects` on `origin`; it never publishes transcripts, prompts, responses, source code, local paths, or tool logs.
 5. Run:
 

@@ -15,4 +15,4 @@ node "<pluginRoot>/scripts/project-share.mjs" push --base-url "<baseUrl>" --sess
 4. This command is explicit consent to update only `context-workspace/shared-projects`. Never push the current code branch.
 5. Require a successful JSON response, then report the project title and number of shared tickets.
 
-Only project title, description, ticket IDs, short descriptions, statuses, owners, and revisions may be published. Do not add transcripts, prompts, raw responses, code, local paths, or tool logs.
+Only project title, description, ticket IDs, short descriptions, statuses, human owners, AI agents, completion attribution, sanitized continuation context, and revisions may be published. Do not add original prompts, transcripts, raw responses, code, local paths, credentials, or tool logs.

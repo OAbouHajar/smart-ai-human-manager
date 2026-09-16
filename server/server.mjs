@@ -141,6 +141,9 @@ ensureColumn("tasks", "project_id", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "ticket_id", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "description", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "owner", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "agent_owner", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "completed_by", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "completed_with", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "updated_at", "INTEGER");
 ensureColumn("work_items", "project_id", "TEXT NOT NULL DEFAULT ''");
 db.exec(`
@@ -723,7 +726,8 @@ function getBoard(url, response) {
   const sessionIds = sessionRows.map((session) => session.id);
   const placeholders = sessionIds.map(() => "?").join(", ");
   const tasks = db.prepare(`
-      SELECT t.*, s.title AS session_title, s.repository, s.cwd, s.branch, s.updated_at AS session_updated_at
+      SELECT t.*, s.title AS session_title, s.repository, s.cwd, s.branch, s.provider,
+        s.updated_at AS session_updated_at
       FROM tasks t
       JOIN sessions s ON s.id = t.session_id
       WHERE t.project_id = ?
@@ -832,6 +836,9 @@ function exportSharedProject(projectId, response) {
     description: cleanText(task.description, 1000),
     status: normalizeTaskStatus(task.status),
     owner: cleanText(task.owner, 120),
+    agent: cleanText(task.agent_owner, 120),
+    completedBy: cleanText(task.completed_by, 120),
+    completedWith: cleanText(task.completed_with, 120),
     updatedAt: task.updated_at || task.created_at
   }));
   const latest = sessions[0];
@@ -1034,12 +1041,13 @@ function importSharedProject(data, response) {
     const selectTask = db.prepare("SELECT * FROM tasks WHERE project_id = ? AND ticket_id = ? ORDER BY id LIMIT 1");
     const insertTask = db.prepare(`
       INSERT INTO tasks(
-        session_id, project_id, ticket_id, text, description, owner,
-        completed, position, created_at, updated_at, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        session_id, project_id, ticket_id, text, description, owner, agent_owner,
+        completed_by, completed_with, completed, position, created_at, updated_at, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const updateTaskStatement = db.prepare(`
-      UPDATE tasks SET text = ?, description = ?, owner = ?, completed = ?, position = ?, updated_at = ?, status = ?
+      UPDATE tasks SET text = ?, description = ?, owner = ?, agent_owner = ?,
+        completed_by = ?, completed_with = ?, completed = ?, position = ?, updated_at = ?, status = ?
       WHERE id = ?
     `);
     const sharedTicketIds = [];
@@ -1050,18 +1058,22 @@ function importSharedProject(data, response) {
       sharedTicketIds.push(ticketId);
       const ticketDescription = cleanText(ticket.description, 1000);
       const owner = cleanText(ticket.owner, 120);
+      const agent = cleanText(ticket.agent, 120);
+      const completedBy = cleanText(ticket.completedBy, 120);
+      const completedWith = cleanText(ticket.completedWith, 120);
       const ticketStatus = normalizeTaskStatus(ticket.status);
       const updatedAt = Number(ticket.updatedAt) || revision || now;
       const row = selectTask.get(projectId, ticketId);
       if (row) {
         updateTaskStatement.run(
-          ticketTitle, ticketDescription, owner, ticketStatus === "done" ? 1 : 0,
-          position, updatedAt, ticketStatus, row.id
+          ticketTitle, ticketDescription, owner, agent, completedBy, completedWith,
+          ticketStatus === "done" ? 1 : 0, position, updatedAt, ticketStatus, row.id
         );
       } else {
         insertTask.run(
           syntheticSessionId, projectId, ticketId, ticketTitle, ticketDescription, owner,
-          ticketStatus === "done" ? 1 : 0, position, updatedAt, updatedAt, ticketStatus
+          agent, completedBy, completedWith, ticketStatus === "done" ? 1 : 0,
+          position, updatedAt, updatedAt, ticketStatus
         );
       }
     });
@@ -1246,6 +1258,8 @@ function addProjectTask(projectId, data, response) {
   if (!text) return json(response, 400, { error: "Task text is required" });
   const description = cleanText(data.description, 1000);
   const owner = cleanText(data.owner, 120);
+  const attribution = sessionAttribution(session);
+  const agent = cleanText(data.agent, 120) || attribution.agent;
   const status = normalizeTaskStatus(data.status);
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE project_id = ?")
     .get(projectId).position;
@@ -1253,19 +1267,23 @@ function addProjectTask(projectId, data, response) {
   const ticketId = nextProjectTicketId(projectId);
   const result = db.prepare(`
     INSERT INTO tasks(
-      session_id, project_id, ticket_id, text, description, owner,
-      completed, position, created_at, updated_at, status
+      session_id, project_id, ticket_id, text, description, owner, agent_owner,
+      completed_by, completed_with, completed, position, created_at, updated_at, status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    session.id, projectId, ticketId, text, description, owner,
+    session.id, projectId, ticketId, text, description, owner, agent,
+    status === "done" ? (owner || attribution.human) : "",
+    status === "done" ? agent : "",
     status === "done" ? 1 : 0, position, now, now, status
   );
   db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, projectId);
   broadcast("sessions-changed", { id: session.id, eventName: "task-added" });
   json(response, 201, {
     id: Number(result.lastInsertRowid), sessionId: session.id, projectId, ticketId, text,
-    description, owner, completed: status === "done", status, position, updatedAt: now
+    description, owner, agent, completedBy: status === "done" ? (owner || attribution.human) : "",
+    completedWith: status === "done" ? agent : "",
+    completed: status === "done", status, position, updatedAt: now
   });
 }
 
@@ -1683,19 +1701,29 @@ function addTask(id, data, response) {
   const status = normalizeTaskStatus(data.status);
   const description = cleanText(data.description, 1000);
   const owner = cleanText(data.owner, 120);
-  const session = db.prepare("SELECT project_id FROM sessions WHERE id = ?").get(id);
+  const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
+  const attribution = sessionAttribution(session);
+  const agent = cleanText(data.agent, 120) || attribution.agent;
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE session_id = ?").get(id).position;
   const now = Date.now();
   const ticketId = session?.project_id ? nextProjectTicketId(session.project_id) : "";
   const result = db.prepare(`
     INSERT INTO tasks(
-      session_id, ticket_id, text, description, owner, completed, position, created_at, updated_at, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, ticketId, text, description, owner, status === "done" ? 1 : 0, position, now, now, status);
+      session_id, ticket_id, text, description, owner, agent_owner, completed_by,
+      completed_with, completed, position, created_at, updated_at, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id, ticketId, text, description, owner, agent,
+    status === "done" ? (owner || attribution.human) : "",
+    status === "done" ? agent : "",
+    status === "done" ? 1 : 0, position, now, now, status
+  );
   touchProjectForSession(id);
   broadcast("sessions-changed", { id, eventName: "task-added" });
   json(response, 201, {
-    id: Number(result.lastInsertRowid), sessionId: id, ticketId, text, description, owner,
+    id: Number(result.lastInsertRowid), sessionId: id, ticketId, text, description, owner, agent,
+    completedBy: status === "done" ? (owner || attribution.human) : "",
+    completedWith: status === "done" ? agent : "",
     completed: status === "done", status, position, updatedAt: now
   });
 }
@@ -1703,23 +1731,54 @@ function addTask(id, data, response) {
 function updateTask(id, data, response) {
   const row = db.prepare("SELECT * FROM tasks WHERE id = ?").get(id);
   if (!row) return json(response, 404, { error: "Task not found" });
+  const sourceSession = db.prepare("SELECT * FROM sessions WHERE id = ?").get(row.session_id);
+  const actorSessionId = cleanText(data.actorSessionId, 300);
+  const actorSession = actorSessionId
+    ? db.prepare("SELECT * FROM sessions WHERE id = ?").get(actorSessionId)
+    : null;
+  if (actorSessionId && !actorSession) {
+    return json(response, 400, { error: "The attribution session does not exist" });
+  }
+  const taskProjectId = row.project_id || sourceSession?.project_id || "";
+  if (actorSession && taskProjectId && actorSession.project_id !== taskProjectId) {
+    return json(response, 409, { error: "The attribution session is not linked to this project" });
+  }
+  const attribution = sessionAttribution(actorSession || sourceSession);
   const text = data.text === undefined ? row.text : cleanText(data.text, 500);
   const description = data.description === undefined ? row.description : cleanText(data.description, 1000);
-  const owner = data.owner === undefined ? row.owner : cleanText(data.owner, 120);
+  let owner = data.owner === undefined ? row.owner : cleanText(data.owner, 120);
+  let agent = data.agent === undefined
+    ? (row.agent_owner || attribution.agent)
+    : cleanText(data.agent, 120);
   let status = data.status === undefined ? normalizeTaskStatus(row.status) : normalizeTaskStatus(data.status);
   if (data.completed !== undefined) status = data.completed ? "done" : (status === "done" ? "next" : status);
+  if (actorSession && ["in_progress", "done"].includes(status)) {
+    if (!owner) owner = cleanText(data.actorName, 120) || attribution.human;
+    agent = attribution.agent || agent;
+  }
   const completed = status === "done" ? 1 : 0;
+  const becameDone = status === "done" && normalizeTaskStatus(row.status) !== "done";
+  const completedBy = status === "done"
+    ? cleanText(data.completedBy, 120) || cleanText(data.actorName, 120) || row.completed_by || owner || attribution.human
+    : "";
+  const completedWith = status === "done"
+    ? cleanText(data.completedWith, 120) || row.completed_with || agent || attribution.agent
+    : "";
   const now = Date.now();
   db.prepare(`
-    UPDATE tasks SET text = ?, description = ?, owner = ?, completed = ?, status = ?, updated_at = ? WHERE id = ?
-  `).run(text, description, owner, completed, status, now, id);
+    UPDATE tasks SET text = ?, description = ?, owner = ?, agent_owner = ?,
+      completed_by = ?, completed_with = ?, completed = ?, status = ?, updated_at = ? WHERE id = ?
+  `).run(text, description, owner, agent, completedBy, completedWith, completed, status, now, id);
   if (row.project_id) db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, row.project_id);
   else {
     db.prepare("UPDATE sessions SET updated_at = ? WHERE id = ?").run(now, row.session_id);
     touchProjectForSession(row.session_id, now);
   }
-  broadcast("sessions-changed", { id: row.session_id, eventName: "task-updated" });
-  json(response, 200, taskRecord({ ...row, text, description, owner, completed, status, updated_at: now }));
+  broadcast("sessions-changed", { id: row.session_id, eventName: becameDone ? "task-completed" : "task-updated" });
+  json(response, 200, taskRecord({
+    ...row, text, description, owner, agent_owner: agent, completed_by: completedBy,
+    completed_with: completedWith, completed, status, updated_at: now
+  }));
 }
 
 function deleteTask(id, response) {
@@ -2094,6 +2153,7 @@ function projectRecord(row) {
 }
 
 function taskRecord(row) {
+  const agent = row.agent_owner || providerConfig(row.provider)?.name || "";
   return {
     id: row.id,
     sessionId: row.session_id,
@@ -2102,11 +2162,36 @@ function taskRecord(row) {
     text: row.text,
     description: row.description || "",
     owner: row.owner || "",
+    agent,
+    completedBy: row.completed_by || "",
+    completedWith: row.completed_with || "",
     completed: Boolean(row.completed),
     status: normalizeTaskStatus(row.status || (row.completed ? "done" : "next")),
     position: row.position,
     updatedAt: row.updated_at || row.created_at
   };
+}
+
+function sessionAttribution(session) {
+  if (!session) return { human: "", agent: "" };
+  return {
+    human: gitUserName(session.cwd || session.repository),
+    agent: providerConfig(session.provider)?.name || cleanText(session.provider, 120)
+  };
+}
+
+function gitUserName(cwd) {
+  if (!cwd || !existsSync(cwd)) return "";
+  try {
+    return cleanText(execFileSync("git", ["-C", cwd, "config", "user.name"], {
+      encoding: "utf8",
+      timeout: 2000,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "ignore"]
+    }).trim(), 120);
+  } catch {
+    return "";
+  }
 }
 
 function ensureProjectTicketIds(projectId) {

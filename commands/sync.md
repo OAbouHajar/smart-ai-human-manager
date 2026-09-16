@@ -14,7 +14,7 @@ Reconcile the current tracked project's Kanban with the full conversation and ac
    - `blocked`: cannot continue because of a concrete blocker.
    - `next`: actionable and should be done soon.
    - `backlog`: valid but not currently prioritized.
-6. PATCH changed tasks at `{baseUrl}/api/tasks/{taskId}` with `{ "status": "..." }`.
+6. PATCH changed tasks at `{baseUrl}/api/tasks/{taskId}` with `{ "status": "...", "actorSessionId": "<currentSessionId>" }` so human and AI attribution stays accurate.
 7. Add newly discovered unfinished user-requested work through
    `{baseUrl}/api/projects/{projectId}/tasks` with `{ "text": "...", "status": "next" }`.
 8. Never delete, rewrite, or duplicate user-created tasks. Never create generic maintenance work.

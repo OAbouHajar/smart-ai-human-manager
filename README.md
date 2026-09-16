@@ -126,7 +126,7 @@ Sessions remain **Unassigned** until you choose a project. Repository and folder
 
 Project sharing publishes the work, not the AI conversation. `/cw:project-share` writes a sanitized board snapshot to the dedicated `context-workspace/shared-projects` branch on the repository's configured Git remote. Teammates use `/cw:project-pull` to import that board into their local dashboard and connect a new local AI session to the same project.
 
-Shared snapshots contain project details, tickets, statuses, owners, revisions, and a sanitized continuation context with the latest summary, completed work, blockers, next action, and a generated teammate starter prompt. They exclude original prompts, transcripts, raw responses, source code, local paths, credentials, and tool logs. The sharing branch is independent and must not be merged into the product's code branches.
+Shared snapshots contain project details, tickets, status, human owner, AI agent, completion attribution, revisions, and a sanitized continuation context with the latest summary, completed work, blockers, next action, and a generated teammate starter prompt. They exclude original prompts, transcripts, raw responses, source code, local paths, credentials, and tool logs. The sharing branch is independent and must not be merged into the product's code branches.
 
 Pushes use normal non-force Git updates. Concurrent changes are rejected rather than overwritten; pull and reconcile the local board before publishing again.
 

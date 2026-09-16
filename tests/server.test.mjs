@@ -373,6 +373,39 @@ test("exports and imports sanitized shared project boards", async () => {
   assert.equal(task.ticketId, "SD-1");
   assert.equal(task.description, "Publish only approved Kanban fields.");
   assert.equal(task.owner, "Osama");
+  assert.equal(task.agent, "GitHub Copilot CLI");
+
+  const attributionSessionId = "shared-board-attribution";
+  await fetch(`${baseUrl}/api/hooks/claude/sessionStart`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionId: attributionSessionId, timestamp: Date.now(), cwd: process.cwd(), source: "new" })
+  });
+  await fetch(`${baseUrl}/api/projects/${project.id}/sessions`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      sessionId: `claude:${attributionSessionId}`,
+      autoWrap: false,
+      requireUnassigned: true
+    })
+  });
+  let attributed = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      status: "done",
+      actorSessionId: `claude:${attributionSessionId}`,
+      actorName: "Jack"
+    })
+  }).then((response) => response.json());
+  assert.equal(attributed.completedBy, "Jack");
+  assert.equal(attributed.completedWith, "Claude Code");
+  attributed = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ status: "in_progress" })
+  }).then((response) => response.json());
 
   const snapshot = await fetch(`${baseUrl}/api/projects/${project.id}/share`).then((response) => response.json());
   assert.equal(snapshot.schemaVersion, 1);
@@ -383,7 +416,10 @@ test("exports and imports sanitized shared project boards", async () => {
     description: "Publish only approved Kanban fields.",
     status: "in_progress",
     owner: "Osama",
-    updatedAt: task.updatedAt
+    agent: "Claude Code",
+    completedBy: "",
+    completedWith: "",
+    updatedAt: attributed.updatedAt
   });
   assert.equal(snapshot.context.summary, "");
   assert.match(snapshot.context.starterPrompt, /Continue the Context Workspace project "Shared Delivery"/);
