@@ -1200,17 +1200,41 @@ function renderProjectSessions(sessions) {
 
 function renderProjectInsights({ sessions, duration, credits, tokens, files, board, progress }) {
   elements.projectInsightsGrid.replaceChildren();
+  const questions = sessions.reduce((total, session) => total + (Array.isArray(session.questions) ? session.questions.length : 0), 0);
+  const decisions = sessions.reduce((total, session) => total + (Array.isArray(session.decisions) ? session.decisions.length : 0), 0);
+  const unresolved = sessions.reduce((total, session) => total + (Array.isArray(session.unresolved) ? session.unresolved.length : 0), 0);
+  const wrapped = sessions.filter((session) => !session.needsReview && session.checkpointSource).length;
+  const contributors = uniqueValues(board.tasks.flatMap((task) => [task.owner, task.completedBy]));
+  const agents = uniqueValues([
+    ...sessions.map((session) => session.providerName),
+    ...board.tasks.flatMap((task) => [task.agent, task.completedWith])
+  ]);
+  const models = uniqueValues(sessions.map((session) => session.metrics?.model));
+  const openTasks = board.total - (board.counts.done || 0);
+  const wrapCoverage = sessions.length ? Math.round(wrapped / sessions.length * 100) : 0;
   const metrics = [
-    ["Total effort", duration ? formatMilliseconds(duration) : "—", `Across ${sessions.length} sessions`],
-    ["Completion", `${progress}%`, `${board.counts.done || 0} of ${board.total} tasks`],
-    ["AI tokens", tokens ? formatNumber(tokens) : "—", "Cumulative model input and output"],
-    ["AI credits", credits ? formatCredits(credits) : "—", `${files} files recorded`]
+    ["Completion", `${progress}%`, `${board.counts.done || 0} done · ${openTasks} open`, "delivery"],
+    ["Focused time", duration ? formatMilliseconds(duration) : "—", `Across ${sessions.length} sessions`, "delivery"],
+    ["Questions & actions", formatNumber(questions), "Recorded across linked sessions", "continuity"],
+    ["Decisions", formatNumber(decisions), "Explicit decisions preserved", "continuity"],
+    ["Blockers", formatNumber(board.counts.blocked || 0), `${unresolved} unresolved notes`, "delivery"],
+    ["Wrap coverage", `${wrapCoverage}%`, `${wrapped} of ${sessions.length} sessions wrapped`, "continuity"],
+    ["Files involved", formatNumber(files), "File evidence across sessions", "continuity"],
+    ["Contributors", formatNumber(contributors.length), contributors.length ? contributors.join(" · ") : "No human owner recorded", "collaboration"],
+    ["AI agents", formatNumber(agents.length), agents.length ? agents.join(" · ") : "No agent recorded", "collaboration"],
+    ["AI tokens", tokens ? formatNumber(tokens) : "—", "Cumulative input and output", "ai"],
+    ["Tokens / session", tokens && sessions.length ? formatNumber(Math.round(tokens / sessions.length)) : "—", "Average model usage", "ai"],
+    ["AI credits", credits ? formatCredits(credits) : "—", models.length ? `Models: ${models.join(" · ")}` : "No model data recorded", "ai"]
   ];
-  metrics.forEach(([label, value, detail]) => {
-    const card = element("article", "project-insight");
+  metrics.forEach(([label, value, detail, category]) => {
+    const card = element("article", `project-insight ${category}`);
     card.append(element("span", "", label), element("strong", "", value), element("small", "", detail));
     elements.projectInsightsGrid.append(card);
   });
+}
+
+function uniqueValues(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
 async function openProjectNextSession() {

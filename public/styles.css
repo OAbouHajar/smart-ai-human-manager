@@ -889,11 +889,22 @@ button.context-link { cursor: pointer; }
 .ticket-dialog-actions { align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--cp-border); }
 .ticket-dialog-spacer { flex: 1; }
 .project-insights-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
-.project-insight { min-width: 0; padding: 1.2rem; }
+.project-insight { position: relative; min-width: 0; padding: 1.2rem; overflow: hidden; }
+.project-insight::before {
+  position: absolute; top: 0; right: 0; left: 0; height: 2px;
+  background: var(--cp-border-strong); content: "";
+}
+.project-insight.delivery::before { background: var(--cp-success); }
+.project-insight.continuity::before { background: var(--cp-link); }
+.project-insight.collaboration::before { background: var(--tag-ado); }
+.project-insight.ai::before { background: var(--cp-accent); }
 .project-insight span, .project-insight strong, .project-insight small { display: block; }
 .project-insight span { color: var(--cp-text-muted); font-size: 0.65rem; text-transform: uppercase; }
-.project-insight strong { margin: 1rem 0 0.3rem; color: var(--cp-accent); font-size: 1.7rem; }
-.project-insight small { color: var(--cp-text-muted); font-size: 0.68rem; }
+.project-insight strong { margin: 0.9rem 0 0.3rem; color: var(--cp-text); font-size: 1.55rem; }
+.project-insight small {
+  min-height: 2.2rem; overflow-wrap: anywhere; color: var(--cp-text-muted);
+  font-size: 0.68rem; line-height: 1.45;
+}
 .coach-strip { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--cp-border); }
 .coach-strip strong { display: block; margin-top: 0.25rem; }
 .no-projects { padding: 2rem 0; color: var(--cp-text-muted); border-bottom: 1px solid var(--cp-border); text-align: center; }

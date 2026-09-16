@@ -899,6 +899,10 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /function openTicketDialog/);
   assert.match(app, /function saveTicket/);
   assert.match(app, /card-attribution/);
+  assert.match(app, /Questions & actions/);
+  assert.match(app, /Wrap coverage/);
+  assert.match(app, /Tokens \/ session/);
+  assert.match(app, /function uniqueValues/);
   assert.match(app, /ticket-card-details/);
   assert.match(app, /state\.fullBoard && !dialogWasOpen/);
   assert.match(styles, /\.ticket-dialog/);

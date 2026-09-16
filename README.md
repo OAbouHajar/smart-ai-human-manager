@@ -48,7 +48,7 @@ Turn private AI coding sessions into shared project context with tasks, decision
 
 - Automatic lifecycle tracking for supported AI CLIs.
 - Explicit projects that can combine related sessions without grouping unrelated work from the same repository.
-- Project overview, Kanban board, session history, progress, time, cumulative AI tokens, credits, and effort.
+- Project overview, Kanban board, session history, progress, questions and actions, decisions, blockers, contributors, agent mix, wrap coverage, time, cumulative AI tokens, credits, and effort.
 - Search across tasks, summaries, actions, projects, folders, and files.
 - Clear current state, completed work, blockers, and recommended next action.
 - Structured wrap checkpoints and next-session todo lists.
