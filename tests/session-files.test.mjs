@@ -882,7 +882,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /Task, project, folder, or file/);
   assert.match(html, /data-view="board"[\s\S]*Projects/);
   assert.match(html, /What changed and what needs attention/);
-  assert.match(html, /This project is private to this machine/);
+  assert.doesNotMatch(html, /This project is private to this machine/);
+  assert.match(html, /id="projectIdButton"/);
   assert.match(html, /Shared projects synchronize this board|This board is private until you explicitly share the project/);
   assert.doesNotMatch(html, /data-project-tab="board"/);
   assert.match(html, /id="projectBoardPanel" class="project-board-section"/);
@@ -927,7 +928,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(styles, /\.sidebar-resize-handle/);
   assert.match(html, /data-project-filter="shared"/);
   assert.match(app, /createStarButton\(project\.starred, "project"/);
-  assert.match(app, /function projectIdChip/);
+  assert.match(app, /function copySelectedProjectId/);
   assert.match(app, /Project ID copied/);
   assert.match(app, /createStarButton\(session\.pinned, "session"/);
   assert.match(app, /^function createStarButton\(/m);

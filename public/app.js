@@ -422,6 +422,7 @@ function bindEvents() {
     elements.projectMoreButton.setAttribute("aria-expanded", "false");
     await copyCommand(state.board?.project?.sharing?.enabled ? "/cw:project-push" : "/cw:project-share");
   });
+  elements.projectIdButton.addEventListener("click", copySelectedProjectId);
   elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
@@ -1086,7 +1087,6 @@ function renderProjectWorkspace(board) {
   elements.projectWorkspaceSummary.textContent = project.summary || "Add a clear success outcome for this project.";
   elements.projectUpdatedLabel.textContent = `Updated ${relativeTime(projectState?.updatedAt || project.updatedAt)}`;
   elements.projectWorkspaceMeta.replaceChildren(
-    projectIdChip(project.id),
     projectMetaChip("sessions", `${sessions.length} ${sessions.length === 1 ? "session" : "sessions"}`),
     projectMetaChip("branch", projectState?.branch || "No branch"),
     projectMetaChip("folder", basename(project.repository) || basename(project.cwd) || "Local workspace")
@@ -1102,15 +1102,12 @@ function renderProjectWorkspace(board) {
     ? "Shared workspace"
     : "Private workspace";
   elements.projectShareStatus.classList.toggle("shared", Boolean(project.sharing?.enabled));
-  elements.projectPrivacyNotice.classList.toggle("shared", Boolean(project.sharing?.enabled));
-  elements.projectPrivacyIcon.textContent = project.sharing?.enabled ? "↗" : "●";
-  elements.projectPrivacyTitle.textContent = project.sharing?.enabled
-    ? "This project shares work context with your team"
-    : "This project is private to this machine";
-  elements.projectPrivacyDetail.textContent = project.sharing?.enabled
-    ? "Tickets, status, ownership, and project summaries synchronize through Git. Prompts, responses, source code, local paths, and full conversations stay private."
-    : "Nothing is published until you explicitly share it. Your prompts, responses, source code, local paths, and conversation history remain private.";
-  elements.projectPrivacyLabel.textContent = project.sharing?.enabled ? "Shared context" : "Private context";
+  elements.projectShareStatus.title = project.sharing?.enabled
+    ? "Tickets and sanitized project context can synchronize. AI conversations and file contents remain private."
+    : "This project and its AI conversations remain private to this machine.";
+  elements.projectIdButton.textContent = `ID ${project.id.slice(0, 8)}`;
+  elements.projectIdButton.title = `Copy project ID: ${project.id}`;
+  elements.projectIdButton.setAttribute("aria-label", `Copy project ID ${project.id}`);
   elements.projectBoardBoundary.textContent = project.sharing?.enabled
     ? "This board synchronizes with teammates. Session conversations and local file contents stay private."
     : "This board is private until you explicitly share the project.";
@@ -2001,22 +1998,15 @@ function projectMetaChip(kind, text) {
   return chip;
 }
 
-function projectIdChip(projectId) {
-  const chip = element("button", "project-meta-chip project-id");
-  chip.type = "button";
-  chip.title = `Copy project ID: ${projectId}`;
-  chip.setAttribute("aria-label", `Copy project ID ${projectId}`);
-  chip.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 7V3h13v13h-4v5H3V7h5Zm2 0h7v7h2V5h-9v2Zm5 2H5v10h10V9Z"/></svg>';
-  chip.append(document.createTextNode(`ID ${projectId.slice(0, 8)}`));
-  chip.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(projectId);
-      toast("Project ID copied");
-    } catch {
-      toast(`Copy failed. Project ID: ${projectId}`, true);
-    }
-  });
-  return chip;
+async function copySelectedProjectId() {
+  const projectId = state.board?.project?.id || state.selectedProjectId;
+  if (!projectId) return;
+  try {
+    await navigator.clipboard.writeText(projectId);
+    toast("Project ID copied");
+  } catch {
+    toast(`Copy failed. Project ID: ${projectId}`, true);
+  }
 }
 
 function relativeTime(timestamp) {

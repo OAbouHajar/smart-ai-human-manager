@@ -1,7 +1,7 @@
 {
   "name": "sham",
   "description": "Backward-compatible SHAM commands for Context Workspace.",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": {
     "name": "Context Workspace"
   },
