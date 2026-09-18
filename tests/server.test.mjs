@@ -404,7 +404,13 @@ test("exports and imports sanitized shared project boards", async () => {
   attributed = await fetch(`${baseUrl}/api/tasks/${task.id}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ status: "in_progress" })
+    body: JSON.stringify({
+      status: "in_progress",
+      recommendedModel: "GPT-5.6 Sol",
+      modelProvider: "GitHub Copilot CLI",
+      reasoningEffort: "high",
+      modelReason: "Cross-file implementation and privacy-sensitive migration logic require stronger reasoning."
+    })
   }).then((response) => response.json());
 
   const snapshot = await fetch(`${baseUrl}/api/projects/${project.id}/share`).then((response) => response.json());
@@ -419,6 +425,10 @@ test("exports and imports sanitized shared project boards", async () => {
     agent: "Claude Code",
     completedBy: "",
     completedWith: "",
+    recommendedModel: "GPT-5.6 Sol",
+    modelProvider: "GitHub Copilot CLI",
+    reasoningEffort: "high",
+    modelReason: "Cross-file implementation and privacy-sensitive migration logic require stronger reasoning.",
     updatedAt: attributed.updatedAt
   });
   assert.equal(snapshot.context.summary, "");

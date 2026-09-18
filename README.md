@@ -134,7 +134,7 @@ Direct ID linking keeps auto-wrap off unless you explicitly request it.
 
 Project sharing publishes the work, not the AI conversation. `/cw:project-share` writes a sanitized board snapshot to the dedicated `context-workspace/shared-projects` branch on the repository's configured Git remote. Teammates use `/cw:project-pull` to import that board into their local dashboard and connect a new local AI session to the same project.
 
-Shared snapshots contain project details, tickets, status, human owner, AI agent, completion attribution, revisions, and a sanitized continuation context with the latest summary, completed work, blockers, next action, and a generated teammate starter prompt. They exclude original prompts, transcripts, raw responses, source code, local paths, credentials, and tool logs. The sharing branch is independent and must not be merged into the product's code branches.
+Shared snapshots contain project details, tickets, status, human owner, AI agent, completion attribution, model recommendations, revisions, and a sanitized continuation context with the latest summary, completed work, blockers, next action, and a generated teammate starter prompt. They exclude original prompts, transcripts, raw responses, source code, local paths, credentials, and tool logs. The sharing branch is independent and must not be merged into the product's code branches.
 
 Pushes use normal non-force Git updates. Concurrent changes are rejected rather than overwritten; pull and reconcile the local board before publishing again.
 
@@ -153,6 +153,7 @@ Copilot includes **Context Workspace** commands:
 | `/cw:auto-wrap on\|off\|status\|default` | Control automatic wrapping for the current session |
 | `/cw:refine` | Clarify, split, and prioritize backlog work |
 | `/cw:plan` | Build an ordered plan from unfinished work |
+| `/cw:model-plan` | Recommend an appropriate model and reasoning effort for every open ticket |
 | `/cw:work` | Execute the best ready project task |
 | `/cw:sync` | Reconcile project state with actual evidence |
 | `/cw:review` | Validate delivered work against its intended outcome |

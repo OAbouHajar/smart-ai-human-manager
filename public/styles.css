@@ -105,6 +105,14 @@ h1, h2, p { margin-top: 0; }
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+.ticket-model-chip {
+  width: fit-content; max-width: 100%; padding: 0.18rem 0.45rem;
+  overflow: hidden; color: var(--cp-link);
+  background: color-mix(in oklch, var(--cp-link) 11%, transparent);
+  border: 1px solid color-mix(in oklch, var(--cp-link) 36%, var(--cp-border));
+  border-radius: 999px; font-size: 0.6rem; font-weight: 700;
+  text-overflow: ellipsis; white-space: nowrap;
+}
 .card-description {
   margin: 0;
   color: var(--cp-text-muted);
@@ -870,6 +878,9 @@ button.context-link { cursor: pointer; }
 }
 .ticket-title-field { grid-column: 1 / -1; }
 .ticket-description-field { grid-column: 1 / -1; }
+.ticket-model-section { margin-top: 1.25rem; padding-top: 1.1rem; border-top: 1px solid var(--cp-border); }
+.ticket-model-grid { display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 1rem; }
+.ticket-model-reason-field { grid-column: 1 / -1; }
 .ticket-context-section { margin-top: 1.25rem; }
 .ticket-context-heading {
   display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
@@ -1159,7 +1170,9 @@ button.context-link { cursor: pointer; }
   .command-item { grid-template-columns: 1fr auto; }
   .command-item > span { grid-column: 1 / -1; }
   .ticket-form-grid, .ticket-context { grid-template-columns: 1fr; }
+  .ticket-model-grid { grid-template-columns: 1fr; }
   .ticket-title-field, .ticket-description-field { grid-column: 1; }
+  .ticket-model-reason-field { grid-column: 1; }
   .ticket-context-heading { align-items: flex-start; flex-direction: column; gap: 0.2rem; }
   .ticket-context div { border-right: 0; border-bottom: 1px solid var(--cp-border); }
   .ticket-context div:last-child { border-bottom: 0; }

@@ -870,7 +870,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   ]);
   const commandNames = [
     "wrap", "handoff", "reopen", "project", "project-share", "project-push", "project-pull",
-    "archive", "auto-wrap", "refine", "plan", "work", "sync", "review", "retro", "update"
+    "archive", "auto-wrap", "refine", "plan", "model-plan", "work", "sync", "review", "retro", "update"
   ];
   const shamCommands = await Promise.all(commandNames.map((name) => readFile(join(root, "commands", `${name}.md`), "utf8")));
   assert.match(html, /<strong>Context Workspace<\/strong>/);
@@ -893,12 +893,16 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="ticketAgentInput"/);
   assert.match(html, /id="ticketCompletedByValue"/);
   assert.match(html, /id="ticketCompletedWithValue"/);
+  assert.match(html, /id="ticketRecommendedModelInput"/);
+  assert.match(html, /id="ticketModelReasonInput"/);
   assert.match(html, /class="ticket-context-section"/);
   assert.match(app, /ticketDialogTitle\.textContent = "Edit ticket"/);
   assert.match(html, /<button type="submit" class="button primary">Save ticket<\/button>/);
   assert.match(app, /function openTicketDialog/);
   assert.match(app, /function saveTicket/);
   assert.match(app, /card-attribution/);
+  assert.match(app, /\/cw:model-plan/);
+  assert.match(app, /ticket-model-chip/);
   assert.match(app, /Delivery flow/);
   assert.match(app, /Session effort/);
   assert.match(app, /Context captured/);

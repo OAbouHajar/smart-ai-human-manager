@@ -144,6 +144,10 @@ ensureColumn("tasks", "owner", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "agent_owner", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "completed_by", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "completed_with", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "recommended_model", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "model_provider", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "reasoning_effort", "TEXT NOT NULL DEFAULT ''");
+ensureColumn("tasks", "model_reason", "TEXT NOT NULL DEFAULT ''");
 ensureColumn("tasks", "updated_at", "INTEGER");
 ensureColumn("work_items", "project_id", "TEXT NOT NULL DEFAULT ''");
 db.exec(`
@@ -839,6 +843,10 @@ function exportSharedProject(projectId, response) {
     agent: cleanText(task.agent_owner, 120),
     completedBy: cleanText(task.completed_by, 120),
     completedWith: cleanText(task.completed_with, 120),
+    recommendedModel: cleanText(task.recommended_model, 120),
+    modelProvider: cleanText(task.model_provider, 120),
+    reasoningEffort: cleanText(task.reasoning_effort, 40),
+    modelReason: cleanText(task.model_reason, 500),
     updatedAt: task.updated_at || task.created_at
   }));
   const latest = sessions[0];
@@ -1042,12 +1050,14 @@ function importSharedProject(data, response) {
     const insertTask = db.prepare(`
       INSERT INTO tasks(
         session_id, project_id, ticket_id, text, description, owner, agent_owner,
-        completed_by, completed_with, completed, position, created_at, updated_at, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        completed_by, completed_with, recommended_model, model_provider, reasoning_effort,
+        model_reason, completed, position, created_at, updated_at, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const updateTaskStatement = db.prepare(`
       UPDATE tasks SET text = ?, description = ?, owner = ?, agent_owner = ?,
-        completed_by = ?, completed_with = ?, completed = ?, position = ?, updated_at = ?, status = ?
+        completed_by = ?, completed_with = ?, recommended_model = ?, model_provider = ?,
+        reasoning_effort = ?, model_reason = ?, completed = ?, position = ?, updated_at = ?, status = ?
       WHERE id = ?
     `);
     const sharedTicketIds = [];
@@ -1061,18 +1071,24 @@ function importSharedProject(data, response) {
       const agent = cleanText(ticket.agent, 120);
       const completedBy = cleanText(ticket.completedBy, 120);
       const completedWith = cleanText(ticket.completedWith, 120);
+      const recommendedModel = cleanText(ticket.recommendedModel, 120);
+      const modelProvider = cleanText(ticket.modelProvider, 120);
+      const reasoningEffort = cleanText(ticket.reasoningEffort, 40);
+      const modelReason = cleanText(ticket.modelReason, 500);
       const ticketStatus = normalizeTaskStatus(ticket.status);
       const updatedAt = Number(ticket.updatedAt) || revision || now;
       const row = selectTask.get(projectId, ticketId);
       if (row) {
         updateTaskStatement.run(
           ticketTitle, ticketDescription, owner, agent, completedBy, completedWith,
+          recommendedModel, modelProvider, reasoningEffort, modelReason,
           ticketStatus === "done" ? 1 : 0, position, updatedAt, ticketStatus, row.id
         );
       } else {
         insertTask.run(
           syntheticSessionId, projectId, ticketId, ticketTitle, ticketDescription, owner,
-          agent, completedBy, completedWith, ticketStatus === "done" ? 1 : 0,
+          agent, completedBy, completedWith, recommendedModel, modelProvider,
+          reasoningEffort, modelReason, ticketStatus === "done" ? 1 : 0,
           position, updatedAt, updatedAt, ticketStatus
         );
       }
@@ -1260,6 +1276,10 @@ function addProjectTask(projectId, data, response) {
   const owner = cleanText(data.owner, 120);
   const attribution = sessionAttribution(session);
   const agent = cleanText(data.agent, 120) || attribution.agent;
+  const recommendedModel = cleanText(data.recommendedModel, 120);
+  const modelProvider = cleanText(data.modelProvider, 120);
+  const reasoningEffort = cleanText(data.reasoningEffort, 40);
+  const modelReason = cleanText(data.modelReason, 500);
   const status = normalizeTaskStatus(data.status);
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE project_id = ?")
     .get(projectId).position;
@@ -1268,13 +1288,15 @@ function addProjectTask(projectId, data, response) {
   const result = db.prepare(`
     INSERT INTO tasks(
       session_id, project_id, ticket_id, text, description, owner, agent_owner,
-      completed_by, completed_with, completed, position, created_at, updated_at, status
+      completed_by, completed_with, recommended_model, model_provider, reasoning_effort,
+      model_reason, completed, position, created_at, updated_at, status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     session.id, projectId, ticketId, text, description, owner, agent,
     status === "done" ? (owner || attribution.human) : "",
     status === "done" ? agent : "",
+    recommendedModel, modelProvider, reasoningEffort, modelReason,
     status === "done" ? 1 : 0, position, now, now, status
   );
   db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, projectId);
@@ -1282,7 +1304,7 @@ function addProjectTask(projectId, data, response) {
   json(response, 201, {
     id: Number(result.lastInsertRowid), sessionId: session.id, projectId, ticketId, text,
     description, owner, agent, completedBy: status === "done" ? (owner || attribution.human) : "",
-    completedWith: status === "done" ? agent : "",
+    completedWith: status === "done" ? agent : "", recommendedModel, modelProvider, reasoningEffort, modelReason,
     completed: status === "done", status, position, updatedAt: now
   });
 }
@@ -1704,18 +1726,24 @@ function addTask(id, data, response) {
   const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
   const attribution = sessionAttribution(session);
   const agent = cleanText(data.agent, 120) || attribution.agent;
+  const recommendedModel = cleanText(data.recommendedModel, 120);
+  const modelProvider = cleanText(data.modelProvider, 120);
+  const reasoningEffort = cleanText(data.reasoningEffort, 40);
+  const modelReason = cleanText(data.modelReason, 500);
   const position = db.prepare("SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE session_id = ?").get(id).position;
   const now = Date.now();
   const ticketId = session?.project_id ? nextProjectTicketId(session.project_id) : "";
   const result = db.prepare(`
     INSERT INTO tasks(
       session_id, ticket_id, text, description, owner, agent_owner, completed_by,
-      completed_with, completed, position, created_at, updated_at, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      completed_with, recommended_model, model_provider, reasoning_effort, model_reason,
+      completed, position, created_at, updated_at, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     id, ticketId, text, description, owner, agent,
     status === "done" ? (owner || attribution.human) : "",
     status === "done" ? agent : "",
+    recommendedModel, modelProvider, reasoningEffort, modelReason,
     status === "done" ? 1 : 0, position, now, now, status
   );
   touchProjectForSession(id);
@@ -1724,6 +1752,7 @@ function addTask(id, data, response) {
     id: Number(result.lastInsertRowid), sessionId: id, ticketId, text, description, owner, agent,
     completedBy: status === "done" ? (owner || attribution.human) : "",
     completedWith: status === "done" ? agent : "",
+    recommendedModel, modelProvider, reasoningEffort, modelReason,
     completed: status === "done", status, position, updatedAt: now
   });
 }
@@ -1750,6 +1779,18 @@ function updateTask(id, data, response) {
   let agent = data.agent === undefined
     ? (row.agent_owner || attribution.agent)
     : cleanText(data.agent, 120);
+  const recommendedModel = data.recommendedModel === undefined
+    ? row.recommended_model
+    : cleanText(data.recommendedModel, 120);
+  const modelProvider = data.modelProvider === undefined
+    ? row.model_provider
+    : cleanText(data.modelProvider, 120);
+  const reasoningEffort = data.reasoningEffort === undefined
+    ? row.reasoning_effort
+    : cleanText(data.reasoningEffort, 40);
+  const modelReason = data.modelReason === undefined
+    ? row.model_reason
+    : cleanText(data.modelReason, 500);
   let status = data.status === undefined ? normalizeTaskStatus(row.status) : normalizeTaskStatus(data.status);
   if (data.completed !== undefined) status = data.completed ? "done" : (status === "done" ? "next" : status);
   if (actorSession && ["in_progress", "done"].includes(status)) {
@@ -1767,8 +1808,13 @@ function updateTask(id, data, response) {
   const now = Date.now();
   db.prepare(`
     UPDATE tasks SET text = ?, description = ?, owner = ?, agent_owner = ?,
-      completed_by = ?, completed_with = ?, completed = ?, status = ?, updated_at = ? WHERE id = ?
-  `).run(text, description, owner, agent, completedBy, completedWith, completed, status, now, id);
+      completed_by = ?, completed_with = ?, recommended_model = ?, model_provider = ?,
+      reasoning_effort = ?, model_reason = ?, completed = ?, status = ?, updated_at = ? WHERE id = ?
+  `).run(
+    text, description, owner, agent, completedBy, completedWith,
+    recommendedModel, modelProvider, reasoningEffort, modelReason,
+    completed, status, now, id
+  );
   if (row.project_id) db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(now, row.project_id);
   else {
     db.prepare("UPDATE sessions SET updated_at = ? WHERE id = ?").run(now, row.session_id);
@@ -1777,7 +1823,8 @@ function updateTask(id, data, response) {
   broadcast("sessions-changed", { id: row.session_id, eventName: becameDone ? "task-completed" : "task-updated" });
   json(response, 200, taskRecord({
     ...row, text, description, owner, agent_owner: agent, completed_by: completedBy,
-    completed_with: completedWith, completed, status, updated_at: now
+    completed_with: completedWith, recommended_model: recommendedModel, model_provider: modelProvider,
+    reasoning_effort: reasoningEffort, model_reason: modelReason, completed, status, updated_at: now
   }));
 }
 
@@ -2165,6 +2212,10 @@ function taskRecord(row) {
     agent,
     completedBy: row.completed_by || "",
     completedWith: row.completed_with || "",
+    recommendedModel: row.recommended_model || "",
+    modelProvider: row.model_provider || "",
+    reasoningEffort: row.reasoning_effort || "",
+    modelReason: row.model_reason || "",
     completed: Boolean(row.completed),
     status: normalizeTaskStatus(row.status || (row.completed ? "done" : "next")),
     position: row.position,

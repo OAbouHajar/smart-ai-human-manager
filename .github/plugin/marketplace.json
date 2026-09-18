@@ -5,19 +5,19 @@
   },
   "metadata": {
     "description": "Official plugins for Context Workspace",
-    "version": "0.14.1"
+    "version": "0.15.0"
   },
   "plugins": [
     {
       "name": "cw",
       "description": "Context Workspace for session continuity and agile project delivery.",
-      "version": "0.14.1",
+      "version": "0.15.0",
       "source": "."
     },
     {
       "name": "sham",
       "description": "Compatibility commands for existing SHAM users.",
-      "version": "0.14.1",
+      "version": "0.15.0",
       "source": "./compat/sham"
     }
   ]

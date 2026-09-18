@@ -623,6 +623,36 @@
           <textarea id="ticketDescriptionInput" rows="6" maxlength="1000" placeholder="Add the details, outcome, or acceptance notes for this ticket."></textarea>
         </label>
       </div>
+      <section class="ticket-model-section">
+        <div class="ticket-context-heading">
+          <span>AI execution recommendation</span>
+          <small>Run <code>/cw:model-plan</code> to assess every open ticket</small>
+        </div>
+        <div class="ticket-model-grid">
+          <label class="ticket-field">
+            <span>Recommended model</span>
+            <input id="ticketRecommendedModelInput" maxlength="120" placeholder="Example: GPT-5.6 Sol">
+          </label>
+          <label class="ticket-field">
+            <span>Provider</span>
+            <input id="ticketModelProviderInput" maxlength="120" placeholder="Example: GitHub Copilot CLI">
+          </label>
+          <label class="ticket-field">
+            <span>Reasoning effort</span>
+            <select id="ticketReasoningEffortInput">
+              <option value="">Not specified</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="xhigh">Extra high</option>
+            </select>
+          </label>
+          <label class="ticket-field ticket-model-reason-field">
+            <span>Why this model?</span>
+            <textarea id="ticketModelReasonInput" rows="3" maxlength="500" placeholder="Explain why this model fits the task's complexity, risk, and context needs."></textarea>
+          </label>
+        </div>
+      </section>
       <section class="ticket-context-section">
         <div class="ticket-context-heading">
           <span>Context</span>

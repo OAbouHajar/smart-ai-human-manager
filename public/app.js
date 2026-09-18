@@ -94,6 +94,11 @@ const sessionHubCommands = [
     description: "Analyze unfinished chat work, order it, and populate the project board."
   },
   {
+    command: "/cw:model-plan",
+    title: "Recommend models for project tickets",
+    description: "Assess open tasks and save a model, provider, reasoning effort, and rationale for each."
+  },
+  {
     command: "/cw:work",
     title: "Execute the next task",
     description: "Choose the best actionable card, move it to In Progress, execute it, and update the board."
@@ -1558,6 +1563,7 @@ function renderBoardCard(task) {
 
   const heading = element("div", "card-heading");
   if (task.ticketId) heading.append(element("span", "ticket-id", task.ticketId));
+  if (task.recommendedModel) heading.append(element("span", "ticket-model-chip", task.recommendedModel));
   heading.append(element("p", "card-text", task.text));
   const description = task.description ? element("p", "card-description", task.description) : null;
   const details = element("button", "ticket-card-details");
@@ -1615,6 +1621,10 @@ function openTicketDialog(task) {
   elements.ticketDescriptionInput.value = task.description || "";
   elements.ticketOwnerInput.value = task.owner || "";
   elements.ticketAgentInput.value = task.agent || "";
+  elements.ticketRecommendedModelInput.value = task.recommendedModel || "";
+  elements.ticketModelProviderInput.value = task.modelProvider || "";
+  elements.ticketReasoningEffortInput.value = task.reasoningEffort || "";
+  elements.ticketModelReasonInput.value = task.modelReason || "";
   elements.ticketStatusInput.replaceChildren();
   Object.entries(boardStatusLabels).forEach(([value, label]) => {
     const option = document.createElement("option");
@@ -1633,7 +1643,8 @@ function openTicketDialog(task) {
   const archived = state.board?.project?.status === "archived";
   for (const field of [
     elements.ticketTitleInput, elements.ticketDescriptionInput, elements.ticketOwnerInput,
-    elements.ticketAgentInput, elements.ticketStatusInput
+    elements.ticketAgentInput, elements.ticketStatusInput, elements.ticketRecommendedModelInput,
+    elements.ticketModelProviderInput, elements.ticketReasoningEffortInput, elements.ticketModelReasonInput
   ]) {
     field.disabled = archived;
   }
@@ -1659,6 +1670,10 @@ async function saveTicket(event) {
       description: elements.ticketDescriptionInput.value,
       owner: elements.ticketOwnerInput.value,
       agent: elements.ticketAgentInput.value,
+      recommendedModel: elements.ticketRecommendedModelInput.value,
+      modelProvider: elements.ticketModelProviderInput.value,
+      reasoningEffort: elements.ticketReasoningEffortInput.value,
+      modelReason: elements.ticketModelReasonInput.value,
       status: elements.ticketStatusInput.value
     }
   });
