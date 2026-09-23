@@ -113,6 +113,24 @@ h3 { font-size: 1.25rem; }
 }
 .context-note strong { color: var(--soft); font-size: 0.75rem; font-weight: 650; }
 
+.demo {
+  padding: 6.5rem 0;
+  scroll-margin-top: 2rem;
+  border-top: 1px solid var(--line-soft);
+}
+.demo-frame {
+  overflow: hidden; max-width: 1100px; margin: 2.6rem auto 0;
+  background: var(--surface-high); border: 1px solid #315064; border-radius: 18px;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.48), 0 0 70px rgba(102, 231, 199, 0.07);
+}
+.demo-frame .window-bar { padding: 0.7rem 0.8rem; }
+.demo-frame video {
+  display: block; width: 100%; aspect-ratio: 16 / 9; background: #02070b;
+}
+.demo-caption {
+  margin: 1rem auto 0; color: var(--muted); font-size: 0.8rem; text-align: center;
+}
+
 .positioning { padding: 6.5rem 0; text-align: center; border-top: 1px solid var(--line-soft); }
 .positioning h2 { max-width: 900px; margin-inline: auto; }
 .session-to-project {
@@ -250,7 +268,7 @@ footer a:hover { color: var(--text); }
   .site-header, main > section, footer { width: min(calc(100% - 1.5rem), var(--max)); }
   .workflow-grid, .insight-grid, .quick-value { grid-template-columns: 1fr; }
   .actions { display: grid; }
-  .positioning, .workflow, .workspace, .measure, .commands, .install { padding: 5.5rem 0; }
+  .demo, .positioning, .workflow, .workspace, .measure, .commands, .install { padding: 5.5rem 0; }
   .continuity { padding: 1.5rem; }
   .local-first { align-items: flex-start; padding: 1.4rem; }
   .local-first img { width: 3.4rem; height: 3.4rem; }

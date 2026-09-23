@@ -22,6 +22,10 @@ test("landing page presents the project and AI-first installation path", async (
   assert.match(html, /Let your AI set it up/);
   assert.match(html, /id="copyHeroPrompt"/);
   assert.match(html, /Install with AI/);
+  assert.match(html, /Watch the 2-minute demo/);
+  assert.match(html, /id="demo"/);
+  assert.match(html, /assets\/context-workspace-demo\.mp4/);
+  assert.match(html, /assets\/context-workspace-demo-poster\.jpg/);
   assert.match(html, /id="installPrompt"/);
   assert.match(html, /Copilot/);
   assert.match(html, /Claude Code/);
@@ -37,6 +41,7 @@ test("landing page presents the project and AI-first installation path", async (
   assert.match(workflow, /questions-screenshot\.png/);
   assert.match(workflow, /board-screenshot\.png/);
   assert.match(workflow, /context-workspace-logo\.png/);
+  assert.match(workflow, /cp -R site\/assets\/\. _site\/assets\//);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/);
 });
 
