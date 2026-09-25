@@ -71,6 +71,15 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(script, /showModal/);
   assert.match(script, /demoVideo\.pause/);
   assert.match(script, /interactiveDemoDialog\.showModal/);
+  const themeHandler = script.match(
+    /themeToggle\.addEventListener\("click",[\s\S]*?\r?\n\}\);\r?\nupdateThemeToggle\(\);/
+  );
+  assert.ok(themeHandler, "theme toggle handler should have a clear initialization boundary");
+  assert.doesNotMatch(
+    themeHandler[0],
+    /openDemoVideo|openInteractiveDemo/,
+    "demo handlers should initialize independently from the theme-toggle click handler"
+  );
   assert.match(script, /context-workspace-theme/);
   assert.match(script, /updateThemeToggle/);
   assert.match(script, /selectAgent/);

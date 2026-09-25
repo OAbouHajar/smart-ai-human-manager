@@ -36,26 +36,26 @@ themeToggle.addEventListener("click", () => {
   document.documentElement.dataset.theme = nextTheme;
   localStorage.setItem("context-workspace-theme", nextTheme);
   updateThemeToggle();
-
-  openDemoVideo.addEventListener("click", () => demoVideoDialog.showModal());
-  closeDemoVideo.addEventListener("click", () => {
-    demoVideo.pause();
-    demoVideoDialog.close();
-  });
-  demoVideoDialog.addEventListener("click", (event) => {
-    if (event.target !== demoVideoDialog) return;
-    demoVideo.pause();
-    demoVideoDialog.close();
-  });
-  demoVideoDialog.addEventListener("close", () => demoVideo.pause());
-
-  openInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.showModal());
-  closeInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.close());
-  interactiveDemoDialog.addEventListener("click", (event) => {
-    if (event.target === interactiveDemoDialog) interactiveDemoDialog.close();
-  });
 });
 updateThemeToggle();
+
+openDemoVideo.addEventListener("click", () => demoVideoDialog.showModal());
+closeDemoVideo.addEventListener("click", () => {
+  demoVideo.pause();
+  demoVideoDialog.close();
+});
+demoVideoDialog.addEventListener("click", (event) => {
+  if (event.target !== demoVideoDialog) return;
+  demoVideo.pause();
+  demoVideoDialog.close();
+});
+demoVideoDialog.addEventListener("close", () => demoVideo.pause());
+
+openInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.showModal());
+closeInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.close());
+interactiveDemoDialog.addEventListener("click", (event) => {
+  if (event.target === interactiveDemoDialog) interactiveDemoDialog.close();
+});
 
 const agentPrompts = {
   copilot: {
