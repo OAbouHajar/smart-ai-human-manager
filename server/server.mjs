@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir, access, rename, unlink } from "node:fs/prom
 import { createReadStream, existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, extname, isAbsolute, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { homedir, platform } from "node:os";
+import { homedir, platform, userInfo } from "node:os";
 import { execFileSync, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
@@ -847,7 +847,7 @@ function exportSharedProject(projectId, response) {
     title: cleanText(task.text, 500),
     description: cleanText(task.description, 1000),
     status: normalizeTaskStatus(task.status),
-    owner: cleanText(task.owner, 120),
+    owner: cleanText(task.owner, 120) || gitUserName(project.cwd || project.repository),
     agent: cleanText(task.agent_owner, 120),
     completedBy: cleanText(task.completed_by, 120),
     completedWith: cleanText(task.completed_with, 120),
@@ -1281,8 +1281,8 @@ function addProjectTask(projectId, data, response) {
   const text = cleanText(data.text, 500);
   if (!text) return json(response, 400, { error: "Task text is required" });
   const description = cleanText(data.description, 1000);
-  const owner = cleanText(data.owner, 120);
   const attribution = sessionAttribution(session);
+  const owner = cleanText(data.owner, 120) || attribution.human;
   const agent = cleanText(data.agent, 120) || attribution.agent;
   const recommendedModel = cleanText(data.recommendedModel, 120);
   const modelProvider = cleanText(data.modelProvider, 120);
@@ -1461,6 +1461,7 @@ function checkpoint(id, data, response) {
         contextTier: existing.context_tier,
         capturedAt: existing.metrics_at
       };
+  const checkpointAttribution = sessionAttribution(existing);
   db.exec("BEGIN");
   try {
     db.prepare(`
@@ -1482,12 +1483,15 @@ function checkpoint(id, data, response) {
       const nextPosition = Number(db.prepare(`
         SELECT COALESCE(MAX(position), -1) + 1 AS position FROM tasks WHERE session_id = ? AND project_id = ''
       `).get(id).position);
-      const insert = db.prepare("INSERT INTO tasks(session_id, text, completed, position, created_at, status) VALUES (?, ?, 0, ?, ?, 'next')");
+      const insert = db.prepare(`
+        INSERT INTO tasks(session_id, text, owner, agent_owner, completed, position, created_at, status)
+        VALUES (?, ?, ?, ?, 0, ?, ?, 'next')
+      `);
       let added = 0;
       for (const task of tasks) {
         const key = task.toLocaleLowerCase();
         if (existingText.has(key)) continue;
-        insert.run(id, task, nextPosition + added, now);
+        insert.run(id, task, checkpointAttribution.human, checkpointAttribution.agent, nextPosition + added, now);
         existingText.add(key);
         added++;
       }
@@ -1730,9 +1734,9 @@ function addTask(id, data, response) {
   if (!text) return json(response, 400, { error: "Task text is required" });
   const status = normalizeTaskStatus(data.status);
   const description = cleanText(data.description, 1000);
-  const owner = cleanText(data.owner, 120);
   const session = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id);
   const attribution = sessionAttribution(session);
+  const owner = cleanText(data.owner, 120) || attribution.human;
   const agent = cleanText(data.agent, 120) || attribution.agent;
   const recommendedModel = cleanText(data.recommendedModel, 120);
   const modelProvider = cleanText(data.modelProvider, 120);
@@ -2230,7 +2234,7 @@ function taskRecord(row) {
     ticketId: row.ticket_id || "",
     text: row.text,
     description: row.description || "",
-    owner: row.owner || "",
+    owner: row.owner || gitUserName(row.cwd || row.repository),
     agent,
     completedBy: row.completed_by || "",
     completedWith: row.completed_with || "",
@@ -2254,14 +2258,20 @@ function sessionAttribution(session) {
 }
 
 function gitUserName(cwd) {
-  if (!cwd || !existsSync(cwd)) return "";
+  if (cwd && existsSync(cwd)) {
+    try {
+      const gitName = cleanText(execFileSync("git", ["-C", cwd, "config", "user.name"], {
+        encoding: "utf8",
+        timeout: 2000,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "ignore"]
+      }).trim(), 120);
+      if (gitName) return gitName;
+    } catch {
+    }
+  }
   try {
-    return cleanText(execFileSync("git", ["-C", cwd, "config", "user.name"], {
-      encoding: "utf8",
-      timeout: 2000,
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "ignore"]
-    }).trim(), 120);
+    return cleanText(userInfo().username, 120);
   } catch {
     return "";
   }

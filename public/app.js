@@ -1570,23 +1570,7 @@ function renderBoardCard(task) {
   });
   card.addEventListener("dragend", () => card.classList.remove("dragging"));
 
-  const session = element("div", "card-session");
-  session.append(element("span", "", task.sessionTitle));
-  const open = element("button");
-  open.title = "Open session";
-  open.setAttribute("aria-label", `Open ${task.sessionTitle}`);
-  open.innerHTML = '<svg viewBox="0 0 24 24"><path d="m13 5 7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6L13 5Z"/></svg>';
-  open.addEventListener("click", async () => {
-    state.view = "sessions";
-    localStorage.setItem("sessionHub.projectFirstView", "sessions");
-    await selectSession(task.sessionId);
-    applyView();
-  });
-  session.append(open);
-
   const heading = element("div", "card-heading");
-  if (task.ticketId) heading.append(element("span", "ticket-id", task.ticketId));
-  if (task.recommendedModel) heading.append(element("span", "ticket-model-chip", task.recommendedModel));
   heading.append(element("p", "card-text", task.text));
   const description = task.description ? element("p", "card-description", task.description) : null;
   const details = element("button", "ticket-card-details");
@@ -1601,8 +1585,22 @@ function renderBoardCard(task) {
     event.stopPropagation();
     openTicketDialog(task);
   });
-  const meta = element("div", "card-meta");
-  const attribution = element("span", "card-attribution");
+
+  const ticketMeta = element("div", "card-ticket-meta");
+  if (task.ticketId) ticketMeta.append(element("span", "ticket-id", task.ticketId));
+  if (task.recommendedModel) {
+    ticketMeta.append(element("span", "ticket-model-chip", `Recommended · ${task.recommendedModel}`));
+  }
+
+  const ownership = element("div", "card-ownership");
+  const human = element("div", "card-human-owner");
+  human.append(
+    element("span", "card-human-icon", "H"),
+    element("strong", "", task.completedBy || task.owner || "Unassigned")
+  );
+  ownership.append(human);
+
+  const agentAttribution = element("div", "card-agent-attribution");
   const agentName = task.completedWith || task.agent || "No agent";
   const logoPath = agentLogoPath(agentName);
   if (logoPath) {
@@ -1611,26 +1609,40 @@ function renderBoardCard(task) {
     logo.src = logoPath;
     logo.alt = "";
     logo.title = agentName;
-    attribution.append(logo);
+    agentAttribution.append(logo);
   } else {
-    attribution.append(element("span", "card-agent-logo", "AI"));
+    agentAttribution.append(element("span", "card-agent-logo", "AI"));
   }
-  const attributionText = element("span");
-  attributionText.append(
-    element("strong", "", task.completedBy || task.owner || "Unassigned"),
-    element("small", "", agentName)
+  agentAttribution.append(element("small", "", agentName));
+  ownership.append(agentAttribution);
+
+  const source = element("button", "card-source");
+  source.type = "button";
+  source.disabled = !task.sessionId || task.sessionId.startsWith("shared-project:");
+  source.append(
+    element("small", "", "From session"),
+    element("strong", "", task.sessionTitle || "No linked session"),
+    element("span", "", "→")
   );
-  attribution.append(attributionText);
-  meta.append(attribution);
-  const detailsLabel = element("button", "ticket-details-link", "Details");
+  source.addEventListener("pointerdown", (event) => event.stopPropagation());
+  source.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    state.view = "sessions";
+    localStorage.setItem("sessionHub.projectFirstView", "sessions");
+    await selectSession(task.sessionId);
+    applyView();
+  });
+
+  const actions = element("div", "card-actions");
+  const detailsLabel = element("button", "ticket-details-link", "Details →");
   detailsLabel.type = "button";
   detailsLabel.addEventListener("pointerdown", (event) => event.stopPropagation());
   detailsLabel.addEventListener("click", (event) => {
     event.stopPropagation();
     openTicketDialog(task);
   });
-  meta.append(detailsLabel);
-  card.append(session, details, meta);
+  actions.append(detailsLabel);
+  card.append(details, ticketMeta, ownership, source, actions);
   return card;
 }
 

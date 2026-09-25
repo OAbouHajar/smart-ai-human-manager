@@ -95,6 +95,10 @@ h1, h2, p { margin-top: 0; }
   color: var(--cp-success);
 }
 .card-heading { display: grid; gap: 0.35rem; }
+.card-ticket-meta {
+  display: flex; justify-content: space-between; gap: 0.45rem; align-items: center;
+  margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--cp-border);
+}
 .ticket-id {
   width: fit-content;
   padding: 0.12rem 0.38rem;
@@ -1037,30 +1041,38 @@ button.context-link { cursor: pointer; }
 .kanban-card.dragging { opacity: 0.45; }
 .kanban-card.done-card { opacity: 0.7; }
 .kanban-card.done-card .card-text { text-decoration: line-through; }
-.card-session { min-width: 0; display: flex; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; color: var(--cp-accent); font-size: 0.65rem; font-weight: 700; }
-.card-session span { min-width: 0; overflow-wrap: anywhere; }
-.card-session button { flex: 0 0 auto; width: 1.7rem; height: 1.7rem; padding: 0; color: var(--cp-text-muted); background: transparent; border: 0; border-radius: var(--radius-sm); cursor: pointer; }
-.card-session svg { width: 0.85rem; }
 .ticket-card-details {
   width: 100%; display: block; padding: 0; color: inherit; background: transparent;
   border: 0; cursor: pointer; text-align: left;
 }
 .ticket-card-details:hover .card-text, .ticket-card-details:focus-visible .card-text { color: var(--cp-accent); }
-.card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; line-height: 1.48; }
-.card-meta { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
-.card-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-attribution { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 0.4rem; align-items: center; }
-.card-attribution > span { min-width: 0; display: grid; gap: 0.08rem; }
+.card-text { margin: 0; overflow-wrap: anywhere; color: var(--cp-text); font-size: 0.82rem; font-weight: 700; line-height: 1.42; }
+.card-ownership { display: grid; gap: 0.45rem; margin-top: 0.75rem; }
+.card-human-owner, .card-agent-attribution { min-width: 0; display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 0.4rem; align-items: center; }
+.card-human-icon {
+  display: grid; place-items: center; width: 1.6rem; height: 1.6rem;
+  color: var(--cp-text-soft); background: var(--cp-surface-soft); border: 1px solid var(--cp-border);
+  border-radius: 50%; font-size: 0.55rem; font-weight: 800;
+}
+.card-human-owner strong { min-width: 0; overflow: hidden; color: var(--cp-text-soft); font-size: 0.65rem; text-overflow: ellipsis; white-space: nowrap; }
 .card-agent-logo {
   width: 1.6rem; height: 1.6rem; padding: 0.22rem; object-fit: contain;
   background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.38rem;
 }
 .card-agent-logo:not(img) { display: grid; place-items: center; color: var(--cp-text-muted); font-size: 0.52rem; font-weight: 800; }
-.card-attribution strong, .card-attribution small {
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.card-agent-attribution small { min-width: 0; overflow: hidden; color: var(--cp-text-muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
+.card-source {
+  width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.12rem 0.5rem;
+  margin-top: 0.75rem; padding: 0.65rem 0; color: inherit; text-align: left; background: transparent;
+  border: 0; border-top: 1px solid var(--cp-border); cursor: pointer;
 }
-.card-attribution strong { color: var(--cp-text-soft); font-size: 0.65rem; }
-.card-attribution small { color: var(--cp-text-muted); font-size: 0.58rem; }
+.card-source small, .card-source strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-source small { color: var(--cp-text-muted); font-size: 0.55rem; }
+.card-source strong { color: var(--cp-text-soft); font-size: 0.62rem; }
+.card-source > span { grid-column: 2; grid-row: 1 / 3; align-self: center; color: var(--cp-link); }
+.card-source:hover strong, .card-source:focus-visible strong { color: var(--cp-link); }
+.card-source:disabled { cursor: default; opacity: 0.65; }
+.card-actions { display: flex; justify-content: flex-end; margin-top: 0.45rem; }
 .ticket-details-link {
   padding: 0; color: var(--cp-link); background: transparent; border: 0;
   cursor: pointer; font-size: 0.64rem; font-weight: 700;

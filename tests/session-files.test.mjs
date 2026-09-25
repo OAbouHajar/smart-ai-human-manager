@@ -904,7 +904,10 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /<button type="submit" class="button primary">Save ticket<\/button>/);
   assert.match(app, /function openTicketDialog/);
   assert.match(app, /function saveTicket/);
-  assert.match(app, /card-attribution/);
+  assert.match(app, /card-ownership/);
+  assert.match(app, /card-ticket-meta/);
+  assert.match(app, /card-source/);
+  assert.match(app, /Recommended ·/);
   assert.match(app, /function openProjectIdentityEditor/);
   assert.match(app, /function saveProjectIdentity/);
   assert.match(app, /method: "PATCH"[\s\S]*title,[\s\S]*description:/);

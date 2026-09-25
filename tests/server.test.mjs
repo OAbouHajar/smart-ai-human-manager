@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { access, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -677,6 +677,40 @@ test("updates project title and description across project list and board", asyn
     body: JSON.stringify({ title: "   " })
   });
   assert.equal(response.status, 400);
+});
+
+test("defaults task ownership from Git user for human supervision", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "context-workspace-owner-"));
+  execFileSync("git", ["init"], { cwd: workspace, stdio: "ignore" });
+  execFileSync("git", ["config", "user.name", "Test Operator"], { cwd: workspace });
+  execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: workspace });
+
+  const sessionId = "default-owner-session";
+  await fetch(`${baseUrl}/api/hooks/sessionStart`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionId, timestamp: Date.now(), cwd: workspace, source: "new" })
+  });
+  const project = await fetch(`${baseUrl}/api/projects`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ title: "Owned Delivery", sessionId, autoWrap: false })
+  }).then((response) => response.json());
+
+  const created = await fetch(`${baseUrl}/api/projects/${project.id}/tasks`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text: "Created without an explicit owner", status: "next" })
+  }).then((response) => response.json());
+  assert.equal(created.owner, "Test Operator");
+
+  await fetch(`${baseUrl}/api/sessions/${sessionId}/checkpoint`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ tasks: ["Checkpoint-created work"] })
+  });
+  const board = await fetch(`${baseUrl}/api/board?projectId=${project.id}`).then((response) => response.json());
+  assert.equal(board.tasks.find((task) => task.text === "Checkpoint-created work").owner, "Test Operator");
 });
 
 async function waitForHealth() {
