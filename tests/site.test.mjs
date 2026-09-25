@@ -5,38 +5,72 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 
-test("landing page presents the project and AI-first installation path", async () => {
-  const [html, script, workflow] = await Promise.all([
+test("landing page presents the AI project value and installation path", async () => {
+  const [html, script, workflow, styles] = await Promise.all([
     readFile(new URL("../site/index.html", import.meta.url), "utf8"),
     readFile(new URL("../site/app.js", import.meta.url), "utf8"),
-    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8")
+    readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
+    readFile(new URL("../site/styles.css", import.meta.url), "utf8")
   ]);
 
-  assert.match(html, /Local-first context for AI-assisted work/);
-  assert.match(html, /Where AI sessions become shared work/);
-  assert.match(html, /tasks, decisions, progress, evidence/);
-  assert.match(html, /Your AI chat is not the project/);
-  assert.match(html, /One board/);
-  assert.match(html, /See what the result really took/);
-  assert.match(html, /Stop anywhere/);
-  assert.match(html, /Let your AI set it up/);
+  assert.match(html, /Where AI work/);
+  assert.match(html, /<html lang="en" dir="ltr">/);
+  assert.match(html, /become shared projects/);
+  assert.doesNotMatch(html, /Private conversations\. Shared project context\. Human control\./);
+  assert.match(html, /people and agents can share, manage, and measure/);
+  assert.match(html, /assets\/before-after\.png/);
+  assert.match(html, /Use fewer tokens/);
+  assert.match(html, /Share context safely/);
+  assert.match(html, /Keep the team aligned/);
+  assert.match(html, /class="supported-marks"/);
+  assert.match(html, /class="working-with">Working with/);
+  assert.doesNotMatch(html, /class="product-name"/);
+  assert.match(html, /Turn AI work into a Kanban/);
+  assert.match(html, /assets\/project-kanban\.png/);
+  assert.match(html, /id="openKanbanImage"/);
+  assert.match(html, /id="kanbanImageDialog"/);
+  assert.match(html, /Workflow status/);
+  assert.match(html, /Human and agent ownership/);
+  assert.match(html, /Model recommendations/);
+  assert.match(html, /Ticket details and evidence/);
+  assert.match(html, /Project visibility/);
+  assert.doesNotMatch(html, /2nd place|Hackathon project/);
   assert.match(html, /id="copyHeroPrompt"/);
-  assert.match(html, /Install with AI/);
-  assert.match(html, /Watch the 2-minute demo/);
-  assert.match(html, /id="demo"/);
+  assert.match(html, /Install with the AI agent you already use/);
   assert.match(html, /assets\/context-workspace-demo\.mp4/);
-  assert.match(html, /assets\/context-workspace-demo-poster\.jpg/);
   assert.match(html, /id="installPrompt"/);
+  assert.match(html, /id="themeToggle"/);
+  assert.match(html, /data-agent="copilot"/);
+  assert.match(html, /data-agent="scout"/);
+  assert.match(html, /data-agent="claude"/);
+  assert.match(html, /data-agent="codex"/);
+  assert.match(html, /data-agent="gemini"/);
   assert.match(html, /Copilot/);
-  assert.match(html, /Claude Code/);
-  assert.match(html, /OpenAI Codex/);
-  assert.match(html, /Google Gemini/);
-  assert.match(html, /screenshots\/board-screenshot\.png/);
+  assert.match(html, /Scout/);
+  assert.match(html, /Claude/);
+  assert.match(html, /Codex/);
+  assert.match(html, /Gemini/);
   assert.match(html, /assets\/context-workspace-logo\.png/);
-  assert.match(html, /Existing `\/sham:\*` commands remain available/);
+  assert.match(html, /assets\/providers\/github-copilot\.svg/);
+  assert.match(html, /assets\/providers\/microsoft-scout\.png/);
+  assert.match(html, /assets\/providers\/anthropic\.svg/);
+  assert.match(html, /assets\/providers\/openai\.svg/);
+  assert.match(html, /assets\/providers\/google-gemini\.svg/);
   assert.match(script, /copyHeroPrompt/);
   assert.match(script, /copyPrompt/);
   assert.match(script, /navigator\.clipboard\.writeText/);
+  assert.match(script, /agentPrompts/);
+  assert.match(script, /showModal/);
+  assert.match(script, /context-workspace-theme/);
+  assert.match(script, /updateThemeToggle/);
+  assert.match(script, /selectAgent/);
+  assert.match(script, /Managed Scout skill/);
+  assert.match(script, /ArrowRight/);
+  assert.match(styles, /--green:/);
+  assert.match(styles, /data-theme="dark"/);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.doesNotMatch(styles, /background-clip:\s*text/);
+  assert.doesNotMatch(styles, /border-left:\s*[2-9]/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
   assert.match(workflow, /questions-screenshot\.png/);
   assert.match(workflow, /board-screenshot\.png/);

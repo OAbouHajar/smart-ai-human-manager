@@ -21,8 +21,11 @@ try {
 
 if ((Get-Command node -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPath (Join-Path $HookRoot "scripts\provider-hooks.mjs"))) {
     & node (Join-Path $HookRoot "scripts\provider-hooks.mjs") uninstall $HookRoot
+    if (Test-Path -LiteralPath (Join-Path $HookRoot "scripts\scout-integration.mjs")) {
+        & node (Join-Path $HookRoot "scripts\scout-integration.mjs") uninstall $HookRoot
+    }
 } elseif (Test-Path -LiteralPath (Join-Path $HookRoot "scripts\provider-hooks.mjs")) {
-    Write-Warning "Node.js is unavailable, so AI CLI provider hooks could not be removed."
+    Write-Warning "Node.js is unavailable, so AI provider hooks and the Microsoft Scout skill could not be removed."
 }
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {

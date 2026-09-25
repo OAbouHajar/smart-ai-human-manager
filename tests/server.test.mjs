@@ -151,7 +151,7 @@ test("tracks, checkpoints, and updates a Copilot session", async () => {
     assert.match(info.version, /^\d+\.\d+\.\d+$/);
     assert.equal(info.repositoryUrl, "https://github.com/OAbouHajar/smart-ai-human-manager");
     assert.equal(info.releasesUrl, "https://github.com/OAbouHajar/smart-ai-human-manager/releases");
-    assert.deepEqual(info.providers.map((provider) => provider.id), ["copilot", "claude", "codex", "gemini"]);
+    assert.deepEqual(info.providers.map((provider) => provider.id), ["copilot", "claude", "codex", "gemini", "scout"]);
     assert.equal(info.providers.every((provider) =>
       typeof provider.detected === "boolean" && typeof provider.configured === "boolean"
     ), true);
@@ -616,10 +616,17 @@ test("tracks provider sessions with collision-safe IDs and resume commands", asy
     body: JSON.stringify({ sessionId: externalId, timestamp: Date.now(), cwd: process.cwd(), source: "startup" })
   });
   assert.equal(response.status, 200);
+  response = await fetch(`${baseUrl}/api/hooks/scout/sessionStart`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ sessionId: externalId, timestamp: Date.now(), cwd: process.cwd(), source: "scout-skill" })
+  });
+  assert.equal(response.status, 200);
 
   const claude = await fetch(`${baseUrl}/api/sessions/${encodeURIComponent(`claude:${externalId}`)}`).then((result) => result.json());
   const gemini = await fetch(`${baseUrl}/api/sessions/${encodeURIComponent(`gemini:${externalId}`)}`).then((result) => result.json());
   const codex = await fetch(`${baseUrl}/api/sessions/${encodeURIComponent(`codex:${externalId}`)}`).then((result) => result.json());
+  const scout = await fetch(`${baseUrl}/api/sessions/${encodeURIComponent(`scout:${externalId}`)}`).then((result) => result.json());
   assert.equal(claude.provider, "claude");
   assert.equal(claude.externalId, externalId);
   assert.equal(claude.providerName, "Claude Code");
@@ -628,6 +635,8 @@ test("tracks provider sessions with collision-safe IDs and resume commands", asy
   assert.equal(gemini.resumeCommand, `gemini --resume ${externalId}`);
   assert.equal(codex.providerName, "Codex CLI");
   assert.equal(codex.resumeCommand, `codex resume ${externalId}`);
+  assert.equal(scout.providerName, "Microsoft Scout");
+  assert.equal(scout.resumeCommand, "");
 });
 
 async function waitForHealth() {

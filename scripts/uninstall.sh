@@ -30,8 +30,11 @@ curl --silent --max-time 2 --request POST \
   "http://127.0.0.1:43120/api/shutdown" >/dev/null 2>&1 || true
 if command -v node >/dev/null 2>&1 && [[ -n "$HOOK_ROOT" ]]; then
   node "$HOOK_ROOT/scripts/provider-hooks.mjs" uninstall "$HOOK_ROOT"
+  if [[ -f "$HOOK_ROOT/scripts/scout-integration.mjs" ]]; then
+    node "$HOOK_ROOT/scripts/scout-integration.mjs" uninstall "$HOOK_ROOT"
+  fi
 elif [[ -n "$HOOK_ROOT" ]]; then
-  echo "Warning: Node.js is unavailable, so AI CLI provider hooks could not be removed." >&2
+  echo "Warning: Node.js is unavailable, so AI provider hooks and the Microsoft Scout skill could not be removed." >&2
 fi
 if command -v copilot >/dev/null 2>&1; then
   copilot plugin uninstall cw >/dev/null 2>&1 || true

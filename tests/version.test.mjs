@@ -55,6 +55,8 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
   assert.match(windowsInstaller, /plugin install cw@context-workspace/);
   assert.match(macInstaller, /plugin install sham@context-workspace/);
   assert.match(windowsInstaller, /plugin install sham@context-workspace/);
+  assert.match(macInstaller, /scout-integration\.mjs" install/);
+  assert.match(windowsInstaller, /scout-integration\.mjs"\) install/);
   assert.match(macInstaller, /cp "\$INSTALL_ROOT\/scripts\/project-share\.mjs" "\$COMPAT_ROOT\/scripts\/project-share\.mjs"/);
   assert.match(windowsInstaller, /Copy-Item -LiteralPath \(Join-Path \$InstallRoot "scripts\\project-share\.mjs"\) -Destination \$CompatScripts/);
   assert.doesNotMatch(macInstaller, /plugin marketplace add OAbouHajar/);
@@ -72,5 +74,6 @@ test("package, plugin, marketplace, and installers stay aligned", async () => {
     assert.match(uninstaller, /plugin uninstall copilot-session-hub/);
     assert.match(uninstaller, /plugin marketplace remove context-workspace/);
     assert.match(uninstaller, /plugin marketplace remove ai-session-hub/);
+    assert.match(uninstaller, /scout-integration\.mjs/);
   }
 });

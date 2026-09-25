@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { createUpdateChecker } from "./update-checker.mjs";
 import { inspectProviderHooks } from "../scripts/provider-hooks.mjs";
+import { inspectScoutIntegration } from "../scripts/scout-integration.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = join(root, "public");
@@ -705,6 +706,13 @@ async function getApplicationInfo(response) {
       });
     }
   }
+  const scout = await inspectScoutIntegration();
+  providers.push({
+    id: "scout",
+    name: "Microsoft Scout",
+    detected: scout.detected,
+    configured: scout.configured
+  });
   json(response, 200, {
     version: appVersion,
     platform: platform(),
@@ -1893,6 +1901,9 @@ function resumeSession(id, response) {
   }
   const cwd = row.cwd;
   const config = providerConfig(row.provider);
+  if (!config?.supportsResume) {
+    return json(response, 409, { error: `${config?.name || "This provider"} must be resumed from its own conversation history` });
+  }
   const executablePath = resolveExecutable(config.executable);
   if (!executablePath) return json(response, 409, { error: `${config.name} was not found on PATH` });
   const resumeArgs = config.resumeArgs(row.external_id || id);
@@ -1933,27 +1944,38 @@ function providerConfig(provider) {
   return {
     copilot: {
       name: "GitHub Copilot CLI",
+      supportsResume: true,
       executable: "copilot",
       resumeArgs: (id) => [`--resume=${id}`],
       resumeCommand: (id) => `copilot --resume=${id}`
     },
     claude: {
       name: "Claude Code",
+      supportsResume: true,
       executable: "claude",
       resumeArgs: (id) => ["--resume", id],
       resumeCommand: (id) => `claude --resume ${id}`
     },
     codex: {
       name: "Codex CLI",
+      supportsResume: true,
       executable: "codex",
       resumeArgs: (id) => ["resume", id],
       resumeCommand: (id) => `codex resume ${id}`
     },
     gemini: {
       name: "Gemini CLI",
+      supportsResume: true,
       executable: "gemini",
       resumeArgs: (id) => ["--resume", id],
       resumeCommand: (id) => `gemini --resume ${id}`
+    },
+    scout: {
+      name: "Microsoft Scout",
+      supportsResume: false,
+      executable: "",
+      resumeArgs: () => [],
+      resumeCommand: () => ""
     }
   }[provider];
 }

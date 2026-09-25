@@ -35,8 +35,19 @@ for provider in copilot claude codex gemini; do
     PROVIDER_COUNT=$((PROVIDER_COUNT + 1))
   fi
 done
-if [[ "$PROVIDER_COUNT" -eq 0 ]]; then
-  echo "Install at least one supported AI CLI: GitHub Copilot, Claude Code, Codex, or Gemini." >&2
+SCOUT_DETECTED=false
+for scout_path in \
+  "${SCOUT_PATH:-}" \
+  "/Applications/Microsoft Scout.app/Contents/MacOS/Microsoft Scout" \
+  "/Applications/Scout.app/Contents/MacOS/Scout" \
+  "$HOME/Applications/Microsoft Scout.app/Contents/MacOS/Microsoft Scout"; do
+  if [[ -n "$scout_path" && -e "$scout_path" ]]; then
+    SCOUT_DETECTED=true
+    break
+  fi
+done
+if [[ "$PROVIDER_COUNT" -eq 0 && "$SCOUT_DETECTED" != true ]]; then
+  echo "Install at least one supported AI agent: GitHub Copilot, Claude Code, Codex, Gemini, or Microsoft Scout." >&2
   exit 1
 fi
 
@@ -151,6 +162,7 @@ start_service() {
 }
 
 node "$INSTALL_ROOT/scripts/provider-hooks.mjs" install "$INSTALL_ROOT"
+node "$INSTALL_ROOT/scripts/scout-integration.mjs" install "$INSTALL_ROOT"
 
 if command -v copilot >/dev/null 2>&1; then
   copilot plugin uninstall cw >/dev/null 2>&1 || true
@@ -243,4 +255,4 @@ fi
 echo "Context Workspace installed."
 echo "Dashboard: http://127.0.0.1:43120"
 echo "Data: $DATA_ROOT"
-echo "Restart each supported AI CLI so the Context Workspace hooks are loaded."
+echo "Restart each supported AI CLI so the Context Workspace hooks are loaded. Start a new Scout conversation to load its skill."

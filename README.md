@@ -14,7 +14,7 @@ Turn private AI coding sessions into shared project context with tasks, decision
   <a href="#quick-start">Install Context Workspace</a>
 </p>
 
-> Supports **GitHub Copilot CLI**, **Claude Code**, **OpenAI Codex CLI**, and **Google Gemini CLI**.
+> Supports **GitHub Copilot CLI**, **Claude Code**, **OpenAI Codex CLI**, **Google Gemini CLI**, and **Microsoft Scout**.
 >
 > Independent open source software; not an official GitHub, Microsoft, Anthropic, OpenAI, or Google product.
 
@@ -41,7 +41,7 @@ Turn private AI coding sessions into shared project context with tasks, decision
 | Where is data stored? | In a local SQLite database |
 | Does it upload sessions? | No |
 | Which systems are supported? | macOS and Windows |
-| Which providers are supported? | Copilot, Claude, Codex, and Gemini |
+| Which providers are supported? | Copilot, Claude, Codex, Gemini, and Microsoft Scout |
 | Can it resume sessions? | Yes, using the matching provider command |
 
 ## What you get
@@ -61,7 +61,7 @@ Turn private AI coding sessions into shared project context with tasks, decision
 
 ### Ask an AI CLI to install it (recommended)
 
-Copy this prompt into Copilot, Claude, Codex, or Gemini:
+Copy this prompt into Copilot, Claude, Codex, Gemini, or Microsoft Scout:
 
 <details open>
 <summary><strong>Show installation prompt</strong></summary>
@@ -108,8 +108,11 @@ The installer detects available providers, preserves existing settings and sessi
 | Claude Code | Yes | `claude --resume <id>` | “Wrap this session” | [Setup](docs/providers/claude-code/setup.md) · [Usage](docs/providers/claude-code/usage.md) |
 | OpenAI Codex CLI | Yes | `codex resume <id>` | “Wrap this session” | [Setup](docs/providers/codex/setup.md) · [Usage](docs/providers/codex/usage.md) |
 | Google Gemini CLI | Yes | `gemini --resume <id>` | “Wrap this session” | [Setup](docs/providers/gemini/setup.md) · [Usage](docs/providers/gemini/usage.md) |
+| Microsoft Scout | Skill-driven | Restore from Scout history | “Track this with Context Workspace” then “Wrap this session” | [Setup](docs/providers/microsoft-scout/setup.md) · [Usage](docs/providers/microsoft-scout/usage.md) |
 
 Context Workspace uses documented lifecycle hooks rather than unstable provider transcript formats. Historical import is currently available only for supported Copilot CLI history.
+
+Microsoft Scout currently exposes custom skills but not user-configurable external lifecycle hooks. Its integration begins when the Context Workspace skill is activated in a conversation, rather than automatically when Scout opens.
 
 ## Daily workflow
 

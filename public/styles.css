@@ -444,6 +444,7 @@ kbd {
 .provider-badge[data-provider="claude"] { color: var(--tag-branch); border-color: color-mix(in oklch, var(--tag-branch) 45%, var(--cp-border)); }
 .provider-badge[data-provider="gemini"] { color: var(--tag-ado); border-color: color-mix(in oklch, var(--tag-ado) 45%, var(--cp-border)); }
 .provider-badge[data-provider="codex"] { color: var(--cp-text-soft); border-color: var(--cp-border-strong); }
+.provider-badge[data-provider="scout"] { color: var(--tag-ado); border-color: color-mix(in oklch, var(--tag-ado) 45%, var(--cp-border)); }
 .editable-title-row { display: flex; align-items: flex-start; gap: 0.4rem; margin-top: 0.65rem; }
 .editable-title-row h1 {
   margin: 0; max-width: none; font-size: 2.1rem; line-height: 1.12;

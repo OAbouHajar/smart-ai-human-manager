@@ -490,7 +490,7 @@ test("auto-wrap requires consent and preserves human control across providers", 
       body: { autoWrapMode: "sometimes" }
     });
 
-    for (const [index, provider] of ["copilot", "claude", "codex", "gemini"].entries()) {
+    for (const [index, provider] of ["copilot", "claude", "codex", "gemini", "scout"].entries()) {
       const externalId = `${provider}-auto-wrap`;
       const sessionId = provider === "copilot" ? externalId : `${provider}:${externalId}`;
       await request(server, `/api/hooks/${provider}/sessionStart`, {

@@ -747,8 +747,12 @@ function renderDetail() {
   elements.repoChip.title = session.cwd || "No working directory";
   elements.branchChip.querySelector("span").textContent = session.branch || "No branch";
   elements.sessionIdChip.querySelector("span").textContent = `Session ID: ${shortSessionId(session.externalId || session.id)}`;
-  elements.sessionIdChip.title = `Copy ${session.resumeCommand}`;
-  elements.sessionIdChip.setAttribute("aria-label", `Copy ${session.providerName || "AI CLI"} resume command`);
+  elements.sessionIdChip.title = session.resumeCommand ? `Copy ${session.resumeCommand}` : "Copy session ID";
+  elements.sessionIdChip.setAttribute(
+    "aria-label",
+    session.resumeCommand ? `Copy ${session.providerName || "AI CLI"} resume command` : "Copy session ID"
+  );
+  elements.resumeMainButton.classList.toggle("hidden", !session.resumeCommand);
   elements.sessionDuration.textContent = formatDuration(session.startedAt, session.endedAt || Date.now());
   renderSessionMetrics(session.metrics);
   elements.trackProjectButton.classList.toggle("tracked", Boolean(session.project));
@@ -2008,10 +2012,10 @@ async function resumeSelected() {
 
 async function copyResumeCommand() {
   if (!state.selected) return;
-  const command = state.selected.resumeCommand;
+  const command = state.selected.resumeCommand || state.selected.externalId || state.selected.id;
   try {
     await navigator.clipboard.writeText(command);
-    toast("Resume command copied");
+    toast(state.selected.resumeCommand ? "Resume command copied" : "Session ID copied");
   } catch {
     toast(`Copy failed. Use: ${command}`, true);
   }

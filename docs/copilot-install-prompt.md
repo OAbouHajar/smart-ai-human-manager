@@ -6,8 +6,8 @@ Copy the prompt below into GitHub Copilot CLI. Copilot will clone the repository
 Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this Windows machine.
 
 Do the setup end-to-end:
-1. Verify that git, PowerShell 7 (`pwsh`), Node.js 22.13 or newer, and at least one supported AI CLI (GitHub Copilot, Claude Code, Codex, or Gemini) are installed.
-2. Verify that each detected AI CLI is usable and signed in. If a prerequisite is missing, stop and tell me the exact official installation command or link needed.
+1. Verify that git, PowerShell 7 (`pwsh`), Node.js 22.13 or newer, and at least one supported AI agent (GitHub Copilot, Claude Code, Codex, Gemini, or Microsoft Scout) are installed.
+2. Verify that each detected AI agent is usable and signed in. If a prerequisite is missing, stop and tell me the exact official installation command or link needed.
 3. Clone the repository into a temporary directory. If it is already cloned there, fetch and reset that temporary clone to the latest `main`.
 4. Read `README.md` and `scripts/install.ps1` before executing the installer.
 5. Run `pwsh -File .\scripts\install.ps1 -NoOpen`.

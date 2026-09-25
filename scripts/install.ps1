@@ -40,8 +40,13 @@ if ($NodeVersion -lt [version]"22.13.0") {
 
 $ProviderCommands = @("copilot", "claude", "codex", "gemini")
 $InstalledProviders = @($ProviderCommands | Where-Object { Get-Command $_ -ErrorAction SilentlyContinue })
-if ($InstalledProviders.Count -eq 0) {
-    throw "Install at least one supported AI CLI: GitHub Copilot, Claude Code, Codex, or Gemini."
+$ScoutCandidates = @(
+    $env:SCOUT_PATH,
+    (Join-Path $env:LOCALAPPDATA "Programs\Clawpilot\scout\scout.exe"),
+    (Join-Path $env:LOCALAPPDATA "Programs\Microsoft Scout\scout.exe")
+) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+if ($InstalledProviders.Count -eq 0 -and $ScoutCandidates.Count -eq 0) {
+    throw "Install at least one supported AI agent: GitHub Copilot, Claude Code, Codex, Gemini, or Microsoft Scout."
 }
 
 # Stop the service before replacing files or reinstalling the plugin. The running
@@ -99,6 +104,10 @@ Set-Content -LiteralPath $StartupScript -Value $StartupContent -Encoding ASCII
 & node (Join-Path $InstallRoot "scripts\provider-hooks.mjs") install $InstallRoot
 if ($LASTEXITCODE -ne 0) {
     throw "Could not configure AI CLI provider hooks."
+}
+& node (Join-Path $InstallRoot "scripts\scout-integration.mjs") install $InstallRoot
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not configure the Microsoft Scout skill."
 }
 
 if (Get-Command copilot -ErrorAction SilentlyContinue) {
@@ -216,4 +225,4 @@ if (-not $NoOpen) {
 Write-Host "Context Workspace installed." -ForegroundColor Green
 Write-Host "Dashboard: http://127.0.0.1:43120"
 Write-Host "Data: $DataRoot"
-Write-Host "Restart each supported AI CLI so the Context Workspace hooks are loaded."
+Write-Host "Restart each supported AI CLI so the Context Workspace hooks are loaded. Start a new Scout conversation to load its skill."
