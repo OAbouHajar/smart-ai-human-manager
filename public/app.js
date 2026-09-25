@@ -428,6 +428,12 @@ function bindEvents() {
     await copyCommand(state.board?.project?.sharing?.enabled ? "/cw:project-push" : "/cw:project-share");
   });
   elements.projectIdButton.addEventListener("click", copySelectedProjectId);
+  elements.projectWorkspaceTitle.addEventListener("click", () => openProjectIdentityEditor("title"));
+  elements.projectWorkspaceSummary.addEventListener("click", () => openProjectIdentityEditor("description"));
+  elements.projectWorkspaceTitle.addEventListener("keydown", (event) => openProjectIdentityEditorFromKeyboard(event, "title"));
+  elements.projectWorkspaceSummary.addEventListener("keydown", (event) => openProjectIdentityEditorFromKeyboard(event, "description"));
+  elements.projectIdentityForm.addEventListener("submit", saveProjectIdentity);
+  elements.cancelProjectIdentity.addEventListener("click", closeProjectIdentityEditor);
   elements.projectInboxButton.addEventListener("click", openUnassignedSessions);
   elements.closeProjectDialog.addEventListener("click", closeProjectDialog);
   elements.projectDialog.addEventListener("click", (event) => {
@@ -1094,8 +1100,11 @@ function renderProjectWorkspace(board) {
   const outputTokens = sessions.reduce((total, session) => total + Number(session.metrics?.outputTokens || 0), 0);
   const fileCount = sessions.reduce((total, session) => total + Number(session.fileCount || 0), 0);
 
+  closeProjectIdentityEditor();
   elements.projectWorkspaceTitle.textContent = projectName(project);
   elements.projectWorkspaceSummary.textContent = project.summary || "Add a clear success outcome for this project.";
+  elements.projectTitleInput.value = project.title || "";
+  elements.projectDescriptionInput.value = project.description || project.summary || "";
   elements.projectUpdatedLabel.textContent = `Updated ${relativeTime(projectState?.updatedAt || project.updatedAt)}`;
   elements.projectWorkspaceMeta.replaceChildren(
     projectMetaChip("sessions", `${sessions.length} ${sessions.length === 1 ? "session" : "sessions"}`),
@@ -1539,6 +1548,16 @@ function createStarButton(starred, target, onClick) {
   return button;
 }
 
+function agentLogoPath(value) {
+  const agent = String(value || "").toLowerCase();
+  if (agent.includes("scout")) return "/providers/microsoft-scout.png";
+  if (agent.includes("claude") || agent.includes("anthropic")) return "/providers/anthropic.svg";
+  if (agent.includes("codex") || agent.includes("openai")) return "/providers/openai.svg";
+  if (agent.includes("gemini")) return "/providers/google-gemini.svg";
+  if (agent.includes("copilot") || agent.includes("github")) return "/providers/github-copilot.svg";
+  return "";
+}
+
 function renderBoardCard(task) {
   const archived = state.board?.project?.status === "archived";
   const card = element("article", `kanban-card${task.status === "done" ? " done-card" : ""}`);
@@ -1584,10 +1603,24 @@ function renderBoardCard(task) {
   });
   const meta = element("div", "card-meta");
   const attribution = element("span", "card-attribution");
-  attribution.append(
+  const agentName = task.completedWith || task.agent || "No agent";
+  const logoPath = agentLogoPath(agentName);
+  if (logoPath) {
+    const logo = document.createElement("img");
+    logo.className = "card-agent-logo";
+    logo.src = logoPath;
+    logo.alt = "";
+    logo.title = agentName;
+    attribution.append(logo);
+  } else {
+    attribution.append(element("span", "card-agent-logo", "AI"));
+  }
+  const attributionText = element("span");
+  attributionText.append(
     element("strong", "", task.completedBy || task.owner || "Unassigned"),
-    element("small", "", task.completedWith || task.agent || "No agent")
+    element("small", "", agentName)
   );
+  attribution.append(attributionText);
   meta.append(attribution);
   const select = document.createElement("select");
   select.className = "card-status";
@@ -1614,6 +1647,54 @@ function renderBoardCard(task) {
   meta.append(detailsLabel);
   card.append(session, details, meta);
   return card;
+}
+
+function openProjectIdentityEditor(field = "title") {
+  if (!state.board?.project || elements.projectWorkspaceTitle.textContent === "Loading project…") return;
+  elements.projectTitleInput.value = state.board.project.title || "";
+  elements.projectDescriptionInput.value = state.board.project.description || state.board.project.summary || "";
+  elements.projectIdentityDisplay.classList.add("hidden");
+  elements.projectIdentityForm.classList.remove("hidden");
+  const target = field === "description" ? elements.projectDescriptionInput : elements.projectTitleInput;
+  target.focus();
+  target.select();
+}
+
+function openProjectIdentityEditorFromKeyboard(event, field) {
+  if (!["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  openProjectIdentityEditor(field);
+}
+
+function closeProjectIdentityEditor() {
+  elements.projectIdentityForm.classList.add("hidden");
+  elements.projectIdentityDisplay.classList.remove("hidden");
+}
+
+async function saveProjectIdentity(event) {
+  event.preventDefault();
+  if (!state.selectedProjectId) return;
+  const title = elements.projectTitleInput.value.trim();
+  if (!title) {
+    elements.projectTitleInput.focus();
+    return;
+  }
+  const submit = elements.projectIdentityForm.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  try {
+    await api(`/api/projects/${encodeURIComponent(state.selectedProjectId)}`, {
+      method: "PATCH",
+      body: {
+        title,
+        description: elements.projectDescriptionInput.value.trim()
+      }
+    });
+    closeProjectIdentityEditor();
+    await refresh({ preserveSelection: true });
+    toast("Project updated");
+  } finally {
+    submit.disabled = false;
+  }
 }
 
 function openTicketDialog(task) {

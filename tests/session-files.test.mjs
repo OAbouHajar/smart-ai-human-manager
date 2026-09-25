@@ -884,6 +884,10 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /What changed and what needs attention/);
   assert.doesNotMatch(html, /This project is private to this machine/);
   assert.match(html, /id="projectIdButton"/);
+  assert.match(html, /id="projectIdentityForm"/);
+  assert.match(html, /id="projectTitleInput"/);
+  assert.match(html, /id="projectDescriptionInput"/);
+  assert.match(html, /id="cancelProjectIdentity"/);
   assert.match(html, /Shared projects synchronize this board|This board is private until you explicitly share the project/);
   assert.doesNotMatch(html, /data-project-tab="board"/);
   assert.match(html, /id="projectBoardPanel" class="project-board-section"/);
@@ -901,6 +905,14 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /function openTicketDialog/);
   assert.match(app, /function saveTicket/);
   assert.match(app, /card-attribution/);
+  assert.match(app, /function openProjectIdentityEditor/);
+  assert.match(app, /function saveProjectIdentity/);
+  assert.match(app, /method: "PATCH"[\s\S]*title,[\s\S]*description:/);
+  assert.match(app, /function agentLogoPath/);
+  assert.match(app, /card-agent-logo/);
+  assert.match(app, /microsoft-scout\.png/);
+  assert.match(styles, /\.project-identity-form/);
+  assert.match(styles, /\.card-agent-logo/);
   assert.match(app, /\/cw:model-plan/);
   assert.match(app, /ticket-model-chip/);
   assert.match(app, /Delivery flow/);

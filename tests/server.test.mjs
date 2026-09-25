@@ -639,6 +639,46 @@ test("tracks provider sessions with collision-safe IDs and resume commands", asy
   assert.equal(scout.resumeCommand, "");
 });
 
+test("updates project title and description across project list and board", async () => {
+  const project = await fetch(`${baseUrl}/api/projects`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      title: "Initial project title",
+      description: "Initial project description"
+    })
+  }).then((response) => response.json());
+
+  let response = await fetch(`${baseUrl}/api/projects/${project.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      title: "Updated delivery project",
+      description: "Supervise people and AI agents from one board."
+    })
+  });
+  assert.equal(response.status, 200);
+  const updated = await response.json();
+  assert.equal(updated.title, "Updated delivery project");
+  assert.equal(updated.description, "Supervise people and AI agents from one board.");
+
+  const projects = await fetch(`${baseUrl}/api/projects?filter=all`).then((result) => result.json());
+  const listed = projects.find((candidate) => candidate.id === project.id);
+  assert.equal(listed.title, updated.title);
+  assert.equal(listed.description, updated.description);
+
+  const board = await fetch(`${baseUrl}/api/board?projectId=${project.id}`).then((result) => result.json());
+  assert.equal(board.project.title, updated.title);
+  assert.equal(board.project.description, updated.description);
+
+  response = await fetch(`${baseUrl}/api/projects/${project.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ title: "   " })
+  });
+  assert.equal(response.status, 400);
+});
+
 async function waitForHealth() {
   for (let attempt = 0; attempt < 40; attempt++) {
     try {

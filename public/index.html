@@ -331,8 +331,24 @@
               <button id="projectIdButton" class="project-id-button" title="Copy project ID">ID</button>
               <span id="projectUpdatedLabel">Project activity</span>
             </div>
-            <h1 id="projectWorkspaceTitle">Projects</h1>
-            <p id="projectWorkspaceSummary">Turn wrapped AI sessions into structured, measurable project work.</p>
+            <div id="projectIdentityDisplay" class="project-identity-display">
+              <h1 id="projectWorkspaceTitle" role="button" tabindex="0" title="Edit project title">Projects</h1>
+              <p id="projectWorkspaceSummary" role="button" tabindex="0" title="Edit project description">Turn wrapped AI sessions into structured, measurable project work.</p>
+            </div>
+            <form id="projectIdentityForm" class="project-identity-form hidden">
+              <label>
+                <span>Project name</span>
+                <input id="projectTitleInput" maxlength="120" required>
+              </label>
+              <label>
+                <span>Description</span>
+                <textarea id="projectDescriptionInput" maxlength="1000" rows="3"></textarea>
+              </label>
+              <div class="project-identity-actions">
+                <button id="cancelProjectIdentity" class="button secondary" type="button">Cancel</button>
+                <button class="button primary" type="submit">Save</button>
+              </div>
+            </form>
             <div class="project-meta-row">
               <div id="projectWorkspaceMeta" class="project-workspace-meta"></div>
               <button id="linkProjectWorkItemButton" class="project-meta-link">
