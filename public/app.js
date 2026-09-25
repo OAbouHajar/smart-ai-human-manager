@@ -1622,21 +1622,6 @@ function renderBoardCard(task) {
   );
   attribution.append(attributionText);
   meta.append(attribution);
-  const select = document.createElement("select");
-  select.className = "card-status";
-  select.disabled = archived;
-  Object.entries(boardStatusLabels).forEach(([value, label]) => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    option.selected = task.status === value;
-    select.append(option);
-  });
-  select.addEventListener("click", (event) => event.stopPropagation());
-  select.addEventListener("change", async () => {
-    await moveTask(task.id, select.value);
-  });
-  meta.append(select);
   const detailsLabel = element("button", "ticket-details-link", "Details");
   detailsLabel.type = "button";
   detailsLabel.addEventListener("pointerdown", (event) => event.stopPropagation());

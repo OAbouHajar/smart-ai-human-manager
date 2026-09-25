@@ -911,6 +911,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /function agentLogoPath/);
   assert.match(app, /card-agent-logo/);
   assert.match(app, /microsoft-scout\.png/);
+  assert.doesNotMatch(app, /className = "card-status"/);
+  assert.doesNotMatch(styles, /\.card-status/);
   assert.match(styles, /\.project-identity-form/);
   assert.match(styles, /\.card-agent-logo/);
   assert.match(app, /\/cw:model-plan/);

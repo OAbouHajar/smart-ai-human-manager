@@ -1047,7 +1047,7 @@ button.context-link { cursor: pointer; }
 }
 .ticket-card-details:hover .card-text, .ticket-card-details:focus-visible .card-text { color: var(--cp-accent); }
 .card-text { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; line-height: 1.48; }
-.card-meta { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
+.card-meta { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.5rem; margin-top: 0.75rem; color: var(--cp-text-muted); font-size: 0.65rem; }
 .card-meta > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-attribution { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: 0.4rem; align-items: center; }
 .card-attribution > span { min-width: 0; display: grid; gap: 0.08rem; }
@@ -1066,7 +1066,6 @@ button.context-link { cursor: pointer; }
   cursor: pointer; font-size: 0.64rem; font-weight: 700;
 }
 .ticket-details-link:hover { text-decoration: underline; }
-.card-status { flex: 0 0 auto; min-width: 0; max-width: 6.5rem; padding: 0.2rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.35rem; font-size: 0.65rem; }
 .board-empty { padding: 1rem 0.4rem; color: var(--cp-text-muted); font-size: 0.7rem; text-align: center; }
 .sidebar.board-mode .filters { display: none; }
 
