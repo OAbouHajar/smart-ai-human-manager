@@ -146,6 +146,17 @@ pre code { color: oklch(0.88 0.015 245); font: 0.7rem/1.65 ui-monospace, SFMono-
 .video-dialog { width: min(92vw, 1100px); max-width: none; padding: 2.8rem 0.8rem 0.8rem; background: oklch(0.12 0.02 245); border: 1px solid oklch(0.42 0.03 245); border-radius: 10px; box-shadow: 0 24px 80px oklch(0.08 0.02 245 / 0.7); }
 .video-dialog::backdrop { background: oklch(0.12 0.02 245 / 0.82); }
 .video-dialog video { display: block; width: 100%; aspect-ratio: 16 / 9; background: oklch(0.08 0.02 245); }
+.interactive-demo-dialog { width: min(96vw, 1480px); max-width: none; height: min(90vh, 900px); padding: 0; overflow: hidden; background: oklch(0.12 0.02 245); border: 1px solid oklch(0.42 0.03 245); border-radius: 11px; box-shadow: 0 28px 90px oklch(0.08 0.02 245 / 0.72); }
+.interactive-demo-dialog::backdrop { background: oklch(0.12 0.02 245 / 0.78); }
+.interactive-demo-bar { display: flex; justify-content: space-between; align-items: center; min-height: 2.6rem; padding: 0 0.7rem; color: oklch(0.82 0.02 245); background: oklch(0.18 0.025 245); border-bottom: 1px solid oklch(0.36 0.03 245); font-size: 0.65rem; }
+.interactive-demo-bar > span, .interactive-demo-bar > div { display: flex; gap: 0.45rem; align-items: center; }
+.interactive-demo-bar i { width: 0.52rem; height: 0.52rem; background: oklch(0.7 0.18 30); border-radius: 50%; }
+.interactive-demo-bar i:nth-child(2) { background: oklch(0.82 0.16 90); }
+.interactive-demo-bar i:nth-child(3) { background: oklch(0.7 0.15 150); }
+.interactive-demo-bar strong { margin-left: 0.35rem; }
+.interactive-demo-bar a { color: oklch(0.8 0.09 230); font-weight: 650; }
+.interactive-demo-bar button { display: grid; place-items: center; width: 1.8rem; height: 1.8rem; color: oklch(0.9 0.01 245); background: transparent; border: 1px solid oklch(0.4 0.03 245); border-radius: 50%; font-size: 1.05rem; cursor: pointer; }
+.interactive-demo-dialog iframe { display: block; width: 100%; height: calc(100% - 2.6rem); background: #0f141a; border: 0; }
 
 @media (max-width: 900px) {
   .hero, .kanban-layout, .install-layout { grid-template-columns: 1fr; }
@@ -165,6 +176,8 @@ pre code { color: oklch(0.88 0.015 245); font: 0.7rem/1.65 ui-monospace, SFMono-
   .agent-list { grid-template-columns: 1fr; }
   .install-actions { flex-direction: column; }
   .site-footer { flex-direction: column; gap: 0.5rem; }
+  .interactive-demo-dialog { width: 100vw; height: 100vh; max-height: none; border-radius: 0; }
+  .interactive-demo-bar strong { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

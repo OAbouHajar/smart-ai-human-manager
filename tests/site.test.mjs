@@ -34,7 +34,9 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(html, /id="kanbanImageDialog"/);
   assert.match(html, /id="openDemoVideo"/);
   assert.match(html, /id="demoVideoDialog"/);
-  assert.match(html, /dashboard-demo\.html/);
+  assert.match(html, /id="openInteractiveDemo"/);
+  assert.match(html, /id="interactiveDemoDialog"/);
+  assert.match(html, /<iframe[^>]+src="dashboard-demo\.html"/);
   assert.match(html, /Workflow status/);
   assert.match(html, /Human and agent ownership/);
   assert.match(html, /Model recommendations/);
@@ -68,6 +70,7 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(script, /agentPrompts/);
   assert.match(script, /showModal/);
   assert.match(script, /demoVideo\.pause/);
+  assert.match(script, /interactiveDemoDialog\.showModal/);
   assert.match(script, /context-workspace-theme/);
   assert.match(script, /updateThemeToggle/);
   assert.match(script, /selectAgent/);

@@ -47,7 +47,7 @@
         <div class="hero-actions">
           <a class="button primary" href="#value">See the value</a>
           <button id="openDemoVideo" class="button secondary" type="button">Watch the demo</button>
-          <a class="button quiet" href="dashboard-demo.html" target="_blank" rel="noreferrer">Try interactive demo ↗</a>
+          <button id="openInteractiveDemo" class="button quiet" type="button">Try interactive demo</button>
         </div>
       </div>
 
@@ -154,6 +154,17 @@ Preserve existing Context Workspace data and unrelated Copilot settings. Configu
       <source src="assets/context-workspace-demo.mp4" type="video/mp4">
       Your browser does not support embedded video.
     </video>
+  </dialog>
+
+  <dialog id="interactiveDemoDialog" class="interactive-demo-dialog" aria-label="Interactive Context Workspace dashboard demo">
+    <div class="interactive-demo-bar">
+      <span><i></i><i></i><i></i><strong>Interactive Context Workspace demo</strong></span>
+      <div>
+        <a href="dashboard-demo.html" target="_blank" rel="noreferrer">Open full page ↗</a>
+        <button id="closeInteractiveDemo" type="button" aria-label="Close interactive dashboard demo">×</button>
+      </div>
+    </div>
+    <iframe id="interactiveDemoFrame" title="Interactive Context Workspace dashboard" src="dashboard-demo.html" loading="lazy"></iframe>
   </dialog>
 
   <footer class="site-footer page-shell">

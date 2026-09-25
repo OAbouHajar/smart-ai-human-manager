@@ -10,6 +10,9 @@ const demoVideoDialog = document.querySelector("#demoVideoDialog");
 const openDemoVideo = document.querySelector("#openDemoVideo");
 const closeDemoVideo = document.querySelector("#closeDemoVideo");
 const demoVideo = document.querySelector("#demoVideo");
+const interactiveDemoDialog = document.querySelector("#interactiveDemoDialog");
+const openInteractiveDemo = document.querySelector("#openInteractiveDemo");
+const closeInteractiveDemo = document.querySelector("#closeInteractiveDemo");
 const copyButtons = [
   document.querySelector("#copyHeroPrompt"),
   document.querySelector("#copyPrompt"),
@@ -45,6 +48,12 @@ themeToggle.addEventListener("click", () => {
     demoVideoDialog.close();
   });
   demoVideoDialog.addEventListener("close", () => demoVideo.pause());
+
+  openInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.showModal());
+  closeInteractiveDemo.addEventListener("click", () => interactiveDemoDialog.close());
+  interactiveDemoDialog.addEventListener("click", (event) => {
+    if (event.target === interactiveDemoDialog) interactiveDemoDialog.close();
+  });
 });
 updateThemeToggle();
 
