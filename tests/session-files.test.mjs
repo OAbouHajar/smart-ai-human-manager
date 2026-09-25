@@ -313,6 +313,63 @@ test("sets current and empty states and remains idempotent", async () => {
   }
 });
 
+test("discovered sessions are reviewable and rejected copies are fully removed", async () => {
+  const fixture = await createFixture();
+  createHistory(fixture.historyPath, {
+    sessions: [
+      { id: "discovery-kept", cwd: "C:\\repo", repository: "C:\\repo", summary: "Keep this session" },
+      { id: "discovery-rejected", cwd: "C:\\repo", repository: "C:\\repo", summary: "Reject this session" }
+    ],
+    files: [{ sessionId: "discovery-rejected", path: "C:\\repo\\rejected.js", toolName: "edit", turnIndex: 1 }],
+    checkpoints: [{
+      sessionId: "discovery-rejected",
+      title: "Reject this session",
+      nextSteps: "A local task to purge",
+      workDone: "Local event to purge"
+    }]
+  });
+  const server = await startServer(fixture);
+  try {
+    const imported = await request(server, "/api/import-history", { method: "POST" });
+    assert.equal(imported.imported, 2);
+    assert.equal(imported.pendingReview, 2);
+    const stats = await request(server, "/api/stats");
+    assert.equal(stats.discovered, 2);
+    const discovered = await request(server, "/api/sessions?filter=discovered");
+    assert.deepEqual(discovered.map((session) => session.id).sort(), ["discovery-kept", "discovery-rejected"]);
+
+    const kept = await request(server, "/api/sessions/discovery-kept/review", { method: "POST" });
+    assert.equal(kept.needsReview, false);
+    assert.equal(kept.events.some((event) => event.type === "history-review"), true);
+    const reviewQueue = await request(server, "/api/sessions?filter=discovered");
+    assert.deepEqual(reviewQueue.map((session) => session.id), ["discovery-rejected"]);
+
+    await request(server, "/api/sessions/discovery-rejected", { method: "DELETE" });
+    const missing = await request(server, "/api/sessions/discovery-rejected", {
+      expectedStatus: 404
+    });
+    assert.match(missing.error, /Session not found/);
+    const database = new DatabaseSync(join(fixture.dataDir, "sessions.db"), { readOnly: true });
+    try {
+      assert.equal(database.prepare("SELECT COUNT(*) AS count FROM sessions WHERE id = ?").get("discovery-rejected").count, 0);
+      for (const table of ["tasks", "session_files", "work_items", "events"]) {
+        const row = database.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE session_id = ?`).get("discovery-rejected");
+        assert.equal(row.count, 0, `${table} should be purged`);
+      }
+      assert.equal(database.prepare("SELECT COUNT(*) AS count FROM ignored_history_sessions WHERE source_id = ?").get("discovery-rejected").count, 1);
+    } finally {
+      database.close();
+    }
+
+    const rescanned = await request(server, "/api/import-history", { method: "POST" });
+    assert.equal(rescanned.imported, 0);
+    assert.equal(rescanned.pendingReview, 0);
+    assert.deepEqual((await request(server, "/api/sessions?filter=discovered")).map((session) => session.id), []);
+  } finally {
+    await stopServer(server, fixture);
+  }
+});
+
 test("imports a session supported only by file evidence", async () => {
   const fixture = await createFixture();
   const sessionId = "file-only";
@@ -935,6 +992,14 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(html, /id="projectSharedFilterButton"/);
   assert.match(html, /id="projectShareButton"/);
   assert.match(html, /id="projectFilters"/);
+  assert.match(html, /data-filter="discovered"/);
+  assert.match(html, /id="discoveryReview"/);
+  assert.match(html, /id="keepDiscovered"/);
+  assert.match(html, /id="removeDiscovered"/);
+  assert.match(app, /Found \$\{result\.pendingReview\} sessions to review/);
+  assert.match(app, /Permanently remove/);
+  assert.match(app, /history-review/);
+  assert.match(styles, /\.discovery-review/);
   assert.match(html, /id="sidebarResizeHandle"/);
   assert.match(app, /sessionHub\.sidebarWidth\.v2/);
   assert.match(app, /function startSidebarResize/);

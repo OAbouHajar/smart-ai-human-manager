@@ -225,6 +225,8 @@ kbd {
 .filter:hover { color: var(--cp-text); background: var(--cp-surface-soft); }
 .filter.active { color: var(--cp-accent); background: var(--cp-accent-soft); font-weight: 650; }
 .filter b { font-size: 0.68rem; font-weight: 650; }
+.filter[data-filter="discovered"] { color: var(--cp-warning); }
+.filter[data-filter="discovered"].active { color: var(--cp-warning); background: color-mix(in oklch, var(--cp-warning) 12%, transparent); }
 
 .sidebar-heading {
   display: flex; align-items: center; justify-content: space-between;
@@ -444,6 +446,19 @@ kbd {
 .provider-badge[data-provider="claude"] { color: var(--tag-branch); border-color: color-mix(in oklch, var(--tag-branch) 45%, var(--cp-border)); }
 .provider-badge[data-provider="gemini"] { color: var(--tag-ado); border-color: color-mix(in oklch, var(--tag-ado) 45%, var(--cp-border)); }
 .provider-badge[data-provider="codex"] { color: var(--cp-text-soft); border-color: var(--cp-border-strong); }
+.discovery-review {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  margin-top: 1rem; padding: 0.85rem 1rem;
+  background: color-mix(in oklch, var(--cp-warning) 8%, var(--cp-surface));
+  border: 1px solid color-mix(in oklch, var(--cp-warning) 38%, var(--cp-border));
+  border-radius: var(--radius-md);
+}
+.discovery-review > div:first-child { display: grid; gap: 0.2rem; }
+.discovery-review strong { font-size: 0.78rem; }
+.discovery-review span { color: var(--cp-text-muted); font-size: 0.7rem; line-height: 1.45; }
+.discovery-review-actions { display: flex; flex: 0 0 auto; gap: 0.5rem; }
+.button.danger { color: var(--cp-danger); background: var(--cp-surface); border-color: color-mix(in oklch, var(--cp-danger) 45%, var(--cp-border)); }
+.button.danger:hover { background: color-mix(in oklch, var(--cp-danger) 10%, var(--cp-surface)); }
 .editable-title-row { display: flex; align-items: flex-start; gap: 0.4rem; margin-top: 0.65rem; }
 .editable-title-row h1 {
   margin: 0; max-width: none; font-size: 2.1rem; line-height: 1.12;
@@ -1134,6 +1149,8 @@ button.context-link { cursor: pointer; }
   .update-banner { grid-template-columns: auto minmax(0, 1fr) auto; }
   .update-banner a, .update-banner .button { display: none; }
   .editable-title-row h1 { font-size: 1.45rem; }
+  .discovery-review { align-items: stretch; flex-direction: column; }
+  .discovery-review-actions { flex-direction: column; }
   .session-summary { font-size: 0.82rem; }
   .more-context-heading small { display: none; }
   .session-metadata { grid-template-columns: 1fr; }

@@ -49,6 +49,7 @@
       </nav>
 
       <nav id="statusFilters" class="filters" aria-label="Session status">
+        <button class="filter" data-filter="discovered" aria-pressed="false"><span>Discovered</span><b id="discoveredCount">0</b></button>
         <button class="filter active" data-filter="wrapped" aria-pressed="true"><span>Wrapped</span><b id="wrappedCount">0</b></button>
         <button class="filter" data-filter="active" aria-pressed="false"><span>Active</span><b id="activeCount">0</b></button>
         <button class="filter" data-filter="paused" aria-pressed="false"><span>Paused</span><b id="pausedCount">0</b></button>
@@ -205,6 +206,16 @@
             <span id="reviewBadge" class="context-badge warning hidden">Needs wrap</span>
             <span id="checkpointBadge" class="context-badge hidden">Checkpoint</span>
           </div>
+          <aside id="discoveryReview" class="discovery-review hidden" aria-label="Review discovered session">
+            <div>
+              <strong>New session discovered</strong>
+              <span>Imported from local Copilot history. Keeping or removing it here never changes your original Copilot history.</span>
+            </div>
+            <div class="discovery-review-actions">
+              <button id="keepDiscovered" class="button primary" type="button">Keep session</button>
+              <button id="removeDiscovered" class="button danger" type="button">Remove permanently</button>
+            </div>
+          </aside>
           <div class="editable-title-row">
             <h1 id="sessionTitle">Select a session</h1>
             <button class="edit-button" data-edit="title" aria-label="Edit session title">
