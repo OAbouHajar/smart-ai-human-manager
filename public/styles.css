@@ -894,9 +894,13 @@ button.context-link { cursor: pointer; }
 .project-session-dialog > label:not(.project-auto-wrap-choice) { display: block; margin-bottom: 0.35rem; color: var(--cp-text-muted); font-size: 0.7rem; font-weight: 700; }
 .project-session-dialog select { width: 100%; min-height: 2.5rem; padding: 0 0.65rem; color: var(--cp-text); background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: var(--radius-sm); }
 .project-session-dialog .project-auto-wrap-choice { margin-top: 0.85rem; }
-.ticket-dialog { width: min(50rem, 100%); padding: 1.6rem; }
+.ticket-dialog {
+  width: min(68rem, 100%); max-height: calc(100vh - 3rem); padding: 1.6rem;
+  overflow-y: auto; overscroll-behavior: contain;
+}
 .ticket-dialog .dialog-title-row { align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--cp-border); }
 .ticket-dialog .dialog-title-row h2 { margin-top: 0.3rem; font-size: 1.25rem; }
+form.ticket-dialog textarea { min-height: 5.5rem; }
 .ticket-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1.2rem; }
 .ticket-field { display: grid; gap: 0.35rem; }
 .ticket-field > span { color: var(--cp-text-soft); font-size: 0.7rem; font-weight: 700; }
@@ -932,7 +936,11 @@ button.context-link { cursor: pointer; }
 .ticket-context div:nth-last-child(-n + 2) { border-bottom: 0; }
 .ticket-context dt { color: var(--cp-text-muted); font-size: 0.65rem; }
 .ticket-context dd { margin: 0.3rem 0 0; overflow-wrap: anywhere; font-size: 0.76rem; font-weight: 650; line-height: 1.4; }
-.ticket-dialog-actions { align-items: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--cp-border); }
+.ticket-dialog-actions {
+  position: sticky; bottom: -1.6rem; z-index: 2; align-items: center;
+  margin: 1.25rem -1.6rem -1.6rem; padding: 1rem 1.6rem 1.2rem;
+  background: var(--cp-surface); border-top: 1px solid var(--cp-border);
+}
 .ticket-dialog-spacer { flex: 1; }
 .project-insights-grid {
   display: grid; grid-template-columns: minmax(18rem, 0.8fr) minmax(26rem, 1.2fr);
@@ -1060,6 +1068,10 @@ button.context-link { cursor: pointer; }
 .card-agent-logo {
   width: 1.6rem; height: 1.6rem; padding: 0.22rem; object-fit: contain;
   background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.38rem;
+}
+html[data-theme="dark"] .card-agent-logo[src$="github-copilot.svg"],
+html[data-theme="dark"] .card-agent-logo[src$="anthropic.svg"] {
+  filter: brightness(0) invert(1);
 }
 .card-agent-logo:not(img) { display: grid; place-items: center; color: var(--cp-text-muted); font-size: 0.52rem; font-weight: 800; }
 .card-agent-attribution small { min-width: 0; overflow: hidden; color: var(--cp-text-muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
