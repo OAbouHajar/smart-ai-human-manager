@@ -908,7 +908,8 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(app, /card-ticket-meta/);
   assert.match(app, /card-source/);
   assert.doesNotMatch(app, /Recommended ·/);
-  assert.match(app, /card\.append\(ticketMeta, details, ownership, source, actions\)/);
+  assert.match(app, /agentRow\.append\(agentAttribution, detailsLabel\)/);
+  assert.match(app, /card\.append\(ticketMeta, details, ownership, source\)/);
   assert.match(app, /function openProjectIdentityEditor/);
   assert.match(app, /function saveProjectIdentity/);
   assert.match(app, /method: "PATCH"[\s\S]*title,[\s\S]*description:/);

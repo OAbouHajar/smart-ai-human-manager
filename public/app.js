@@ -1614,7 +1614,17 @@ function renderBoardCard(task) {
     agentAttribution.append(element("span", "card-agent-logo", "AI"));
   }
   agentAttribution.append(element("small", "", agentName));
-  ownership.append(agentAttribution);
+
+  const detailsLabel = element("button", "ticket-details-link", "Details →");
+  detailsLabel.type = "button";
+  detailsLabel.addEventListener("pointerdown", (event) => event.stopPropagation());
+  detailsLabel.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openTicketDialog(task);
+  });
+  const agentRow = element("div", "card-agent-row");
+  agentRow.append(agentAttribution, detailsLabel);
+  ownership.append(agentRow);
 
   const source = element("button", "card-source");
   source.type = "button";
@@ -1633,16 +1643,7 @@ function renderBoardCard(task) {
     applyView();
   });
 
-  const actions = element("div", "card-actions");
-  const detailsLabel = element("button", "ticket-details-link", "Details →");
-  detailsLabel.type = "button";
-  detailsLabel.addEventListener("pointerdown", (event) => event.stopPropagation());
-  detailsLabel.addEventListener("click", (event) => {
-    event.stopPropagation();
-    openTicketDialog(task);
-  });
-  actions.append(detailsLabel);
-  card.append(ticketMeta, details, ownership, source, actions);
+  card.append(ticketMeta, details, ownership, source);
   return card;
 }
 
