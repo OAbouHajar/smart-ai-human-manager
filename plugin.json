@@ -1,7 +1,7 @@
 {
   "name": "cw",
   "description": "Context Workspace for session continuity and agile project delivery.",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "author": {
     "name": "Context Workspace"
   },

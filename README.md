@@ -11,11 +11,13 @@
 </p>
 
 <p align="center">
-  <img src="site/assets/providers/github-copilot.svg" alt="GitHub Copilot" width="36">
+  <img src="site/assets/providers/github-copilot.svg#gh-light-mode-only" alt="GitHub Copilot" width="36">
+  <img src="site/assets/providers/github-copilot-white.svg#gh-dark-mode-only" alt="GitHub Copilot" width="36">
   &nbsp;&nbsp;
   <img src="site/assets/providers/microsoft-scout.png" alt="Microsoft Scout" width="36">
   &nbsp;&nbsp;
-  <img src="site/assets/providers/anthropic.svg" alt="Claude Code" width="36">
+  <img src="site/assets/providers/anthropic.svg#gh-light-mode-only" alt="Claude Code" width="36">
+  <img src="site/assets/providers/anthropic-white.svg#gh-dark-mode-only" alt="Claude Code" width="36">
   &nbsp;&nbsp;
   <img src="site/assets/providers/openai.svg" alt="OpenAI Codex" width="36">
   &nbsp;&nbsp;
@@ -24,6 +26,8 @@
 
 <p align="center">
   <a href="https://oabouhajar.github.io/smart-ai-human-manager/"><strong>Website and demo</strong></a>
+  ·
+  <a href="https://oabouhajar.github.io/smart-ai-human-manager/dashboard-demo.html">Interactive dashboard</a>
   ·
   <a href="#install">Install</a>
   ·

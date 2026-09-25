@@ -6,6 +6,10 @@ const kanbanImageDialog = document.querySelector("#kanbanImageDialog");
 const openKanbanImage = document.querySelector("#openKanbanImage");
 const closeKanbanImage = document.querySelector("#closeKanbanImage");
 const themeToggle = document.querySelector("#themeToggle");
+const demoVideoDialog = document.querySelector("#demoVideoDialog");
+const openDemoVideo = document.querySelector("#openDemoVideo");
+const closeDemoVideo = document.querySelector("#closeDemoVideo");
+const demoVideo = document.querySelector("#demoVideo");
 const copyButtons = [
   document.querySelector("#copyHeroPrompt"),
   document.querySelector("#copyPrompt"),
@@ -29,6 +33,18 @@ themeToggle.addEventListener("click", () => {
   document.documentElement.dataset.theme = nextTheme;
   localStorage.setItem("context-workspace-theme", nextTheme);
   updateThemeToggle();
+
+  openDemoVideo.addEventListener("click", () => demoVideoDialog.showModal());
+  closeDemoVideo.addEventListener("click", () => {
+    demoVideo.pause();
+    demoVideoDialog.close();
+  });
+  demoVideoDialog.addEventListener("click", (event) => {
+    if (event.target !== demoVideoDialog) return;
+    demoVideo.pause();
+    demoVideoDialog.close();
+  });
+  demoVideoDialog.addEventListener("close", () => demoVideo.pause());
 });
 updateThemeToggle();
 

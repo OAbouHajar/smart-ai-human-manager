@@ -30,7 +30,7 @@ jobs:
       - name: Assemble static site
         run: |
           mkdir -p _site/assets _site/screenshots
-          cp site/index.html site/styles.css site/app.js _site/
+          cp site/*.html site/*.css site/*.js _site/
           cp public/context-workspace-logo.png _site/assets/
           cp -R site/assets/. _site/assets/
           cp screenshots/sessions-screenshot.png _site/screenshots/

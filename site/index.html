@@ -46,7 +46,8 @@
         <p class="hero-detail">Turn separate AI sessions into one visual project that people and agents can share, manage, and measure.</p>
         <div class="hero-actions">
           <a class="button primary" href="#value">See the value</a>
-          <a class="button secondary" href="assets/context-workspace-demo.mp4">Watch the demo</a>
+          <button id="openDemoVideo" class="button secondary" type="button">Watch the demo</button>
+          <a class="button quiet" href="dashboard-demo.html" target="_blank" rel="noreferrer">Try interactive demo ↗</a>
         </div>
       </div>
 
@@ -66,9 +67,9 @@
     <section id="value" class="value-section">
       <div class="page-shell">
         <div class="section-heading">
-          <span>From AI sessions to a managed project</span>
-          <h2>Turn AI work into a Kanban you can manage, visualize, and control.</h2>
-          <p>Every session contributes real project work. Context Workspace organizes it into a board where people and agents can see ownership, status, recommendations, and progress.</p>
+          <span>From AI sessions to supervised delivery</span>
+          <h2>Turn every AI session into work humans can see and steer.</h2>
+          <p>Context Workspace keeps the backlog, completed history, next tasks, blockers, owners, agents, and model recommendations on one Kanban board, so Scrum masters and project leads can supervise progress and decide what happens next.</p>
         </div>
 
         <div class="kanban-layout">
@@ -145,6 +146,14 @@ Preserve existing Context Workspace data and unrelated Copilot settings. Configu
   <dialog id="kanbanImageDialog" class="image-dialog" aria-label="Full-screen Context Workspace project Kanban">
     <button id="closeKanbanImage" class="dialog-close" type="button" aria-label="Close full-screen image">×</button>
     <img src="assets/project-kanban.png" alt="Full-screen Context Workspace project Kanban">
+  </dialog>
+
+  <dialog id="demoVideoDialog" class="video-dialog" aria-label="Context Workspace product demo">
+    <button id="closeDemoVideo" class="dialog-close" type="button" aria-label="Close product demo">×</button>
+    <video id="demoVideo" controls playsinline preload="metadata" poster="assets/context-workspace-demo-poster.jpg">
+      <source src="assets/context-workspace-demo.mp4" type="video/mp4">
+      Your browser does not support embedded video.
+    </video>
   </dialog>
 
   <footer class="site-footer page-shell">

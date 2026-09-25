@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive Context Workspace dashboard demonstration with dummy project data.">
+  <meta name="theme-color" content="#10151b">
+  <title>Context Workspace | Interactive Dashboard Demo</title>
+  <link rel="icon" href="assets/context-workspace-logo.png" type="image/png">
+  <link rel="stylesheet" href="dashboard-demo.css">
+  <script src="dashboard-demo.js" defer></script>
+</head>
+<body>
+  <header class="demo-header">
+    <a class="demo-brand" href="index.html">
+      <img src="assets/context-workspace-logo.png" alt="">
+      <span><strong>Context Workspace</strong><small>Interactive product demo</small></span>
+    </a>
+    <div class="demo-actions">
+      <span class="dummy-badge">Dummy data</span>
+      <button id="startTour" type="button">Start guided tour</button>
+      <a href="index.html">Back to website</a>
+    </div>
+  </header>
+
+  <main class="demo-app">
+    <nav id="tourTabs" class="app-tabs" aria-label="Dashboard views">
+      <button class="tab active" type="button" data-view="project">Project</button>
+      <button class="tab" type="button" data-view="sessions">Sessions <span>4</span></button>
+      <button id="insightsTab" class="tab" type="button" data-view="insights">Insights</button>
+    </nav>
+
+    <section id="projectView" class="app-view active" data-view-panel="project">
+      <div class="board-heading">
+        <div>
+          <span class="section-label">Project board</span>
+          <h1>Release readiness</h1>
+          <p>This board combines useful work from multiple AI sessions. Conversations and local file contents stay private.</p>
+        </div>
+        <div id="tourCounts" class="board-counts">
+          <span><strong>5</strong> open</span>
+          <span><strong>1</strong> active</span>
+          <span><strong>1</strong> blocked</span>
+          <span><strong>3</strong> done</span>
+          <span><strong>9</strong> total</span>
+        </div>
+      </div>
+
+      <div id="tourBoard" class="kanban-board">
+        <section class="kanban-column">
+          <header><strong>Backlog</strong><span>3</span></header>
+          <button class="task-card" type="button" data-task="BCPWA-3">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-3</small>
+            <em>GPT-5.6 Sol Fast</em>
+            <strong>Complete export and local persistence</strong>
+            <p>Add calculation history, memory controls, result copying, and durable local state.</p>
+            <footer><span>Unassigned</span><small>GitHub Copilot CLI</small></footer>
+          </button>
+          <button class="task-card" type="button" data-task="BCPWA-4">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-4</small>
+            <em>GPT-5.6 Sol</em>
+            <strong>Harden quality and accessibility</strong>
+            <p>Add automated checks, keyboard navigation, and screen-reader labels.</p>
+            <footer><span>Maya</span><small>Microsoft Scout</small></footer>
+          </button>
+          <button class="task-card" type="button" data-task="BCPWA-5">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-5</small>
+            <em>GPT-5.6 Sol</em>
+            <strong>Prepare the public release</strong>
+            <p>Finalize documentation, screenshots, release notes, and package validation.</p>
+            <footer><span>Jack</span><small>Claude Code</small></footer>
+          </button>
+        </section>
+
+        <section class="kanban-column">
+          <header><strong>Next</strong><span>1</span></header>
+          <button class="task-card selected-tour-card" type="button" data-task="BCPWA-2">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-2</small>
+            <em>GPT-5.6 Sol</em>
+            <strong>Implement scientific mode</strong>
+            <p>Support powers, roots, trigonometric functions, logarithms, constants, and angle selection.</p>
+            <footer><span>Osama</span><small>GitHub Copilot CLI</small></footer>
+          </button>
+        </section>
+
+        <section class="kanban-column">
+          <header><strong>In progress</strong><span>1</span></header>
+          <button class="task-card active-card" type="button" data-task="BCPWA-7">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-7</small>
+            <em>GPT-5.6 Sol Fast</em>
+            <strong>Validate installer upgrade path</strong>
+            <p>Confirm data preservation and provider refresh across Windows and macOS.</p>
+            <footer><span>Osama</span><small>GitHub Copilot CLI</small></footer>
+          </button>
+        </section>
+
+        <section class="kanban-column">
+          <header><strong>Blocked</strong><span>1</span></header>
+          <button class="task-card blocked-card" type="button" data-task="BCPWA-6">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-6</small>
+            <em>GPT-5.6 Sol</em>
+            <strong>Publish signed Windows package</strong>
+            <p>Waiting for the signing identity and final trust verification.</p>
+            <footer><span>Jack</span><small>Claude Code</small></footer>
+          </button>
+        </section>
+
+        <section class="kanban-column">
+          <header><strong>Done</strong><span>3</span></header>
+          <button class="task-card done-card" type="button" data-task="BCPWA-1">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-1</small>
+            <em>GPT-5.6 Sol Fast</em>
+            <strong>Build the core calculator</strong>
+            <p>Implemented arithmetic, decimals, parentheses, delete/reset, and keyboard input.</p>
+            <footer><span>Osama</span><small>GitHub Copilot CLI</small></footer>
+          </button>
+          <button class="task-card done-card" type="button" data-task="BCPWA-8">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-8</small>
+            <em>Claude Sonnet</em>
+            <strong>Review error handling</strong>
+            <p>Verified invalid expressions and division-by-zero behavior.</p>
+            <footer><span>Jack</span><small>Claude Code</small></footer>
+          </button>
+          <button class="task-card done-card" type="button" data-task="BCPWA-9">
+            <span class="project-name">Release readiness</span>
+            <small>BCPWA-9</small>
+            <em>GPT-5.5</em>
+            <strong>Define visual theme tokens</strong>
+            <p>Delivered accessible light and dark themes with persistent preference.</p>
+            <footer><span>Maya</span><small>Microsoft Scout</small></footer>
+          </button>
+        </section>
+      </div>
+    </section>
+
+    <section id="sessionsView" class="app-view" data-view-panel="sessions">
+      <div class="view-heading">
+        <span class="section-label">Project sessions</span>
+        <h1>Every agent session, one project history</h1>
+        <p>Review the goal, stopping point, next action, effort, and evidence from each contributor.</p>
+      </div>
+      <div class="session-table">
+        <button type="button">
+          <span class="agent-mark copilot">C</span>
+          <span><strong>Build calculator foundation</strong><small>GitHub Copilot CLI · Osama</small></span>
+          <span><strong>1h 42m</strong><small>8 files · 4 tasks done</small></span>
+          <em>Wrapped</em>
+        </button>
+        <button type="button">
+          <span class="agent-mark scout">S</span>
+          <span><strong>Accessibility and themes</strong><small>Microsoft Scout · Maya</small></span>
+          <span><strong>54m</strong><small>5 files · 2 decisions</small></span>
+          <em>Active</em>
+        </button>
+        <button type="button">
+          <span class="agent-mark claude">A</span>
+          <span><strong>Quality and error review</strong><small>Claude Code · Jack</small></span>
+          <span><strong>1h 16m</strong><small>6 files · 3 tasks done</small></span>
+          <em>Wrapped</em>
+        </button>
+        <button type="button">
+          <span class="agent-mark codex">O</span>
+          <span><strong>Scientific mode investigation</strong><small>OpenAI Codex · Osama</small></span>
+          <span><strong>30m</strong><small>3 files · 1 blocker</small></span>
+          <em>Paused</em>
+        </button>
+      </div>
+    </section>
+
+    <section id="insightsView" class="app-view" data-view-panel="insights">
+      <div class="view-heading">
+        <span class="section-label">Project insights</span>
+        <h1>Understand what the result really took</h1>
+        <p>Dummy metrics demonstrate the effort, AI usage, completion, and contribution views available after installation.</p>
+      </div>
+      <div class="insight-grid">
+        <article><span>Progress</span><strong>44%</strong><p>4 of 9 tickets completed</p><div class="meter"><i style="width:44%"></i></div></article>
+        <article><span>Total effort</span><strong>4h 22m</strong><p>Across four AI sessions</p><div class="meter"><i style="width:72%"></i></div></article>
+        <article><span>AI usage</span><strong>18.9 credits</strong><p>128K tokens across three models</p><div class="meter"><i style="width:61%"></i></div></article>
+        <article><span>Evidence</span><strong>22 files</strong><p>9 decisions and 3 blockers recorded</p><div class="meter"><i style="width:83%"></i></div></article>
+      </div>
+      <div class="contribution-panel">
+        <h2>Contribution by person and agent</h2>
+        <div><span>Osama · Copilot</span><i style="width:76%"></i><strong>2h 12m</strong></div>
+        <div><span>Jack · Claude</span><i style="width:43%"></i><strong>1h 16m</strong></div>
+        <div><span>Maya · Scout</span><i style="width:31%"></i><strong>54m</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <aside id="taskDrawer" class="task-drawer" aria-hidden="true">
+    <button id="closeTaskDrawer" type="button" aria-label="Close ticket details">×</button>
+    <span id="drawerTicket">BCPWA-2</span>
+    <h2 id="drawerTitle">Implement scientific mode</h2>
+    <p id="drawerDescription"></p>
+    <dl>
+      <div><dt>Human owner</dt><dd id="drawerOwner"></dd></div>
+      <div><dt>AI agent</dt><dd id="drawerAgent"></dd></div>
+      <div><dt>Recommended model</dt><dd id="drawerModel"></dd></div>
+      <div><dt>Status</dt><dd id="drawerStatus"></dd></div>
+      <div><dt>Evidence</dt><dd id="drawerEvidence"></dd></div>
+    </dl>
+  </aside>
+
+  <div id="tourOverlay" class="tour-overlay" hidden></div>
+  <div id="tourTooltip" class="tour-tooltip" hidden role="dialog" aria-live="polite">
+    <span id="tourCount"></span>
+    <h2 id="tourTitle"></h2>
+    <p id="tourText"></p>
+    <div>
+      <button id="tourExit" type="button">Exit</button>
+      <button id="tourNext" type="button">Next</button>
+    </div>
+  </div>
+</body>
+</html>

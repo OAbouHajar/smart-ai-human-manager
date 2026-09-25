@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 test("landing page presents the AI project value and installation path", async () => {
-  const [html, script, workflow, styles] = await Promise.all([
+  const [html, script, workflow, styles, demoHtml, demoScript] = await Promise.all([
     readFile(new URL("../site/index.html", import.meta.url), "utf8"),
     readFile(new URL("../site/app.js", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/pages.yml", import.meta.url), "utf8"),
-    readFile(new URL("../site/styles.css", import.meta.url), "utf8")
+    readFile(new URL("../site/styles.css", import.meta.url), "utf8"),
+    readFile(new URL("../site/dashboard-demo.html", import.meta.url), "utf8"),
+    readFile(new URL("../site/dashboard-demo.js", import.meta.url), "utf8")
   ]);
 
   assert.match(html, /Where AI work/);
@@ -25,10 +27,14 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(html, /class="supported-marks"/);
   assert.match(html, /class="working-with">Working with/);
   assert.doesNotMatch(html, /class="product-name"/);
-  assert.match(html, /Turn AI work into a Kanban/);
+  assert.match(html, /Turn every AI session into work humans can see and steer/);
+  assert.match(html, /Scrum masters and project leads/);
   assert.match(html, /assets\/project-kanban\.png/);
   assert.match(html, /id="openKanbanImage"/);
   assert.match(html, /id="kanbanImageDialog"/);
+  assert.match(html, /id="openDemoVideo"/);
+  assert.match(html, /id="demoVideoDialog"/);
+  assert.match(html, /dashboard-demo\.html/);
   assert.match(html, /Workflow status/);
   assert.match(html, /Human and agent ownership/);
   assert.match(html, /Model recommendations/);
@@ -61,6 +67,7 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(script, /navigator\.clipboard\.writeText/);
   assert.match(script, /agentPrompts/);
   assert.match(script, /showModal/);
+  assert.match(script, /demoVideo\.pause/);
   assert.match(script, /context-workspace-theme/);
   assert.match(script, /updateThemeToggle/);
   assert.match(script, /selectAgent/);
@@ -76,7 +83,17 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(workflow, /board-screenshot\.png/);
   assert.match(workflow, /context-workspace-logo\.png/);
   assert.match(workflow, /cp -R site\/assets\/\. _site\/assets\//);
+  assert.match(workflow, /cp site\/\*\.html site\/\*\.css site\/\*\.js _site\//);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/);
+  assert.match(demoHtml, /Interactive product demo/);
+  assert.match(demoHtml, /Backlog/);
+  assert.match(demoHtml, /In progress/);
+  assert.match(demoHtml, /Project insights/);
+  assert.match(demoHtml, /Start guided tour/);
+  assert.match(demoScript, /taskData/);
+  assert.match(demoScript, /tourSteps/);
+  assert.match(demoScript, /showTourStep/);
+  assert.match(demoScript, /showView/);
 });
 
 test("dashboard exposes shared project and ticket UI", async () => {
