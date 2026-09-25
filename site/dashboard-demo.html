@@ -23,7 +23,70 @@
     </div>
   </header>
 
-  <main class="demo-app">
+  <div class="demo-layout">
+    <aside id="tourSidebar" class="demo-sidebar">
+      <div class="sidebar-switch" aria-label="Browse Context Workspace">
+        <button class="sidebar-view active" type="button" data-sidebar-view="projects">▥ <span>Projects</span></button>
+        <button class="sidebar-view" type="button" data-sidebar-view="sessions">▣ <span>Sessions</span><small>4</small></button>
+      </div>
+
+      <div class="sidebar-filters" aria-label="Filter projects">
+        <button class="active" type="button" data-project-filter="all">All</button>
+        <button type="button" data-project-filter="shared">Shared</button>
+        <button type="button" data-project-filter="private">Private</button>
+      </div>
+
+      <div class="sidebar-heading">
+        <span>Projects</span>
+        <div><button type="button" aria-label="Create project">＋</button><button type="button" aria-label="Refresh projects">↻</button></div>
+      </div>
+
+      <div class="project-group" data-project-group="shared">
+        <header><span>Shared projects</span><small>2</small></header>
+        <button class="project-item" type="button" data-project-visibility="shared">
+          <strong>ShipReady Release</strong>
+          <span>Shared context · 4 sessions · 6 open</span>
+          <small>last week</small>
+        </button>
+        <button class="project-item selected" type="button" data-project-visibility="shared">
+          <strong>Release readiness</strong>
+          <span>Shared context · 4 sessions · 5 open</span>
+          <small>today</small>
+        </button>
+      </div>
+
+      <div class="project-group" data-project-group="private">
+        <header><span>Private projects</span><small>3</small></header>
+        <button class="project-item" type="button" data-project-visibility="private">
+          <strong>NHM Continuous Patching</strong>
+          <span>Private context · 2 sessions · 6 open</span>
+          <small>7 days ago</small>
+        </button>
+        <button class="project-item" type="button" data-project-visibility="private">
+          <strong>AI Session Hub v0.3.2</strong>
+          <span>Private context · 1 session · 0 open</span>
+          <small>last week</small>
+        </button>
+        <button class="project-item" type="button" data-project-visibility="private">
+          <strong>Fabric Health Monitor</strong>
+          <span>Private context · 3 sessions · 2 open</span>
+          <small>last month</small>
+        </button>
+      </div>
+
+      <button id="sessionInbox" class="session-inbox" type="button">
+        <span>▱</span>
+        <span><strong>Session inbox</strong><small>12 unassigned sessions</small></span>
+        <span>→</span>
+      </button>
+
+      <button class="local-history" type="button" data-sidebar-view="sessions">
+        <span>Local session history</span>
+        <span>◐</span>
+      </button>
+    </aside>
+
+    <main class="demo-app">
     <nav id="tourTabs" class="app-tabs" aria-label="Dashboard views">
       <button class="tab active" type="button" data-view="project">Project</button>
       <button class="tab" type="button" data-view="sessions">Sessions <span>4</span></button>
@@ -194,7 +257,8 @@
         <div><span>Maya · Scout</span><i style="width:31%"></i><strong>54m</strong></div>
       </div>
     </section>
-  </main>
+    </main>
+  </div>
 
   <aside id="taskDrawer" class="task-drawer" aria-hidden="true">
     <button id="closeTaskDrawer" type="button" aria-label="Close ticket details">×</button>

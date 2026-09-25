@@ -90,10 +90,16 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(demoHtml, /In progress/);
   assert.match(demoHtml, /Project insights/);
   assert.match(demoHtml, /Start guided tour/);
+  assert.match(demoHtml, /class="demo-sidebar"/);
+  assert.match(demoHtml, /Shared projects/);
+  assert.match(demoHtml, /Private projects/);
+  assert.match(demoHtml, /Session inbox/);
+  assert.match(demoHtml, /Local session history/);
   assert.match(demoScript, /taskData/);
   assert.match(demoScript, /tourSteps/);
   assert.match(demoScript, /showTourStep/);
   assert.match(demoScript, /showView/);
+  assert.match(demoScript, /projectFilters/);
 });
 
 test("dashboard exposes shared project and ticket UI", async () => {

@@ -14,6 +14,9 @@ const tabs = [...document.querySelectorAll(".tab")];
 const panels = [...document.querySelectorAll("[data-view-panel]")];
 const drawer = document.querySelector("#taskDrawer");
 const closeDrawer = document.querySelector("#closeTaskDrawer");
+const sidebarViews = [...document.querySelectorAll("[data-sidebar-view]")];
+const projectFilters = [...document.querySelectorAll("[data-project-filter]")];
+const projectItems = [...document.querySelectorAll(".project-item")];
 
 function showView(view) {
   tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
@@ -21,6 +24,29 @@ function showView(view) {
 }
 
 tabs.forEach((tab) => tab.addEventListener("click", () => showView(tab.dataset.view)));
+sidebarViews.forEach((control) => {
+  control.addEventListener("click", () => {
+    const view = control.dataset.sidebarView;
+    document.querySelectorAll(".sidebar-view").forEach((button) => button.classList.toggle("active", button.dataset.sidebarView === view));
+    showView(view === "sessions" ? "sessions" : "project");
+  });
+});
+document.querySelector("#sessionInbox").addEventListener("click", () => showView("sessions"));
+projectFilters.forEach((filter) => {
+  filter.addEventListener("click", () => {
+    projectFilters.forEach((button) => button.classList.toggle("active", button === filter));
+    const value = filter.dataset.projectFilter;
+    document.querySelectorAll("[data-project-group]").forEach((group) => {
+      group.classList.toggle("hidden", value !== "all" && group.dataset.projectGroup !== value);
+    });
+  });
+});
+projectItems.forEach((item) => {
+  item.addEventListener("click", () => {
+    projectItems.forEach((project) => project.classList.toggle("selected", project === item));
+    showView("project");
+  });
+});
 
 document.querySelectorAll(".task-card").forEach((card) => {
   card.addEventListener("click", () => {
@@ -43,6 +69,7 @@ closeDrawer.addEventListener("click", () => {
 });
 
 const tourSteps = [
+  { view: "project", selector: "#tourSidebar", title: "Choose the right project or session", text: "Browse shared and private projects, filter the list, or open unassigned work from the Session inbox." },
   { view: "project", selector: "#tourTabs", title: "Move through the project", text: "Project, Sessions, and Insights connect delivery state to the AI sessions and effort behind it." },
   { view: "project", selector: "#tourBoard", title: "Manage work as a Kanban", text: "AI-assisted work becomes tickets that move through Backlog, Next, In progress, Blocked, and Done." },
   { view: "project", selector: '[data-task="BCPWA-2"]', title: "Keep every decision with the ticket", text: "Each card carries the task, human owner, AI agent, recommended model, status, and evidence." },
