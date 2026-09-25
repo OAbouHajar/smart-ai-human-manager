@@ -97,7 +97,7 @@ h1, h2, p { margin-top: 0; }
 .card-heading { display: grid; gap: 0.35rem; }
 .card-ticket-meta {
   display: flex; justify-content: space-between; gap: 0.45rem; align-items: center;
-  margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--cp-border);
+  margin-bottom: 0.75rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--cp-border);
 }
 .ticket-id {
   width: fit-content;

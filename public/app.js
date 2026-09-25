@@ -1589,7 +1589,7 @@ function renderBoardCard(task) {
   const ticketMeta = element("div", "card-ticket-meta");
   if (task.ticketId) ticketMeta.append(element("span", "ticket-id", task.ticketId));
   if (task.recommendedModel) {
-    ticketMeta.append(element("span", "ticket-model-chip", `Recommended · ${task.recommendedModel}`));
+    ticketMeta.append(element("span", "ticket-model-chip", task.recommendedModel));
   }
 
   const ownership = element("div", "card-ownership");
@@ -1642,7 +1642,7 @@ function renderBoardCard(task) {
     openTicketDialog(task);
   });
   actions.append(detailsLabel);
-  card.append(details, ticketMeta, ownership, source, actions);
+  card.append(ticketMeta, details, ownership, source, actions);
   return card;
 }
 
