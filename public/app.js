@@ -4,7 +4,6 @@ const storedSidebarWidth = Number(localStorage.getItem("sessionHub.sidebarWidth.
 if (Number.isFinite(storedSidebarWidth)) {
   document.documentElement.style.setProperty("--sidebar-width", `${Math.min(480, Math.max(280, storedSidebarWidth))}px`);
 }
-
 const state = {
   sessions: [],
   selectedId: localStorage.getItem("sessionHub.selectedId"),
@@ -171,7 +170,6 @@ async function refresh({ preserveSelection = true } = {}) {
   ]);
   state.sessions = sessions;
   elements.wrappedCount.textContent = stats.wrapped || 0;
-  elements.discoveredCount.textContent = stats.discovered || 0;
   elements.activeCount.textContent = stats.active || 0;
   elements.pausedCount.textContent = stats.paused || 0;
   elements.unassignedCount.textContent = stats.unassigned || 0;
@@ -290,8 +288,6 @@ function bindEvents() {
   elements.refreshButton.addEventListener("click", () => refresh());
   elements.copyUpdateCommand.addEventListener("click", () => copyCommand("/cw:update"));
   elements.dismissUpdate.addEventListener("click", dismissUpdate);
-  elements.keepDiscovered.addEventListener("click", keepDiscoveredSession);
-  elements.removeDiscovered.addEventListener("click", removeDiscoveredSession);
   elements.resumeMainButton.addEventListener("click", resumeSelected);
   elements.openCopilotButton.addEventListener("click", resumeSelected);
   elements.repoChip.addEventListener("click", () => action("folder"));
@@ -681,9 +677,7 @@ function renderSessionList() {
     const context = element(
       "span",
       "session-context-line",
-      session.imported && session.needsReview
-        ? `Discovered · ${provider} · ${workspace}`
-        : `${session.projectId ? "Project session" : "Unassigned"} · ${provider} · ${workspace}`
+      `${session.projectId ? "Project session" : "Unassigned"} · ${provider} · ${workspace}`
     );
     const visibleMatch = session.searchMatch && session.searchMatch.type !== "title";
     const previewText = visibleMatch
@@ -742,7 +736,6 @@ function renderDetail() {
   elements.projectBadge.textContent = session.project ? `Project: ${session.project.title}` : "Unassigned";
   elements.importedBadge.classList.toggle("hidden", !session.imported);
   elements.reviewBadge.classList.toggle("hidden", !session.needsReview);
-  elements.discoveryReview.classList.toggle("hidden", !(session.imported && session.needsReview));
   elements.checkpointBadge.classList.toggle("hidden", !session.checkpointSource || session.needsReview);
   elements.checkpointBadge.textContent = session.checkpointSource === "automatic" ? "Auto-wrapped" : "Manually wrapped";
   elements.checkpointBadge.title = session.checkpointedAt
@@ -922,13 +915,9 @@ function renderTimeline() {
   events.slice(0, 8).forEach((event) => {
     const item = element("div", "timeline-item");
     const timestamp = new Date(event.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    const labels = {
-      "history-import": "Discovered",
-      "history-review": "Kept after review"
-    };
     item.append(
       element("time", "", timestamp),
-      element("span", `log-level ${logLevel(event.type)}`, labels[event.type] || event.type.replaceAll("-", " ")),
+      element("span", `log-level ${logLevel(event.type)}`, event.type.replaceAll("-", " ")),
       element("p", "", event.detail),
       element("small", "", relativeTime(event.created_at))
     );
@@ -951,11 +940,6 @@ function renderEmpty() {
     elements.emptyCopy.textContent = "Run /cw:wrap in a Copilot session to save its summary, stopping point, and next action.";
     elements.emptyAction.textContent = "Show active sessions";
     elements.emptyAction.dataset.action = "show-active";
-  } else if (state.filter === "discovered") {
-    elements.emptyTitle.textContent = "No discovered sessions to review";
-    elements.emptyCopy.textContent = "Scan your local Copilot history to find past sessions. New discoveries will appear here before they join your session list.";
-    elements.emptyAction.textContent = "Scan Copilot history";
-    elements.emptyAction.dataset.action = "import-history";
   } else {
     elements.emptyTitle.textContent = `No ${state.filter} sessions`;
     elements.emptyCopy.textContent = "Choose another status or return to your wrapped sessions.";
@@ -1429,7 +1413,6 @@ async function toggleProjectArchive() {
 
 function logLevel(type) {
   if (type.includes("error") || type.includes("failure")) return "error";
-  if (type === "history-review") return "success";
   if (type.includes("checkpoint") || type.includes("resume")) return "success";
   if (type.includes("end")) return "warning";
   return "info";
@@ -1808,22 +1791,9 @@ async function action(name) {
     const result = await api("/api/import-history", { method: "POST" });
     if (result.error === "SOURCE_DB_UNAVAILABLE") toast("Copilot session history is unavailable on this machine", true);
     else if (result.error === "SOURCE_SCHEMA_UNSUPPORTED" || result.filesAvailable === false) toast("This Copilot history format does not include worked-on files", true);
-    else if (result.imported) toast(`Found ${result.pendingReview} sessions to review (${result.imported} new)`);
-    else if (result.pendingReview) toast(`${result.pendingReview} discovered sessions are waiting for your review`);
+    else if (result.imported) toast(`Imported ${result.imported} old sessions`);
     else if (result.fileSessions) toast(`Updated file history for ${result.fileSessions} sessions`);
-    else toast("No new sessions found in Copilot history");
-    if (result.pendingReview > 0) {
-      state.view = "sessions";
-      localStorage.setItem("sessionHub.projectFirstView", "sessions");
-      state.filter = "discovered";
-      state.query = "";
-      elements.searchInput.value = "";
-      document.querySelectorAll(".filter").forEach((button) => {
-        const active = button.dataset.filter === "discovered";
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-pressed", active ? "true" : "false");
-      });
-    }
+    else toast("Session history is already up to date");
     await refresh({ preserveSelection: true });
     return;
   }
@@ -1849,30 +1819,6 @@ async function action(name) {
     await api(`/api/sessions/${encodeURIComponent(state.selected.id)}/folder`, { method: "POST" });
     toast("Opened working directory");
   }
-}
-
-async function keepDiscoveredSession() {
-  if (!state.selected?.imported || !state.selected.needsReview) return;
-  const sessionId = state.selected.id;
-  await api(`/api/sessions/${encodeURIComponent(sessionId)}/review`, { method: "POST" });
-  state.filter = "wrapped";
-  state.query = "";
-  elements.searchInput.value = "";
-  document.querySelectorAll(".filter").forEach((button) => {
-    const active = button.dataset.filter === "wrapped";
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", active ? "true" : "false");
-  });
-  toast("Session kept. Find it under Wrapped.");
-  await refresh({ preserveSelection: false });
-}
-
-async function removeDiscoveredSession() {
-  if (!state.selected?.imported || !state.selected.needsReview) return;
-  if (!window.confirm(`Permanently remove "${state.selected.title}" and its locally imported data? The original Copilot history will not be changed.`)) return;
-  await api(`/api/sessions/${encodeURIComponent(state.selected.id)}`, { method: "DELETE" });
-  toast("Discovered session and local data removed");
-  await refresh({ preserveSelection: false });
 }
 
 async function openSelectedProject() {

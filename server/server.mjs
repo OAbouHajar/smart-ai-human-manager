@@ -108,10 +108,6 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
-  CREATE TABLE IF NOT EXISTS ignored_history_sessions (
-    source_id TEXT PRIMARY KEY,
-    ignored_at INTEGER NOT NULL
-  );
   CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_projects_updated ON projects(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id, position);
@@ -539,8 +535,6 @@ const server = http.createServer(async (request, response) => {
       const action = match[2];
       if (!action && request.method === "GET") return getSession(id, response);
       if (!action && request.method === "PATCH") return updateSession(id, await body(request), response);
-      if (!action && request.method === "DELETE") return deleteDiscoveredSession(id, response);
-      if (action === "review" && request.method === "POST") return keepDiscoveredSession(id, response);
       if (action === "checkpoint" && request.method === "POST") return checkpoint(id, await body(request), response);
       if (action === "tasks" && request.method === "POST") return addTask(id, await body(request), response);
       if (action === "work-items" && request.method === "POST") return addWorkItem(id, await body(request), response);
@@ -598,9 +592,7 @@ function listSessions(url, response) {
   const filter = url.searchParams.get("filter") || "open";
   const where = [];
   const params = {};
-  if (filter === "discovered") {
-    where.push("imported = 1 AND needs_review = 1 AND archived = 0");
-  } else if (!query) {
+  if (!query) {
     if (filter === "open") where.push("archived = 0");
     if (filter === "wrapped") where.push("needs_review = 0 AND archived = 0");
     if (filter === "active") where.push("status = 'active' AND archived = 0");
@@ -680,7 +672,6 @@ function getStats(response) {
       SUM(CASE WHEN status = 'active' AND archived = 0 THEN 1 ELSE 0 END) AS active,
       SUM(CASE WHEN status = 'paused' AND archived = 0 THEN 1 ELSE 0 END) AS paused,
       SUM(CASE WHEN needs_review = 1 AND archived = 0 THEN 1 ELSE 0 END) AS needsReview,
-      SUM(CASE WHEN imported = 1 AND needs_review = 1 AND archived = 0 THEN 1 ELSE 0 END) AS discovered,
       SUM(CASE WHEN project_id = '' AND archived = 0 THEN 1 ELSE 0 END) AS unassigned,
       SUM(CASE WHEN pinned = 1 AND archived = 0 THEN 1 ELSE 0 END) AS pinned
     FROM sessions
@@ -1677,7 +1668,6 @@ function updateSession(id, data, response) {
   if (data.autoWrap !== undefined && typeof data.autoWrap !== "boolean") {
     return json(response, 400, { error: "autoWrap must be true or false" });
   }
-
   if (data.autoWrapMode !== undefined && !["on", "off", "inherit"].includes(data.autoWrapMode)) {
     return json(response, 400, { error: "autoWrapMode must be on, off, or inherit" });
   }
@@ -1701,49 +1691,6 @@ function updateSession(id, data, response) {
   if (data.isProject !== undefined) setLegacyProjectTracking(id, Boolean(data.isProject));
   broadcast("sessions-changed", { id, eventName: "updated" });
   getSession(id, response);
-}
-
-function keepDiscoveredSession(id, response) {
-  const session = db.prepare("SELECT imported, needs_review FROM sessions WHERE id = ?").get(id);
-  if (!session) return json(response, 404, { error: "Session not found" });
-  if (!session.imported || !session.needs_review) {
-    return json(response, 409, { error: "Only a discovered session awaiting review can be kept this way" });
-  }
-  const now = Date.now();
-  db.exec("BEGIN");
-  try {
-    db.prepare("UPDATE sessions SET needs_review = 0, updated_at = ? WHERE id = ?").run(now, id);
-    addEvent(id, "history-review", "Kept after reviewing the imported Copilot session", now);
-    db.exec("COMMIT");
-  } catch (error) {
-    db.exec("ROLLBACK");
-    throw error;
-  }
-  broadcast("sessions-changed", { id, eventName: "history-review" });
-  getSession(id, response);
-}
-
-function deleteDiscoveredSession(id, response) {
-  const session = db.prepare("SELECT imported, needs_review, project_id FROM sessions WHERE id = ?").get(id);
-  if (!session) return json(response, 404, { error: "Session not found" });
-  if (!session.imported || !session.needs_review) {
-    return json(response, 409, { error: "Only a discovered session awaiting review can be removed" });
-  }
-  if (session.project_id) {
-    return json(response, 409, { error: "Unlink this session from its project before removing it" });
-  }
-  db.exec("BEGIN");
-  try {
-    db.prepare("INSERT OR REPLACE INTO ignored_history_sessions(source_id, ignored_at) VALUES (?, ?)").run(id, Date.now());
-    db.prepare("DELETE FROM events WHERE session_id = ?").run(id);
-    db.prepare("DELETE FROM sessions WHERE id = ?").run(id);
-    db.exec("COMMIT");
-  } catch (error) {
-    db.exec("ROLLBACK");
-    throw error;
-  }
-  broadcast("sessions-changed", { id, eventName: "history-rejected" });
-  json(response, 200, { ok: true });
 }
 
 function setLegacyProjectTracking(sessionId, enabled) {
@@ -2523,13 +2470,13 @@ function importHistory() {
       markAllFileHistoryFailure("SOURCE_SCHEMA_UNSUPPORTED");
       return { imported: 0, skipped: 0, fileSessions: 0, available: false, error: "SOURCE_SCHEMA_UNSUPPORTED" };
     }
-    const ignoredHistoryIds = new Set(db.prepare("SELECT source_id FROM ignored_history_sessions").all().map((row) => row.source_id));
     const sourceSessions = history.prepare(`
       SELECT id, cwd, repository, branch, summary, created_at, updated_at
       FROM sessions
       WHERE host_type IS NULL
       ORDER BY updated_at DESC
-    `).all().filter((source) => !ignoredHistoryIds.has(source.id)).slice(0, 1000);
+      LIMIT 1000
+    `).all();
     const latestCheckpoint = tables.includes("checkpoints")
       ? history.prepare(`
           SELECT title, overview, work_done, next_steps
@@ -2649,11 +2596,7 @@ function importHistory() {
       db.exec("ROLLBACK");
       throw error;
     }
-    const pendingReview = Number(db.prepare(`
-      SELECT COUNT(*) AS count FROM sessions
-      WHERE imported = 1 AND needs_review = 1 AND archived = 0
-    `).get().count);
-    return { imported, skipped, fileSessions, pendingReview, available: true, filesAvailable: Boolean(sourceFiles) };
+    return { imported, skipped, fileSessions, available: true, filesAvailable: Boolean(sourceFiles) };
   } catch (error) {
     console.error("Could not import Copilot history:", error.message);
     markAllFileHistoryFailure("SOURCE_DB_UNAVAILABLE");
