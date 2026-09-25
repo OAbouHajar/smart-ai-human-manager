@@ -922,6 +922,7 @@ test("static UI presents explicit projects first and preserves session tools", a
   assert.match(styles, /\.card-agent-logo/);
   assert.match(styles, /card-agent-logo\[src\$="github-copilot\.svg"\]/);
   assert.match(styles, /filter: brightness\(0\) invert\(1\)/);
+  assert.match(styles, /img\.card-agent-logo \{[\s\S]*background: transparent[\s\S]*border-color: transparent/);
   assert.match(styles, /\.ticket-dialog \{[\s\S]*width: min\(68rem, 100%\)[\s\S]*max-height: calc\(100vh - 3rem\)[\s\S]*overflow-y: auto/);
   assert.match(styles, /\.ticket-dialog-actions \{[\s\S]*position: sticky/);
   assert.match(app, /\/cw:model-plan/);

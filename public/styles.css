@@ -1069,6 +1069,7 @@ form.ticket-dialog textarea { min-height: 5.5rem; }
   width: 1.6rem; height: 1.6rem; padding: 0.22rem; object-fit: contain;
   background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 0.38rem;
 }
+img.card-agent-logo { padding: 0.12rem; background: transparent; border-color: transparent; }
 html[data-theme="dark"] .card-agent-logo[src$="github-copilot.svg"],
 html[data-theme="dark"] .card-agent-logo[src$="anthropic.svg"] {
   filter: brightness(0) invert(1);
