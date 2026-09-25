@@ -67,42 +67,23 @@
     <section id="value" class="value-section">
       <div class="page-shell">
         <div class="section-heading">
-          <span>From AI sessions to supervised delivery</span>
-          <h2>Turn every AI session into work humans can see and steer.</h2>
-          <p>Context Workspace keeps the backlog, completed history, next tasks, blockers, owners, agents, and model recommendations on one Kanban board, so Scrum masters and project leads can supervise progress and decide what happens next.</p>
+          <span>From scattered sessions to visible delivery</span>
+          <h2>Turn every AI session into a shared Kanban project.</h2>
+          <p>See what is done, what comes next, who owns each task, which agent is working, and where the project needs human attention.</p>
         </div>
 
-        <div class="kanban-layout">
-          <figure class="kanban-preview">
-            <button id="openKanbanImage" class="image-zoom" type="button" aria-label="Open the project Kanban image full screen">
-              <img src="assets/project-kanban.png" alt="Context Workspace project Kanban showing Backlog, Next, In progress, Blocked, and Done work from AI sessions">
-              <span>View full screen</span>
-            </button>
-            <figcaption>Session conversations and local file contents stay private while the board synchronizes useful project progress.</figcaption>
-          </figure>
+        <figure class="kanban-preview">
+          <button id="openKanbanImage" class="image-zoom" type="button" aria-label="Open the shared Kanban project image full screen">
+            <img src="assets/kanban-overview.png" alt="Before and after illustration showing scattered AI sessions becoming a shared Kanban project">
+            <span>View full screen</span>
+          </button>
+          <figcaption>Tasks, progress, history, people, and agents stay connected on one visual board while private conversations remain local.</figcaption>
+        </figure>
 
-          <div class="board-capabilities">
-            <article>
-              <span>01</span>
-              <div><h3>Workflow status</h3><p>Move work through Backlog, Next, In progress, Blocked, and Done.</p></div>
-            </article>
-            <article>
-              <span>02</span>
-              <div><h3>Human and agent ownership</h3><p>Assign work to a teammate and see which AI agent owns or completed it.</p></div>
-            </article>
-            <article>
-              <span>03</span>
-              <div><h3>Model recommendations</h3><p>Store the recommended model and reasoning effort for every ticket.</p></div>
-            </article>
-            <article>
-              <span>04</span>
-              <div><h3>Ticket details and evidence</h3><p>Keep the description, ticket ID, decisions, files, sessions, and completion evidence together.</p></div>
-            </article>
-            <article>
-              <span>05</span>
-              <div><h3>Project visibility</h3><p>See open, active, blocked, and completed totals, then review sessions and insights.</p></div>
-            </article>
-          </div>
+        <div class="kanban-summary">
+          <span><strong>See the work</strong>Backlog, active, blocked, and completed tasks.</span>
+          <span><strong>Supervise progress</strong>Human owners, AI agents, status, and next actions.</span>
+          <span><strong>Keep the history</strong>Decisions, files, evidence, and completed work stay attached.</span>
         </div>
       </div>
     </section>
@@ -145,7 +126,7 @@ Preserve existing Context Workspace data and unrelated Copilot settings. Configu
 
   <dialog id="kanbanImageDialog" class="image-dialog" aria-label="Full-screen Context Workspace project Kanban">
     <button id="closeKanbanImage" class="dialog-close" type="button" aria-label="Close full-screen image">×</button>
-    <img src="assets/project-kanban.png" alt="Full-screen Context Workspace project Kanban">
+    <img src="assets/kanban-overview.png" alt="Full-screen illustration of AI sessions becoming a shared Kanban project">
   </dialog>
 
   <dialog id="demoVideoDialog" class="video-dialog" aria-label="Context Workspace product demo">

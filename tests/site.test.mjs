@@ -27,9 +27,8 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(html, /class="supported-marks"/);
   assert.match(html, /class="working-with">Working with/);
   assert.doesNotMatch(html, /class="product-name"/);
-  assert.match(html, /Turn every AI session into work humans can see and steer/);
-  assert.match(html, /Scrum masters and project leads/);
-  assert.match(html, /assets\/project-kanban\.png/);
+  assert.match(html, /Turn every AI session into a shared Kanban project/);
+  assert.match(html, /assets\/kanban-overview\.png/);
   assert.match(html, /id="openKanbanImage"/);
   assert.match(html, /id="kanbanImageDialog"/);
   assert.match(html, /id="openDemoVideo"/);
@@ -37,11 +36,9 @@ test("landing page presents the AI project value and installation path", async (
   assert.match(html, /id="openInteractiveDemo"/);
   assert.match(html, /id="interactiveDemoDialog"/);
   assert.match(html, /<iframe[^>]+src="dashboard-demo\.html"/);
-  assert.match(html, /Workflow status/);
-  assert.match(html, /Human and agent ownership/);
-  assert.match(html, /Model recommendations/);
-  assert.match(html, /Ticket details and evidence/);
-  assert.match(html, /Project visibility/);
+  assert.match(html, /See the work/);
+  assert.match(html, /Supervise progress/);
+  assert.match(html, /Keep the history/);
   assert.doesNotMatch(html, /2nd place|Hackathon project/);
   assert.match(html, /id="copyHeroPrompt"/);
   assert.match(html, /Install with the AI agent you already use/);
