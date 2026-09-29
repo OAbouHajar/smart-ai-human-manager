@@ -63,7 +63,7 @@ const agentPrompts = {
     detail: "Plugin and lifecycle hooks",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for GitHub Copilot CLI.
 
-Detect the operating system and verify git, Node.js 22.13+, GitHub Copilot CLI, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, GitHub Copilot CLI, and PowerShell 7 on Windows. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data and unrelated Copilot settings. Configure the local Copilot plugin and lifecycle hooks. Verify http://127.0.0.1:43120/api/health returns ok: true, confirm GitHub Copilot is shown as configured, open the dashboard, and tell me whether Copilot must be restarted.`,
   },
@@ -72,7 +72,7 @@ Preserve existing Context Workspace data and unrelated Copilot settings. Configu
     detail: "Managed Scout skill",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for Microsoft Scout.
 
-Detect the operating system and verify git, Node.js 22.13+, Microsoft Scout, and PowerShell 7 on Windows. Detect Scout from PATH or its installed application location. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, Microsoft Scout, and PowerShell 7 on Windows. Detect Scout from PATH or its installed application location. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data, Scout conversations, memories, skills, and unrelated Copilot settings. Install only the managed Context Workspace Scout skill under ~/.copilot/skills/context-workspace-scout. Verify the local health endpoint returns ok: true, confirm Microsoft Scout is shown as configured, open the dashboard, and tell me to start a new Scout conversation and say "Track this conversation with Context Workspace."`,
   },
@@ -81,7 +81,7 @@ Preserve existing Context Workspace data, Scout conversations, memories, skills,
     detail: "Claude lifecycle hooks",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for Claude Code.
 
-Detect the operating system and verify git, Node.js 22.13+, Claude Code, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, Claude Code, and PowerShell 7 on Windows. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data and unrelated Claude settings and hooks. Merge Context Workspace lifecycle handlers into Claude's settings without replacing existing entries. Verify the local health endpoint returns ok: true, confirm Claude Code is shown as configured, open the dashboard, and tell me to restart Claude Code so the hooks load.`,
   },
@@ -90,7 +90,7 @@ Preserve existing Context Workspace data and unrelated Claude settings and hooks
     detail: "Codex lifecycle hooks",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for OpenAI Codex CLI.
 
-Detect the operating system and verify git, Node.js 22.13+, Codex CLI, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, Codex CLI, and PowerShell 7 on Windows. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data and unrelated Codex configuration and hooks. Merge Context Workspace lifecycle handlers into the Codex hooks configuration without replacing existing entries. Verify the local health endpoint returns ok: true, confirm Codex CLI is shown as configured, open the dashboard, and tell me to restart Codex so the hooks load.`,
   },
@@ -99,7 +99,7 @@ Preserve existing Context Workspace data and unrelated Codex configuration and h
     detail: "Gemini lifecycle hooks",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for Google Gemini CLI.
 
-Detect the operating system and verify git, Node.js 22.13+, Gemini CLI, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, Gemini CLI, and PowerShell 7 on Windows. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data and unrelated Gemini settings and hooks. Merge Context Workspace lifecycle handlers into Gemini's settings without replacing existing entries. Verify the local health endpoint returns ok: true, confirm Gemini CLI is shown as configured, open the dashboard, and tell me to restart Gemini so the hooks load.`,
   },
@@ -108,7 +108,7 @@ Preserve existing Context Workspace data and unrelated Gemini settings and hooks
     detail: "Detect every supported provider",
     prompt: `Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
 
-Detect the operating system and verify git, Node.js 22.13+, at least one supported AI agent, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+Detect the operating system and verify git, Node.js 22.13+, at least one supported AI agent, and PowerShell 7 on Windows. Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the installer with its no-open option. The bootstrap must download the exact latest stable release and verify its SHA-256 checksum.
 
 Preserve existing Context Workspace data and unrelated AI agent settings. Configure every detected supported provider without replacing existing hooks, skills, or settings. Verify http://127.0.0.1:43120/api/health returns ok: true, report every configured provider, open the dashboard, and list any restart or trust action still required.`,
   },
