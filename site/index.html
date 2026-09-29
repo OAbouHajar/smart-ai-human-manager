@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Context Workspace turns separate AI sessions into shared, visual, measurable project work.">
+  <meta name="theme-color" content="#faf9f6">
+  <title>Context Workspace | Where AI sessions become shared work</title>
+  <link rel="icon" href="assets/context-workspace-logo.png" type="image/png">
+  <script>
+    document.documentElement.dataset.theme =
+      localStorage.getItem("context-workspace-theme") ||
+      (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Context Workspace home">
+      <img src="assets/context-workspace-logo.png" alt="">
+      <strong>Context Workspace</strong>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#value">The value</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◐</span><strong>Dark</strong></button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero page-shell">
+      <div class="hero-copy">
+        <p class="working-with">Working with</p>
+        <div class="supported-marks" aria-label="Supported AI agents">
+          <img src="assets/providers/github-copilot.svg" alt="GitHub Copilot">
+          <img src="assets/providers/microsoft-scout.png" alt="Microsoft Scout">
+          <img src="assets/providers/anthropic.svg" alt="Claude Code">
+          <img src="assets/providers/openai.svg" alt="OpenAI Codex">
+          <img src="assets/providers/google-gemini.svg" alt="Google Gemini">
+        </div>
+        <h1>Where AI work<br>become shared projects.</h1>
+        <p class="hero-detail">Turn separate AI sessions into one visual project that people and agents can share, manage, and measure.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#value">See the value</a>
+          <button id="openDemoVideo" class="button secondary" type="button">Watch the demo</button>
+          <button id="openInteractiveDemo" class="button quiet" type="button">Try interactive demo</button>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <figure class="concept-photo">
+          <img src="assets/before-after.png" alt="Before and after illustration showing separate developer Copilot sessions becoming shared project work through Context Workspace">
+          <figcaption>Same tools. Shared progress.</figcaption>
+        </figure>
+        <div class="vision-strip">
+          <div><span aria-hidden="true">◌</span><p><strong>Use fewer tokens</strong>Stop re-explaining the same project context.</p></div>
+          <div><span aria-hidden="true">↗</span><p><strong>Share context safely</strong>Share project state, not private conversations.</p></div>
+          <div><span aria-hidden="true">♙</span><p><strong>Keep the team aligned</strong>People and agents continue from the same progress.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="value" class="value-section">
+      <div class="page-shell">
+        <div class="section-heading">
+          <span>From scattered sessions to visible delivery</span>
+          <h2>Turn every AI session into a shared Kanban project.</h2>
+          <p>See what is done, what comes next, who owns each task, which agent is working, and where the project needs human attention.</p>
+        </div>
+
+        <figure class="kanban-preview">
+          <button id="openKanbanImage" class="image-zoom" type="button" aria-label="Open the shared Kanban project image full screen">
+            <img src="assets/kanban-overview.png" alt="Before and after illustration showing scattered AI sessions becoming a shared Kanban project">
+            <span>View full screen</span>
+          </button>
+          <figcaption>Tasks, progress, history, people, and agents stay connected on one visual board while private conversations remain local.</figcaption>
+        </figure>
+
+        <div class="kanban-summary">
+          <span><strong>See the work</strong>Backlog, active, blocked, and completed tasks.</span>
+          <span><strong>Supervise progress</strong>Human owners, AI agents, status, and next actions.</span>
+          <span><strong>Keep the history</strong>Decisions, files, evidence, and completed work stay attached.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="install-section">
+      <div class="page-shell install-layout">
+        <div class="install-copy">
+          <span>Local-first and open source</span>
+          <h2>Install with the AI agent you already use.</h2>
+          <p>Context Workspace detects supported agents, preserves your existing settings and data, and starts the local visual workspace.</p>
+
+          <div class="agent-list" role="tablist" aria-label="Choose an AI agent for installation instructions">
+            <button class="agent-choice selected" type="button" role="tab" aria-selected="true" aria-controls="installPromptPanel" data-agent="copilot"><img src="assets/providers/github-copilot.svg" alt=""><strong>GitHub Copilot</strong></button>
+            <button class="agent-choice" type="button" role="tab" aria-selected="false" aria-controls="installPromptPanel" data-agent="scout"><img src="assets/providers/microsoft-scout.png" alt=""><strong>Microsoft Scout</strong></button>
+            <button class="agent-choice" type="button" role="tab" aria-selected="false" aria-controls="installPromptPanel" data-agent="claude"><img src="assets/providers/anthropic.svg" alt=""><strong>Claude Code</strong></button>
+            <button class="agent-choice" type="button" role="tab" aria-selected="false" aria-controls="installPromptPanel" data-agent="codex"><img src="assets/providers/openai.svg" alt=""><strong>OpenAI Codex</strong></button>
+            <button class="agent-choice" type="button" role="tab" aria-selected="false" aria-controls="installPromptPanel" data-agent="gemini"><img src="assets/providers/google-gemini.svg" alt=""><strong>Google Gemini</strong></button>
+            <button class="agent-choice more-agents" type="button" role="tab" aria-selected="false" aria-controls="installPromptPanel" data-agent="generic"><span aria-hidden="true">+</span><strong>More agents</strong></button>
+          </div>
+        </div>
+
+        <div id="installPromptPanel" class="prompt" role="tabpanel" aria-live="polite">
+          <div class="prompt-bar">
+            <div><strong id="promptAgentName">GitHub Copilot installation prompt</strong><small id="promptAgentDetail">Plugin and lifecycle hooks</small></div>
+            <button id="copyPrompt" type="button"><span class="copy-label">Copy prompt</span></button>
+          </div>
+          <pre><code id="installPrompt">Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine for GitHub Copilot CLI.
+
+Detect the operating system and verify git, Node.js 22.13+, GitHub Copilot CLI, and PowerShell 7 on Windows. Clone the latest main branch into a temporary directory, read the README and matching installer, then run the installer with its no-open option.
+
+Preserve existing Context Workspace data and unrelated Copilot settings. Configure the local Copilot plugin and lifecycle hooks. Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, confirm GitHub Copilot is shown as configured, open the dashboard, and tell me whether Copilot must be restarted.</code></pre>
+          <div class="install-actions">
+            <button id="copyHeroPrompt" class="button primary" type="button"><span class="copy-label">Copy and install</span></button>
+            <a class="button secondary" href="https://github.com/OAbouHajar/smart-ai-human-manager">View GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="kanbanImageDialog" class="image-dialog" aria-label="Full-screen Context Workspace project Kanban">
+    <button id="closeKanbanImage" class="dialog-close" type="button" aria-label="Close full-screen image">×</button>
+    <img src="assets/kanban-overview.png" alt="Full-screen illustration of AI sessions becoming a shared Kanban project">
+  </dialog>
+
+  <dialog id="demoVideoDialog" class="video-dialog" aria-label="Context Workspace product demo">
+    <button id="closeDemoVideo" class="dialog-close" type="button" aria-label="Close product demo">×</button>
+    <video id="demoVideo" controls playsinline preload="metadata" poster="assets/context-workspace-demo-poster.jpg">
+      <source src="assets/context-workspace-demo.mp4" type="video/mp4">
+      Your browser does not support embedded video.
+    </video>
+  </dialog>
+
+  <dialog id="interactiveDemoDialog" class="interactive-demo-dialog" aria-label="Interactive Context Workspace dashboard demo">
+    <div class="interactive-demo-bar">
+      <span><i></i><i></i><i></i><strong>Interactive Context Workspace demo</strong></span>
+      <div>
+        <a href="dashboard-demo.html" target="_blank" rel="noreferrer">Open full page ↗</a>
+        <button id="closeInteractiveDemo" type="button" aria-label="Close interactive dashboard demo">×</button>
+      </div>
+    </div>
+    <iframe id="interactiveDemoFrame" title="Interactive Context Workspace dashboard" src="dashboard-demo.html" loading="lazy"></iframe>
+  </dialog>
+
+  <footer class="site-footer page-shell">
+    <span><strong>Context Workspace</strong> Where AI sessions become shared work.</span>
+    <span>Runs locally on your machine.</span>
+  </footer>
+</body>
+</html>
