@@ -26,6 +26,28 @@
 
 Requirements: Git, Node.js 22.13+, a supported AI agent, and PowerShell 7 on Windows.
 
+### Install with one prompt
+
+Copy this prompt into GitHub Copilot, Microsoft Scout, Claude Code, OpenAI Codex, Google Gemini, or another capable AI agent:
+
+```text
+Install Context Workspace from https://github.com/OAbouHajar/smart-ai-human-manager on this machine.
+
+Detect the operating system first. Verify git, Node.js 22.13 or newer, at least one supported AI agent, and PowerShell 7 on Windows. Stop and report the missing prerequisite if the platform is unsupported or a requirement is unavailable.
+
+Clone the public distribution repository into a temporary directory, read its README and bootstrap installer, then run the matching installer with its no-open option:
+- Windows: `pwsh -File .\scripts\install.ps1 -NoOpen`
+- macOS: `./scripts/install.sh --no-open`
+
+The bootstrap installer must download the exact latest stable Context Workspace release, verify its SHA-256 checksum, preserve existing Context Workspace data and unrelated AI-agent settings, configure every detected supported provider, and start the local service.
+
+Verify `http://127.0.0.1:43120/api/health` returns `ok: true`, open the dashboard, and report the installed version, configured providers, and any remaining restart action. Proceed autonomously and only ask before administrator-required or destructive actions.
+```
+
+The agent uses the public bootstrap installer. Product source code is not required for installation.
+
+### Install manually
+
 **Windows**
 
 ```powershell
