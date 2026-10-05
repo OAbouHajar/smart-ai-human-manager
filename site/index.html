@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Context Workspace turns separate AI sessions into shared, visual, measurable project work.">
+  <meta name="description" content="Context Workspace turns related AI sessions into shared, visual, measurable workspaces.">
   <meta name="theme-color" content="#faf9f6">
   <title>Context Workspace | Where AI sessions become shared work</title>
   <link rel="icon" href="assets/context-workspace-logo.png" type="image/png">
@@ -25,6 +25,7 @@
     </a>
     <nav aria-label="Primary navigation">
       <a href="#value">The value</a>
+      <a href="#sharing">Share &amp; reuse</a>
       <a href="#install">Install</a>
       <a href="https://github.com/OAbouHajar/smart-ai-human-manager">GitHub</a>
       <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◐</span><strong>Dark</strong></button>
@@ -42,8 +43,8 @@
           <img src="assets/providers/openai.svg" alt="OpenAI Codex">
           <img src="assets/providers/google-gemini.svg" alt="Google Gemini">
         </div>
-        <h1>Where AI work<br>become shared projects.</h1>
-        <p class="hero-detail">Turn separate AI sessions into one visual project that people and agents can share, manage, and measure.</p>
+        <h1>Where AI work<br>becomes shared workspaces.</h1>
+        <p class="hero-detail">Turn related AI sessions into one visual workspace that people and agents can share, manage, and measure.</p>
         <div class="hero-actions">
           <a class="button primary" href="#value">See the value</a>
           <button id="openDemoVideo" class="button secondary" type="button">Watch the demo</button>
@@ -57,8 +58,8 @@
           <figcaption>Same tools. Shared progress.</figcaption>
         </figure>
         <div class="vision-strip">
-          <div><span aria-hidden="true">◌</span><p><strong>Use fewer tokens</strong>Stop re-explaining the same project context.</p></div>
-          <div><span aria-hidden="true">↗</span><p><strong>Share context safely</strong>Share project state, not private conversations.</p></div>
+          <div><span aria-hidden="true">◌</span><p><strong>Use fewer tokens</strong>Stop re-explaining the same workspace context.</p></div>
+          <div><span aria-hidden="true">↗</span><p><strong>Share context safely</strong>Share workspace state, not private conversations.</p></div>
           <div><span aria-hidden="true">♙</span><p><strong>Keep the team aligned</strong>People and agents continue from the same progress.</p></div>
         </div>
       </div>
@@ -68,8 +69,8 @@
       <div class="page-shell">
         <div class="section-heading">
           <span>From scattered sessions to visible delivery</span>
-          <h2>Turn every AI session into a shared Kanban project.</h2>
-          <p>See what is done, what comes next, who owns each task, which agent is working, and where the project needs human attention.</p>
+          <h2>Turn related AI sessions into a shared Kanban workspace.</h2>
+          <p>See what is done, what comes next, who owns each task, which agent is working, and where the workspace needs human attention.</p>
         </div>
 
         <figure class="kanban-preview">
@@ -84,6 +85,36 @@
           <span><strong>See the work</strong>Backlog, active, blocked, and completed tasks.</span>
           <span><strong>Supervise progress</strong>Human owners, AI agents, status, and next actions.</span>
           <span><strong>Keep the history</strong>Decisions, files, evidence, and completed work stay attached.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="sharing" class="sharing-section">
+      <div class="page-shell">
+        <div class="section-heading sharing-heading">
+          <span>Share progress. Reuse context.</span>
+          <h2>Give the next person a useful handoff—not your AI conversation.</h2>
+          <p>Publish a portable workspace snapshot to a dedicated Git branch. Teammates pull the project into their own local workspace and continue with its approved context.</p>
+        </div>
+
+        <figure class="sharing-map">
+          <div class="infographic-art">
+            <img src="assets/context-workspace-workflow.png" alt="Workflow infographic: one developer works in a private terminal, packages a reusable Context Workspace, and a second developer pulls the shared work to continue.">
+            <div class="infographic-shared-items" aria-label="What the next developer receives">
+              <p><strong>Tickets</strong><span>Owners, status, next steps</span></p>
+              <p><strong>Progress</strong><span>Completed work and status</span></p>
+              <p><strong>Approved Knowledge</strong><span>Shared notes, skills, tool names</span></p>
+              <p><strong>Insights</strong><span>Progress and aggregate AI usage</span></p>
+              <p><strong>Next steps</strong><span>Open tasks and recommendations</span></p>
+            </div>
+            <p class="infographic-recipient-note">Gets tickets, Knowledge &amp; insights</p>
+          </div>
+          <figcaption>One private terminal becomes a project handoff another person or AI agent can act on—without exposing the original session.</figcaption>
+          <p class="sharing-boundary-note">Prompts, transcripts, source files, local paths, raw tool arguments and logs, MCP/tool configuration, commands, and credentials never enter the snapshot.</p>
+        </figure>
+
+        <div class="knowledge-section">
+          <p class="knowledge-brief"><strong>Reusable Knowledge:</strong> Manage notes, skills, and integrations per workspace. Share only approved items; session-level tool access stays in your agent’s settings.</p>
         </div>
       </div>
     </section>
@@ -124,7 +155,7 @@ Preserve existing Context Workspace data and unrelated Copilot settings. Configu
     </section>
   </main>
 
-  <dialog id="kanbanImageDialog" class="image-dialog" aria-label="Full-screen Context Workspace project Kanban">
+  <dialog id="kanbanImageDialog" class="image-dialog" aria-label="Full-screen Context Workspace Kanban">
     <button id="closeKanbanImage" class="dialog-close" type="button" aria-label="Close full-screen image">×</button>
     <img src="assets/kanban-overview.png" alt="Full-screen illustration of AI sessions becoming a shared Kanban project">
   </dialog>

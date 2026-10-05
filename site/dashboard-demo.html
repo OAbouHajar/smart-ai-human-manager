@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Interactive Context Workspace dashboard demonstration with dummy project data.">
+  <meta name="description" content="Interactive Context Workspace dashboard demonstration with dummy workspace data.">
   <meta name="theme-color" content="#10151b">
   <title>Context Workspace | Interactive Dashboard Demo</title>
   <link rel="icon" href="assets/context-workspace-logo.png" type="image/png">
@@ -26,23 +26,23 @@
   <div class="demo-layout">
     <aside id="tourSidebar" class="demo-sidebar">
       <div class="sidebar-switch" aria-label="Browse Context Workspace">
-        <button class="sidebar-view active" type="button" data-sidebar-view="projects">▥ <span>Projects</span></button>
+        <button class="sidebar-view active" type="button" data-sidebar-view="projects">▥ <span>Workspaces</span></button>
         <button class="sidebar-view" type="button" data-sidebar-view="sessions">▣ <span>Sessions</span><small>4</small></button>
       </div>
 
-      <div class="sidebar-filters" aria-label="Filter projects">
+      <div class="sidebar-filters" aria-label="Filter workspaces">
         <button class="active" type="button" data-project-filter="all">All</button>
         <button type="button" data-project-filter="shared">Shared</button>
         <button type="button" data-project-filter="private">Private</button>
       </div>
 
       <div class="sidebar-heading">
-        <span>Projects</span>
-        <div><button type="button" aria-label="Create project">＋</button><button type="button" aria-label="Refresh projects">↻</button></div>
+        <span>Workspaces</span>
+        <div><button type="button" aria-label="Create workspace">＋</button><button type="button" aria-label="Refresh workspaces">↻</button></div>
       </div>
 
       <div class="project-group" data-project-group="shared">
-        <header><span>Shared projects</span><small>2</small></header>
+        <header><span>Shared workspaces</span><small>2</small></header>
         <button class="project-item" type="button" data-project-visibility="shared">
           <strong>ShipReady Release</strong>
           <span>Shared context · 4 sessions · 6 open</span>
@@ -56,7 +56,7 @@
       </div>
 
       <div class="project-group" data-project-group="private">
-        <header><span>Private projects</span><small>3</small></header>
+        <header><span>Private workspaces</span><small>3</small></header>
         <button class="project-item" type="button" data-project-visibility="private">
           <strong>NHM Continuous Patching</strong>
           <span>Private context · 2 sessions · 6 open</span>
@@ -88,15 +88,16 @@
 
     <main class="demo-app">
     <nav id="tourTabs" class="app-tabs" aria-label="Dashboard views">
-      <button class="tab active" type="button" data-view="project">Project</button>
+      <button class="tab active" type="button" data-view="project">Workspace</button>
       <button class="tab" type="button" data-view="sessions">Sessions <span>4</span></button>
+      <button class="tab" type="button" data-view="sharing">Share &amp; reuse</button>
       <button id="insightsTab" class="tab" type="button" data-view="insights">Insights</button>
     </nav>
 
     <section id="projectView" class="app-view active" data-view-panel="project">
       <div class="board-heading">
         <div>
-          <span class="section-label">Project board</span>
+          <span class="section-label">Workspace board</span>
           <h1>Release readiness</h1>
           <p>This board combines useful work from multiple AI sessions. Conversations and local file contents stay private.</p>
         </div>
@@ -139,13 +140,13 @@
         </section>
 
         <section class="kanban-column">
-          <header><strong>Next</strong><span>1</span></header>
+          <header><strong>Review</strong><span>1</span></header>
           <button class="task-card selected-tour-card" type="button" data-task="BCPWA-2">
             <span class="project-name">Release readiness</span>
             <small>BCPWA-2</small>
             <em>GPT-5.6 Sol</em>
-            <strong>Implement scientific mode</strong>
-            <p>Support powers, roots, trigonometric functions, logarithms, constants, and angle selection.</p>
+            <strong>Review scientific mode implementation</strong>
+            <p>The AI delivered powers, roots, trigonometric functions, logarithms, constants, and angle selection for human acceptance.</p>
             <footer><span>Osama</span><small>GitHub Copilot CLI</small></footer>
           </button>
         </section>
@@ -206,8 +207,8 @@
 
     <section id="sessionsView" class="app-view" data-view-panel="sessions">
       <div class="view-heading">
-        <span class="section-label">Project sessions</span>
-        <h1>Every agent session, one project history</h1>
+        <span class="section-label">Workspace sessions</span>
+        <h1>Every agent session, one workspace history</h1>
         <p>Review the goal, stopping point, next action, effort, and evidence from each contributor.</p>
       </div>
       <div class="session-table">
@@ -238,9 +239,72 @@
       </div>
     </section>
 
+    <section id="sharingView" class="app-view" data-view-panel="sharing">
+      <div class="view-heading">
+        <span class="section-label">Team handoff</span>
+        <h1>Share the work. Keep conversations private.</h1>
+        <p>A teammate gets the project state and enough approved context to continue—not a dump of your AI chats or machine.</p>
+      </div>
+
+      <div class="share-destination">
+        <div>
+          <span class="share-status-dot"></span>
+          <span><strong>Release readiness</strong><small>Shared snapshot · revision 12 · updated today</small></span>
+        </div>
+        <code>origin / context-workspace/shared-projects</code>
+      </div>
+
+      <div class="share-grid">
+        <article class="share-included">
+          <span class="share-label">Included in the snapshot</span>
+          <h2>Portable project context</h2>
+          <ul>
+            <li><strong>Workspace</strong><small>Title, description, and active or complete status</small></li>
+            <li><strong>Tickets</strong><small>Titles, descriptions, status, owner, agent, attribution, and model guidance</small></li>
+            <li><strong>Continuity</strong><small>Summary, completed work, next action, blockers, and generated restart guidance</small></li>
+            <li><strong>Approved knowledge</strong><small>Items marked shared, plus approved skills and integrations</small></li>
+            <li><strong>Aggregate AI usage</strong><small>Session totals, tokens, credits, providers, and models</small></li>
+          </ul>
+        </article>
+        <article class="share-private">
+          <span class="share-label">Stays on this machine</span>
+          <h2>Private by default</h2>
+          <ul>
+            <li>Original prompts and conversation transcripts</li>
+            <li>Source code and local file contents</li>
+            <li>Local paths, credentials, raw tool arguments, and logs</li>
+            <li>Unapproved notes, resources, skills, and integrations</li>
+          </ul>
+          <p class="share-note">People review the same project progress without reading each other's private AI sessions.</p>
+        </article>
+      </div>
+
+      <div class="reuse-panel">
+        <div>
+          <span class="share-label">How a teammate picks it up</span>
+          <h2>From shared snapshot to their next AI session</h2>
+        </div>
+        <ol>
+          <li><span>1</span><div><strong>Publish</strong><small>Push the confirmed snapshot to the dedicated shared-projects branch.</small></div></li>
+          <li><span>2</span><div><strong>Pull</strong><small>Teammate imports the workspace into their own local Context Workspace.</small></div></li>
+          <li><span>3</span><div><strong>Continue</strong><small>Any supported agent gets the shared goal, current state, and next action.</small></div></li>
+        </ol>
+      </div>
+      <details class="manifest-preview">
+        <summary>Inspect the example share manifest</summary>
+        <pre><code>{
+  "project": ["title", "description", "status"],
+  "tickets": ["title", "description", "status", "owner", "agent", "model guidance"],
+  "context": ["summary", "completed work", "next action", "blockers", "restart guidance"],
+  "knowledge": ["shared notes", "shared resources", "approved skills", "approved integrations"],
+  "aiUsage": ["session totals", "tokens", "credits", "providers", "models"]
+}</code></pre>
+      </details>
+    </section>
+
     <section id="insightsView" class="app-view" data-view-panel="insights">
       <div class="view-heading">
-        <span class="section-label">Project insights</span>
+        <span class="section-label">Workspace insights</span>
         <h1>Understand what the result really took</h1>
         <p>Dummy metrics demonstrate the effort, AI usage, completion, and contribution views available after installation.</p>
       </div>

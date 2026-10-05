@@ -1,6 +1,6 @@
 const taskData = {
   "BCPWA-1": { title: "Build the core calculator", description: "Implemented arithmetic, decimals, parentheses, reset, and keyboard input.", owner: "Osama", agent: "GitHub Copilot CLI", model: "GPT-5.6 Sol Fast", status: "Done", evidence: "6 files, 18 tests, checkpoint approved" },
-  "BCPWA-2": { title: "Implement scientific mode", description: "Support powers, roots, trigonometric functions, logarithms, constants, and angle selection.", owner: "Osama", agent: "GitHub Copilot CLI", model: "GPT-5.6 Sol", status: "Next", evidence: "Task refined, acceptance criteria saved, 3 related files" },
+  "BCPWA-2": { title: "Review scientific mode implementation", description: "Powers, roots, trigonometric functions, logarithms, constants, and angle selection are ready for human acceptance.", owner: "Osama", agent: "GitHub Copilot CLI", model: "GPT-5.6 Sol", status: "Review", evidence: "18 tests passed, acceptance evidence saved, 3 related files" },
   "BCPWA-3": { title: "Complete export and local persistence", description: "Add calculation history, memory controls, result copying, and durable local state.", owner: "Unassigned", agent: "GitHub Copilot CLI", model: "GPT-5.6 Sol Fast", status: "Backlog", evidence: "2 decisions, no implementation yet" },
   "BCPWA-4": { title: "Harden quality and accessibility", description: "Add automated checks, keyboard navigation, and screen-reader labels.", owner: "Maya", agent: "Microsoft Scout", model: "GPT-5.6 Sol", status: "Backlog", evidence: "Accessibility review and 5 affected files" },
   "BCPWA-5": { title: "Prepare the public release", description: "Finalize documentation, screenshots, release notes, and package validation.", owner: "Jack", agent: "Claude Code", model: "GPT-5.6 Sol", status: "Backlog", evidence: "Release checklist and public documentation draft" },
@@ -69,11 +69,12 @@ closeDrawer.addEventListener("click", () => {
 });
 
 const tourSteps = [
-  { view: "project", selector: "#tourSidebar", title: "Choose the right project or session", text: "Browse shared and private projects, filter the list, or open unassigned work from the Session inbox." },
-  { view: "project", selector: "#tourTabs", title: "Move through the project", text: "Project, Sessions, and Insights connect delivery state to the AI sessions and effort behind it." },
-  { view: "project", selector: "#tourBoard", title: "Manage work as a Kanban", text: "AI-assisted work becomes tickets that move through Backlog, Next, In progress, Blocked, and Done." },
-  { view: "project", selector: '[data-task="BCPWA-2"]', title: "Keep every decision with the ticket", text: "Each card carries the task, human owner, AI agent, recommended model, status, and evidence." },
+  { view: "project", selector: "#tourSidebar", title: "Choose the right workspace or session", text: "Browse shared and private workspaces, filter the list, or open unassigned work from the Session inbox." },
+  { view: "project", selector: "#tourTabs", title: "Move through the workspace", text: "Workspace, Sessions, and Insights connect delivery state to the AI sessions and effort behind it." },
+  { view: "project", selector: "#tourBoard", title: "Manage work as a Kanban", text: "AI-assisted work moves through Backlog, In progress, Review, Blocked, and Done. Humans approve Review work before it becomes Done." },
+  { view: "project", selector: '[data-task="BCPWA-2"]', title: "Keep every decision with the ticket", text: "Each card carries the task, human owner, AI agent, recommended model, status, and evidence for the workspace." },
   { view: "project", selector: "#tourCounts", title: "Supervise delivery at a glance", text: "A Scrum master or project lead can see open, active, blocked, and completed work without reading private chats." },
+  { view: "sharing", selector: "#sharingView .share-grid", title: "Know exactly what the team shares", text: "The snapshot carries project work, approved knowledge, continuity, and aggregate usage. Conversations, code, and local machine details stay private." },
   { view: "insights", selector: "#insightsView .insight-grid", title: "Measure the real effort", text: "Insights summarize progress, time, AI usage, evidence, and contribution across people and agents." },
 ];
 

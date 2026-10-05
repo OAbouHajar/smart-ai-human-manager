@@ -105,6 +105,36 @@ h1, h2, p { margin-top: 0; }
 .contribution-panel h2 { font-size: 0.9rem; }
 .contribution-panel > div { display: grid; grid-template-columns: 12rem 1fr 5rem; gap: 1rem; align-items: center; padding: 0.55rem 0; color: var(--soft); font-size: 0.62rem; }
 .contribution-panel i { height: 0.45rem; background: var(--green); border-radius: 99px; }
+.share-destination { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 0.85rem; padding: 0.85rem 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.share-destination > div { display: flex; gap: 0.65rem; align-items: center; }
+.share-status-dot { width: 0.55rem; height: 0.55rem; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 4px rgba(84,214,139,.12); }
+.share-destination strong, .share-destination small { display: block; }
+.share-destination strong { font-size: 0.7rem; }
+.share-destination small { margin-top: 0.2rem; color: var(--muted); font-size: 0.58rem; }
+.share-destination code { color: var(--soft); font-size: 0.58rem; }
+.share-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 0.75rem; }
+.share-grid article, .reuse-panel, .manifest-preview { padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.share-grid h2, .reuse-panel h2 { margin: 0.35rem 0 0.8rem; font-size: 0.9rem; }
+.share-label { color: var(--green); font-size: 0.56rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.share-grid ul { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+.share-grid li { position: relative; padding-left: 1rem; color: var(--soft); font-size: 0.62rem; }
+.share-grid li::before { position: absolute; left: 0; color: var(--green); content: "✓"; }
+.share-grid li strong, .share-grid li small { display: block; }
+.share-grid li strong { color: var(--text); font-size: 0.64rem; }
+.share-grid li small { margin-top: 0.18rem; color: var(--muted); font-size: 0.58rem; line-height: 1.5; }
+.share-private .share-label { color: var(--blue); }
+.share-private li::before { color: var(--blue); content: "•"; }
+.share-note { margin: 0.9rem 0 0; padding-top: 0.7rem; color: var(--muted); border-top: 1px solid var(--line); font-size: 0.6rem; line-height: 1.5; }
+.reuse-panel { margin-top: 0.75rem; }
+.reuse-panel ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.reuse-panel li { display: flex; gap: 0.55rem; align-items: flex-start; }
+.reuse-panel li > span { display: grid; flex: 0 0 1.4rem; place-items: center; height: 1.4rem; color: var(--green); background: #173226; border-radius: 50%; font-size: 0.6rem; font-weight: 800; }
+.reuse-panel li strong, .reuse-panel li small { display: block; }
+.reuse-panel li strong { font-size: 0.64rem; }
+.reuse-panel li small { margin-top: 0.2rem; color: var(--muted); font-size: 0.56rem; line-height: 1.5; }
+.manifest-preview { margin-top: 0.75rem; padding: 0; }
+.manifest-preview summary { padding: 0.75rem 1rem; color: var(--soft); font-size: 0.62rem; font-weight: 700; cursor: pointer; }
+.manifest-preview pre { overflow-x: auto; margin: 0; padding: 0 1rem 1rem; color: #b9d8c6; font-size: 0.58rem; line-height: 1.6; }
 .task-drawer { position: fixed; top: 64px; right: 0; bottom: 0; z-index: 60; width: min(25rem, 92vw); padding: 1.25rem; color: var(--text); background: #141a20; border-left: 1px solid var(--line); box-shadow: -18px 0 50px rgba(0,0,0,.35); transform: translateX(105%); transition: transform .22s ease-out; }
 .task-drawer.open { transform: none; }
 .task-drawer > button { position: absolute; top: 0.65rem; right: 0.75rem; color: var(--soft); background: transparent; border: 0; font-size: 1.3rem; cursor: pointer; }
@@ -134,4 +164,6 @@ h1, h2, p { margin-top: 0; }
   .session-table button { grid-template-columns: 2.5rem 1fr; }
   .session-table button > span:nth-child(3), .session-table em { display: none; }
   .insight-grid { grid-template-columns: repeat(2, 1fr); }
+  .share-grid, .reuse-panel ol { grid-template-columns: 1fr; }
+  .share-destination { align-items: flex-start; flex-direction: column; }
 }
